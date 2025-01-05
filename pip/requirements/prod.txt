@@ -1,0 +1,3 @@
+# requirements for production
+-r common.txt
+# List packages that are only used in the commercial environment below:
