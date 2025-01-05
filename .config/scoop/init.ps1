@@ -3,7 +3,7 @@ $firstDir = (Get-Location).Path
 Set-Location "C:\"
 Get-Location
 
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 Set-Location $firstDir
 
