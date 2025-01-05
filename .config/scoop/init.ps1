@@ -1,6 +1,6 @@
-Set-Location "C:\"
 $firstDir = (Get-Location).Path
-Set-Location "D:\"
+# Set-Location "D:\"
+Set-Location "C:\"
 Get-Location
 
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
