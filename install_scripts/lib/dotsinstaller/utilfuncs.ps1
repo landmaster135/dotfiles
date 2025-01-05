@@ -12,42 +12,42 @@ function Print-Info {
   Write-Host $message -ForegroundColor Cyan
 }
 
-function print-notice {
+function Print-Notice {
   param(
     [string]$message
   )
   Write-Host $message -ForegroundColor Magenta
 }
 
-function print-success {
+function Print-Success {
   param(
     [string]$message
   )
   Write-Host $message -ForegroundColor Green
 }
 
-function print-warning {
+function Print-Warning {
   param(
     [string]$message
   )
   Write-Host $message -ForegroundColor Yellow
 }
 
-function print-error {
+function Print-Error {
   param(
     [string]$message
   )
   Write-Host $message -ForegroundColor Red
 }
 
-function print-debug {
+function Print-Debug {
   param(
     [string]$message
   )
   Write-Host $message -ForegroundColor Blue
 }
 
-function yes-or-no-select {
+function Select-YesOrNo {
   param(
     [string]$prompt = "Are you ready? [yes/no]"
   )
@@ -65,7 +65,7 @@ function yes-or-no-select {
   }
 }
 
-function append-file-if-not-exist {
+function Append-FileIfNotExist {
   param(
     [string]$contents,
     [string]$targetFile
@@ -76,7 +76,7 @@ function append-file-if-not-exist {
   }
 }
 
-function check-install {
+function Check-Install {
   param(
     [string[]]$packages
   )
@@ -93,7 +93,7 @@ function check-install {
   }
 }
 
-function git-clone-or-fetch {
+function Git-CloneOrFetch {
   param(
     [string]$repo,
     [string]$dest
@@ -120,7 +120,7 @@ function git-clone-or-fetch {
   }
 }
 
-function mkdir-not-exist {
+function New-ItemIfNotExist {
   param(
     [string]$path
   )
@@ -129,5 +129,3 @@ function mkdir-not-exist {
     New-Item -ItemType Directory -Force -Path $path | Out-Null
   }
 }
-
-append-file-if-not-exist "DDDDDDDDDDDDDDD" "EEEEEE"

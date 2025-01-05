@@ -103,6 +103,7 @@ function main() {
 
 	if [[ "$is_update" = true ]]; then
 		source $current_dir/lib/dotsinstaller/install-basic-packages.sh
+    print_success_info $0 "install-basic-packages.sh"
 		# source $current_dir/lib/dotsinstaller/install-neovim.sh
 		ln -snf $current_dir/lib/dotsinstaller/bin/* ~/.local/bin/
 
