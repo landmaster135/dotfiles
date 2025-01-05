@@ -105,13 +105,6 @@ function main() {
 		source $current_dir/lib/dotsinstaller/install-basic-packages.sh
     print_success_info $0 "install-basic-packages.sh"
 		# source $current_dir/lib/dotsinstaller/install-neovim.sh
-    print_info "aaaaaaaaaaaaaaaaaaa"
-    ls -a
-    print_info "testestteststse"
-    # echo $USER
-    echo $HOME
-    echo ~
-    print_info "bbbbbbbbbbbbbbbbbbbbb"
     if [[ ! -d ~/.local/bin ]]; then
       mkdir -p ~/.local/bin || {
         local fallback_bin="$HOME/bin"  # Define a fallback directory
@@ -125,7 +118,6 @@ function main() {
     else
       ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/.local/bin/" # Original behavior
     fi
-		# ln -snf $current_dir/lib/dotsinstaller/bin/* ~/.local/bin/
 
 		if [[ "$with_gui" = true ]]; then
 			source $current_dir/lib/dotsinstaller/install-extra.sh
