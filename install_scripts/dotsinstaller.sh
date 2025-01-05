@@ -106,9 +106,9 @@ function main() {
     print_success_info $0 "install-basic-packages.sh"
 		# source $current_dir/lib/dotsinstaller/install-neovim.sh
     if [[ ! -d ~/.local/bin ]]; then
-      ln -snf "$current_dir/lib/dotsinstaller/bin/*" ~/$USER/.local/bin/
+      ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/$USER/.local/bin/"
     else
-      ln -snf "$current_dir/lib/dotsinstaller/bin/*" ~/.local/bin/ # Original behavior
+      ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/.local/bin/" # Original behavior
     fi
 		# ln -snf $current_dir/lib/dotsinstaller/bin/* ~/.local/bin/
 
