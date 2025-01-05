@@ -7,7 +7,7 @@
 # Import-Module $currentDir\lib\dotsinstaller\utilfuncs.ps1
 # . $current_dir\utilfuncs.ps1
 
-function helpmsg {
+function Helpmsg {
   Print-Default "Usage: $($MyInvocation.MyCommand.Name) [install | update | link] [--with-gui] [--help | -h]" -ForegroundColor Yellow
   Print-Default "  install: add require package install and symbolic link to $env:HOME from dotfiles [default]"
   Print-Default "  update: add require package install or update."
@@ -24,17 +24,15 @@ function main {
     [string[]]$arguments
   )
 
-  #Save the current value in the $p variable.
-  $p = [Environment]::GetEnvironmentVariable("PSModulePath")
-  #Add the new path to the $p variable. Begin with a semi-colon separator.
-  $p += ";$currentDir/install_scripts/lib/dotsinstaller"
-  #Add the paths in $p to the PSModulePath value.
-  [Environment]::SetEnvironmentVariable("PSModulePath", $p)
+  # Save the current value in the $p variable and Add the paths in $p to the PSModulePath value.
+  # $p = [Environment]::GetEnvironmentVariable("PSModulePath")
+  # $p += ";$currentDir/install_scripts/lib/dotsinstaller"
+  # [Environment]::SetEnvironmentVariable("PSModulePath", $p)
   # $currentDir = Split-Path -Parent $MyInvocation.MyCommand.Path
   $currentDir = Split-Path -Parent $PSScriptRoot
-  # Import-Module "/home/masudamazudamasu/dotfiles/install_scripts/lib/dotsinstaller/utilfuncs.ps1"
 
-  Import-Module "$currentDir/install_scripts/lib/dotsinstaller/utilfuncs.ps1"
+  # Get-Module -ListAvailable | Import-Module
+  Import-Module -Name "$currentDir/install_scripts/lib/dotsinstaller/utilfuncs.ps1" -Verbose
   $isInstall = $false
   $isLink = $false
   $isUpdate = $false
@@ -43,8 +41,8 @@ function main {
   # Argument parsing (simplified for brevity)
   foreach ($arg in $arguments) {
     switch ($arg) {
-      '--help' { helpmsg; exit 1 }
-      '-h' { helpmsg; exit 1 }
+      '--help' { Helpmsg; exit 1 }
+      '-h' { Helpmsg; exit 1 }
       'install' { $isInstall = $true; $isUpdate = $true; $isLink = $true }
       'update' { $isInstall = $true; $isUpdate = $true }
       'link' { $isLink = $true }
