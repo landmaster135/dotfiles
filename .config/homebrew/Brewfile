@@ -1,0 +1,7 @@
+brew "git"
+brew "wget"
+
+cask "alfred"
+cask "google-chrome"
+cask "google-japanese-ime"
+cask "visual-studio-code"
