@@ -109,6 +109,7 @@ function main() {
     print_info "testestteststse"
     echo $USER
     echo $HOME
+    print_info "aaaaaaaaaaaaaaaaaaa"
     if [[ ! -d ~/.local/bin ]]; then
       ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/$USER/.local/bin/"
     else

@@ -63,7 +63,8 @@ function main {
     # Implement install-required-packages.ps1
     Write-Host "Installing required packages..."
     #Replace with your appropriate package manager calls.
-    PowerShell -ExecutionPolicy Unrestricted "$currentDir/.config/scoop/exec_scoop.ps1"
+    # PowerShell -ExecutionPolicy Unrestricted "$currentDir/.config/scoop/exec_scoop.ps1"
+    PowerShell -ExecutionPolicy Unrestricted "$currentDir/.config/choco/exec_choco.ps1"
   }
 
   if ($isLink) {
