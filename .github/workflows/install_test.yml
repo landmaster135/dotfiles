@@ -13,7 +13,9 @@ jobs:
       - name: fatal unsafe repository (REPO is owned by someone else)
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install dotfiles
-        run: install_scripts/dotsinstaller.sh install
+        run: |
+          chmod 777 install_scripts/dotsinstaller.sh
+          install_scripts/dotsinstaller.sh install
 
   fedora:
     runs-on: ubuntu-latest
@@ -25,7 +27,9 @@ jobs:
       - name: fatal unsafe repository (REPO is owned by someone else)
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install dotfiles
-        run: install_scripts/dotsinstaller.sh install
+        run: |
+          chmod 777 install_scripts/dotsinstaller.sh
+          install_scripts/dotsinstaller.sh install
 
   arch:
     runs-on: ubuntu-latest
@@ -39,7 +43,9 @@ jobs:
       - name: fatal unsafe repository (REPO is owned by someone else)
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install dotfiles
-        run: install_scripts/dotsinstaller.sh install
+        run: |
+          chmod 777 install_scripts/dotsinstaller.sh
+          install_scripts/dotsinstaller.sh install
       - name: Add user
         run: useradd builduser -m
       - name: Add sudoer
@@ -82,7 +88,6 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    container: windows:latest
     steps:
       - uses: actions/checkout@v4
       - name: Install PSScriptAnalyzer module
