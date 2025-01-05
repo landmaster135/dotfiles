@@ -113,7 +113,15 @@ function main() {
     echo ~
     print_info "bbbbbbbbbbbbbbbbbbbbb"
     if [[ ! -d ~/.local/bin ]]; then
-      ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/$USER/.local/bin/"
+      mkdir -p ~/.local/bin || {
+        local fallback_bin="$HOME/bin"  # Define a fallback directory
+        mkdir -p "$fallback_bin" || {
+          print_error "Failed to create both ~/.local/bin and $fallback_bin. Exiting."
+          exit 1
+        }
+        print_warning "Failed to create ~/.local/bin. Using $fallback_bin instead."
+        ln -snf "$current_dir/lib/dotsinstaller/bin/*" "$fallback_bin/" # Use fallback
+      }
     else
       ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/.local/bin/" # Original behavior
     fi
