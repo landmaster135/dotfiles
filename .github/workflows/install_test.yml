@@ -53,7 +53,9 @@ jobs:
       - name: Change password
         run: passwd -d builduser
       - name: Install arch software
-        run: sudo -u builduser bash -c 'install_scripts/arch-extra-setup.sh'
+        run: |
+          chmod 777 install_scripts/arch-extra-setup.sh
+          sudo -u builduser bash -c 'install_scripts/arch-extra-setup.sh'
       - name: Install zsh plugins
         run: zsh
         shell: zsh -li --rcs {0}
