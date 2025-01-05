@@ -14,6 +14,14 @@ function helpmsg() {
 	print_default ""
 }
 
+function print_success_info(){
+  print_info ""
+  print_info "#####################################################"
+  print_info "$(basename "${BASH_SOURCE[0]:-$1}") $2 updated."
+  print_info "#####################################################"
+  print_info ""
+}
+
 #--------------------------------------------------------------#
 ##          main                                              ##
 #--------------------------------------------------------------#
@@ -76,6 +84,11 @@ function main() {
 
 	if [[ "$is_install" = true ]]; then
 		source $current_dir/lib/dotsinstaller/install-required-packages.sh
+    print_info ""
+		print_info "#####################################################"
+		print_info "$(basename "${BASH_SOURCE[0]:-$0}") install finish!!!"
+		print_info "#####################################################"
+		print_info ""
 	fi
 
 	if [[ "$is_link" = true ]]; then
@@ -95,12 +108,17 @@ function main() {
 
 		if [[ "$with_gui" = true ]]; then
 			source $current_dir/lib/dotsinstaller/install-extra.sh
+      print_success_info $0 "install-extra.sh"
 			source $current_dir/lib/dotsinstaller/setup-terminal.sh
+      print_success_info $0 "setup-terminal.sh"
 			# source $current_dir/lib/dotsinstaller/install-i3.sh
 			# source $current_dir/lib/dotsinstaller/install-sway.sh
 			source $current_dir/lib/dotsinstaller/install-hyprland.sh
+      print_success_info $0 "install-hyprland.sh"
 			source $current_dir/lib/dotsinstaller/setup-default-app.sh
+      print_success_info $0 "setup-default-app.sh"
 			source $current_dir/lib/dotsinstaller/install-font.sh
+      print_success_info $0 "install-font.sh"
 		fi
 
 		print_info ""
