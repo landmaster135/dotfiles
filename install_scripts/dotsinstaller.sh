@@ -107,8 +107,9 @@ function main() {
 		# source $current_dir/lib/dotsinstaller/install-neovim.sh
     ls
     print_info "testestteststse"
-    echo $USER
+    # echo $USER
     echo $HOME
+    echo ~
     print_info "aaaaaaaaaaaaaaaaaaa"
     if [[ ! -d ~/.local/bin ]]; then
       ln -snf "$current_dir/lib/dotsinstaller/bin/*" "~/$USER/.local/bin/"

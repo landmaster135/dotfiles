@@ -110,4 +110,4 @@ jobs:
         run: install_scripts/dotsinstaller.ps1 install
       - name: choco list
         shell: pwsh
-        run: choco list -lo
+        run: choco list
