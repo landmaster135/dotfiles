@@ -1,11 +1,11 @@
-Function Print-Default {
+function Print-Default {
   param(
     [string]$message
   )
   Write-Host $message
 }
 
-Function Print-Info {
+function Print-Info {
   param(
     [string]$message
   )
