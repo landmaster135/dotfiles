@@ -108,3 +108,6 @@ jobs:
       - name: Install dotfiles
         shell: pwsh
         run: install_scripts/dotsinstaller.ps1 install
+      - name: scoop list
+        shell: pwsh
+        run: scoop list
