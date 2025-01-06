@@ -1,0 +1,11 @@
+# Dev environment to get common packages.
+pip
+autopep8
+# Get requirements for common packages
+-r common.txt
+# List packages that are only used in the development environment below:
+pytest>=8.1.1
+pytest-cov>=5.0.0
+pytest-mock>=3.14.0
+pytest-xdist>=3.5.0
+memory_profiler

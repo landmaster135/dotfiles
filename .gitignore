@@ -169,3 +169,168 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+
+
+# ====== others =========================================================
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+# Thumbnails
+._*
+
+### Docker ###
+# .dockerignore
+# Dockerfile
+
+### VSCode ###
+.vscode/*
+
+### setting files ###
+.editorconfig
+
+### migration files for alembic
+alembic.ini
+migrations*
+*.sqlite
+models.py
+settings.py
+
+### migration files for Google Cloud Services
+# .gcloudignore
+cloud-sql-proxy
+
+### migration files for Database
+*.db
+*.sqlite
+*.session.sql
+
+### log of profile
+./memory_profiler.log
+tmp_log.txt
+
+
+# ====== yutkat =========================================================
+
+# all ignore #
+# /*
+# /.**
+
+## config
+!/.config/
+!/.config/**
+
+### Secrets
+/.config/TabNine/registration_key
+/.config/espanso/user/**
+/.config/systemd/**/*kite*
+/.config/gh/**
+!/.config/gh/config.yml
+!/.config/pet/snippet.toml
+
+### neovim
+/.config/nvim/plugin/**
+!/.nvim/
+!/.nvim/**
+
+### zsh
+!/.zshenv
+/.zfunc/**
+/.config/zsh/*.local/**
+/.config/zsh/.zcompdump
+/.config/zsh/.zshrc.local
+
+### VSCode
+/.config/Code/**
+!/.config/Code/User/*.json
+
+### i3
+/.config/i3/config.d/local/*
+
+### sway
+/.config/sway/config.d/local/*
+
+### wezterm
+/.config/wezterm/local.lua
+
+## X
+!/.xinitrc
+!/.xprofile
+/.config/gtk-3.0/bookmarks
+
+## Wayland
+!/.pam_environment
+
+### fcitx
+/.config/fcitx/**
+!/.config/fcitx/config
+!/.config/fcitx/conf/
+!/.config/fcitx/conf/**
+/.config/fcitx5/**
+!/.config/fcitx5/config
+!/.config/fcitx5/conf/
+!/.config/fcitx5/conf/**
+/.config/fcitx5/conf/cached_layouts*
+
+### qutebrowser
+/.config/qutebrowser/**
+!/.config/qutebrowser/autoconfig.yml
+!/.config/qutebrowser/greasemonkey
+
+### CopyQ
+/.config/copyq/**
+!/.config/copyq/copyq.conf
+
+## IME
+!/.mozc/
+!/.mozc/**
+/.mozc/*.log
+/.mozc/*.txt
+/.mozc/*.db
+/.mozc/.*
+
+## Systemd
+/.config/systemd/user/**
+!/.config/systemd/user/i3-cycle-focus.service
+!/.config/systemd/user/focus-last.service
+
+## ci
+!/.circleci/
+!/.circleci/**
+!/.github/
+!/.github/**
+
+## etc
+!/.editrc
+
+## lua
+!/.stylua.toml
+!/neovim.yml
+!/selene.toml
+
+## doc
+!/.vale.ini
+/.nvim/vale/styles/**
+!/.nvim/vale/styles/config/
+!/.nvim/vale/styles/config/**
+!/.cspell.json
+
+# global #
+__pycache__
+!/README.md
+!/LICENSE
+!/install.sh
+!/install_scripts/
+!/install_scripts/**
+!.linkignore
+!.gitignore
+!.gitkeep
