@@ -48,11 +48,13 @@ alias 777='chmod 777'
 #==============================================================#
 
 # pip
+alias pip-i='pip install --no-cache-dir'
 alias pip-ip='pip install --no-cache-dir -r requirements.txt'
 alias pip-id='pip install --no-cache-dir -r requirements/dev.txt'
 alias pip-vu='pip -V; sudo python3 -m pip install --upgrade pip'
+alias pip-l='pip list'
 
-# venv
+# virtual env
 alias py-ve='python -m venv .venv'
 alias py-va='source .venv/bin/activate'
 alias py-vd='deactivate'
