@@ -37,6 +37,7 @@ alias git-ba='git branch -a'
 alias git-a='git add .'
 alias git-c='git commit -m'
 alias git-publish='BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); git push --set-upstream origin "$BRANCH_NAME"; unset BRANCH_NAME;'
+alias git-push-afo='git push --all --force origin'
 
 # chmod
 alias 644='chmod 644'
@@ -94,6 +95,9 @@ alias pg-status='sudo /sbin/service postgresql status'
 alias gc='gcloud'
 alias gc-fd='gcloud functions deploy'
 alias gc-sjc='gcloud scheduler jobs create'
+alias gc-init='gcloud init'
+alias gc-initco='gcloud init --console-only'
+alias gc-auth='gcloud auth application-default login'
 
 #==============================================================#
 ##          Go aliases                                        ##
