@@ -99,6 +99,9 @@ alias gc-init='gcloud init'
 alias gc-initco='gcloud init --console-only'
 alias gc-auth='gcloud auth application-default login'
 
+# cloud shell editor
+# alias teachme='cloudshell launch-tutorial'
+
 #==============================================================#
 ##          Go aliases                                        ##
 #==============================================================#
