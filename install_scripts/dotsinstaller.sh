@@ -17,7 +17,7 @@ function helpmsg() {
 function print_success_info(){
   print_info ""
   print_info "#####################################################"
-  print_info "$(basename "${BASH_SOURCE[0]:-$1}") $2 updated."
+  print_info "$(basename "${BASH_SOURCE[0]:-$1}") $2 $3"
   print_info "#####################################################"
   print_info ""
 }
@@ -84,26 +84,18 @@ function main() {
 
 	if [[ "$is_install" = true ]]; then
 		source $current_dir/lib/dotsinstaller/install-required-packages.sh
-    print_info ""
-		print_info "#####################################################"
-		print_info "$(basename "${BASH_SOURCE[0]:-$0}") install finish!!!"
-		print_info "#####################################################"
-		print_info ""
+    print_success_info $0 "" "install finish!!!"
 	fi
 
 	if [[ "$is_link" = true ]]; then
 		source $current_dir/lib/dotsinstaller/link-to-homedir.sh
 		source $current_dir/lib/dotsinstaller/gitconfig.sh
-		print_info ""
-		print_info "#####################################################"
-		print_info "$(basename "${BASH_SOURCE[0]:-$0}") link success!!!"
-		print_info "#####################################################"
-		print_info ""
+    print_success_info $0 "" "link success!!!"
 	fi
 
 	if [[ "$is_update" = true ]]; then
 		source $current_dir/lib/dotsinstaller/install-basic-packages.sh
-    print_success_info $0 "install-basic-packages.sh"
+    print_success_info $0 "install-basic-packages.sh" "updated."
 		# source $current_dir/lib/dotsinstaller/install-neovim.sh
     if [[ ! -d ~/.local/bin ]]; then
       mkdir -p ~/.local/bin || {
@@ -121,24 +113,20 @@ function main() {
 
 		if [[ "$with_gui" = true ]]; then
 			source $current_dir/lib/dotsinstaller/install-extra.sh
-      print_success_info $0 "install-extra.sh"
+      print_success_info $0 "install-extra.sh" "updated."
 			source $current_dir/lib/dotsinstaller/setup-terminal.sh
-      print_success_info $0 "setup-terminal.sh"
+      print_success_info $0 "setup-terminal.sh" "updated."
 			# source $current_dir/lib/dotsinstaller/install-i3.sh
 			# source $current_dir/lib/dotsinstaller/install-sway.sh
 			source $current_dir/lib/dotsinstaller/install-hyprland.sh
-      print_success_info $0 "install-hyprland.sh"
+      print_success_info $0 "install-hyprland.sh" "updated."
 			source $current_dir/lib/dotsinstaller/setup-default-app.sh
-      print_success_info $0 "setup-default-app.sh"
+      print_success_info $0 "setup-default-app.sh" "updated."
 			source $current_dir/lib/dotsinstaller/install-font.sh
-      print_success_info $0 "install-font.sh"
+      print_success_info $0 "install-font.sh" "updated."
 		fi
 
-		print_info ""
-		print_info "#####################################################"
-		print_info "$(basename "${BASH_SOURCE[0]:-$0}") update finish!!!"
-		print_info "#####################################################"
-		print_info ""
+    print_success_info $0 "" "update finish!!!"
 	fi
 }
 
