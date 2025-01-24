@@ -5,7 +5,7 @@ dotfiles
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/landmaster135/dotfiles)
 ![GitHub repo size](https://img.shields.io/github/repo-size/landmaster135/dotfiles)
 
-# Install
+## Install
 
 1. Download
 
@@ -34,5 +34,14 @@ exec zsh
 
 4. Enjoy!
 
-# License
+## Small install
+
+Only aliases.
+```bash
+export ZHOMEDIR=$HOME/dotfiles/.config/zsh
+export ZRCDIR=$ZHOMEDIR/rc
+source "$ZRCDIR/alias.zsh"
+```
+
+## License
 MIT License
