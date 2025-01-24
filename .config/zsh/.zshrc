@@ -34,9 +34,23 @@ eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 
 
+
+#==============================================================#
+#               .zshrc                                         #
+#==============================================================#
+
+# profile
+if [ "$ZSHRC_PROFILE" != "" ]; then
+	zmodload zsh/zprof && zprof > /dev/null
+fi
+
+
 #==============================================================#
 ##          Base Configuration                                ##
 #==============================================================#
+source-safe() { if [ -f "$1" ]; then source "$1"; fi }
+# source "$ZRCDIR/base.zsh"
+
 HOSTNAME="$HOST"
 HISTFILE="${ZDATADIR}/zsh_history"
 HISTSIZE=10000                    # Number of histories in memory
@@ -87,3 +101,11 @@ source "$ZRCDIR/function.zsh"
 ##          Aliases                                           ##
 #--------------------------------------------------------------#
 source "$ZRCDIR/alias.zsh"
+
+#--------------------------------------------------------------#
+##          Key Bindings                                      ##
+#--------------------------------------------------------------#
+source "$ZRCDIR/bindkey.zsh"
+
+source-safe "$ZHOMEDIR/z_key_bind/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}"
+source "$ZHOMEDIR/z_key_bind/bindkey.zsh"
