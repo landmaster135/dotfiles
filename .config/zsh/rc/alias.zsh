@@ -29,7 +29,7 @@ alias ps-grep='ps -fA | grep -e UID -e'
 
 # disk
 alias df='df -h'
-alias du='du -sh'
+alias du-sh='du -sh'
 alias rm-cache='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
@@ -63,6 +63,7 @@ alias py-ve='python -m venv .venv'
 alias py-va='source .venv/bin/activate'
 alias py-vd='deactivate'
 alias py-vi='py-ve; py-va; pip-id;'
+alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
 
 # uvicorn
 alias uvi='uvicorn app:app --reload --port 8000 --host 0.0.0.0'

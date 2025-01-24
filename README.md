@@ -36,11 +36,13 @@ exec zsh
 
 ## Small install
 
-Only aliases.
+Only aliases and functions.
 ```bash
 export ZHOMEDIR=$HOME/dotfiles/.config/zsh
 export ZRCDIR=$ZHOMEDIR/rc
 source "$ZRCDIR/alias.zsh"
+source "$ZRCDIR/function.zsh"
+
 ```
 
 ## License
