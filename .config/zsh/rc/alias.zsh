@@ -11,18 +11,21 @@ alias cl='clear'
 alias wc-l='awk '\''END { print NR, FILENAME }'\'''
 alias fc='fc -r'
 alias ..='cd ..'
+alias ps-fa='ps -fA'
 
 # ls
 alias ls='ls --color=auto'
 alias la='ls -AF --color=auto'
 alias l1='ls -1A --color=auto'
 alias lal='ls -alF --color=auto'
+alias lsoi='lsof -i'
 
 # grep
 alias grep='grep -H -n -I --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias histgrep='history | grep'
+alias ps-grep='ps -fA | grep -e UID -e'
 
 # disk
 alias df='df -h'
@@ -59,9 +62,11 @@ alias pip-l='pip list'
 alias py-ve='python -m venv .venv'
 alias py-va='source .venv/bin/activate'
 alias py-vd='deactivate'
+alias py-vi='py-ve; py-va; pip-id;'
 
 # uvicorn
 alias uvi='uvicorn app:app --reload --port 8000 --host 0.0.0.0'
+alias uvi-kill='sudo lsof -t -i tcp:8000 | xargs kill -9'
 
 # python
 alias py='python'
