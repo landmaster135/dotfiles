@@ -98,6 +98,11 @@ replace	create, list, delete refs to replace objects
 request-pull	generate summary of pending changes
 rerere	reuse recorded resolution of conflicted merges
 reset	reset current HEAD to specified state
+reset --soft HEAD^  Cancel the last commit
+reset --hard HEAD^  Undo the last commit
+reset --hard HEAD   Remove all changes after the commit
+reset --mixed HEAD  Undo git add
+reset --hard ORIG_HEAD  Undo git reset
 restore	restore working tree files
 rev-list	list commit object in reverse chronological order
 rev-parse	pick out and massage parameters for other git commands
