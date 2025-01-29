@@ -41,6 +41,7 @@ function main() {
 		shift
 	done
 
+  chmod 777 "${current_dir}"/install_scripts/dotsinstaller.sh
 	if [[ "$gui" = true ]]; then
 		"${current_dir}"/install_scripts/dotsinstaller.sh install --with-gui
 	else
