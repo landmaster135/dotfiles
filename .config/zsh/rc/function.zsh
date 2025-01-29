@@ -103,11 +103,9 @@ function snippet() {
           cat $ZHOMEDIR/snippets/tmux/$snippet_file.txt
         fi
         ;;
-      --aliases | --build-options | --options | --run-options | --subcommands | --diff-options | --commands)
-				;;
-      general)
-          here_are_the_available_snippets "general"
-        cat $ZHOMEDIR/snippets/general/general.txt
+      common)
+          here_are_the_available_snippets "common"
+        cat $ZHOMEDIR/snippets/common/common.txt
         ;;
       --aliases | --build-options | --options | --run-options | --subcommands | --diff-options | --commands)
 				;;
