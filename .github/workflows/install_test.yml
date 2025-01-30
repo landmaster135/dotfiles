@@ -18,7 +18,7 @@ jobs:
           ./install.sh
       - name: Test shell environment
         run: |
-          source ./dotfiles/.config/zsh/.zshrc
+          source ./.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -37,7 +37,7 @@ jobs:
           install_scripts/dotsinstaller.sh install
       - name: Test shell environment
         run: |
-          source ./dotfiles/.config/zsh/.zshrc
+          source ./.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -81,7 +81,7 @@ jobs:
       #     TERM: screen-256color
       - name: Test shell environment
         run: |
-          source ./dotfiles/.config/zsh/.zshrc
+          source ./.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -104,7 +104,7 @@ jobs:
         run: selene -q .
       - name: Test shell environment
         run: |
-          source ./dotfiles/.config/zsh/.zshrc
+          source ./.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
