@@ -18,7 +18,7 @@ jobs:
           ./install.sh
       - name: ls
         run: |
-          ls
+          ls -a
       - name: Test shell environment
         run: |
           source ./.config/zsh/.zshrc
