@@ -16,6 +16,9 @@ jobs:
         run: |
           chmod 777 ./install.sh
           ./install.sh
+      - name: ls
+        run: |
+          ls
       - name: Test shell environment
         run: |
           source ./.config/zsh/.zshrc
