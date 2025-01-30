@@ -16,8 +16,9 @@ jobs:
         run: |
           chmod 777 ./install.sh
           ./install.sh
-      - name: Test environment
+      - name: Test shell environment
         run: |
+          source ./dotfiles/.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -34,8 +35,9 @@ jobs:
         run: |
           chmod 777 install_scripts/dotsinstaller.sh
           install_scripts/dotsinstaller.sh install
-      - name: Test environment
+      - name: Test shell environment
         run: |
+          source ./dotfiles/.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -77,8 +79,9 @@ jobs:
       #   shell: zsh -li --rcs {0}
       #   env:
       #     TERM: screen-256color
-      - name: Test environment
+      - name: Test shell environment
         run: |
+          source ./dotfiles/.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
@@ -99,8 +102,9 @@ jobs:
         run: test $(git ls-files | grep "\.sh$" | xargs shellcheck -f gcc | grep -v "SC2086\|SC2046\|SC1090\|SC2034\|SC2005\|SC2154\|SC1091" | tee -a /dev/stderr | wc -l) -le 0
       - name: Execute luacheck
         run: selene -q .
-      - name: Test environment
+      - name: Test shell environment
         run: |
+          source ./dotfiles/.config/zsh/.zshrc
           chmod 777 install_scripts/test_after_installed.sh
           install_scripts/test_after_installed.sh
 
