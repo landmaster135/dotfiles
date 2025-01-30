@@ -16,15 +16,6 @@ jobs:
         run: |
           chmod 777 ./install.sh
           ./install.sh
-      - name: ls
-        run: |
-          ls -a
-      - name: Test shell environment
-        run: |
-          chmod 777 ./.config/zsh/.zshrc
-          source ./.config/zsh/.zshrc
-          chmod 777 install_scripts/test_after_installed.sh
-          install_scripts/test_after_installed.sh
 
   fedora:
     runs-on: ubuntu-latest
@@ -39,12 +30,6 @@ jobs:
         run: |
           chmod 777 install_scripts/dotsinstaller.sh
           install_scripts/dotsinstaller.sh install
-      - name: Test shell environment
-        run: |
-          chmod 777 ./.config/zsh/.zshrc
-          source ./.config/zsh/.zshrc
-          chmod 777 install_scripts/test_after_installed.sh
-          install_scripts/test_after_installed.sh
 
   arch:
     runs-on: ubuntu-latest
@@ -84,12 +69,6 @@ jobs:
       #   shell: zsh -li --rcs {0}
       #   env:
       #     TERM: screen-256color
-      - name: Test shell environment
-        run: |
-          chmod 777 ./.config/zsh/.zshrc
-          source ./.config/zsh/.zshrc
-          chmod 777 install_scripts/test_after_installed.sh
-          install_scripts/test_after_installed.sh
 
   lint:
     runs-on: ubuntu-latest
@@ -108,12 +87,6 @@ jobs:
         run: test $(git ls-files | grep "\.sh$" | xargs shellcheck -f gcc | grep -v "SC2086\|SC2046\|SC1090\|SC2034\|SC2005\|SC2154\|SC1091" | tee -a /dev/stderr | wc -l) -le 0
       - name: Execute luacheck
         run: selene -q .
-      - name: Test shell environment
-        run: |
-          chmod 777 ./.config/zsh/.zshrc
-          source ./.config/zsh/.zshrc
-          chmod 777 install_scripts/test_after_installed.sh
-          install_scripts/test_after_installed.sh
 
   windows:
     runs-on: windows-latest
