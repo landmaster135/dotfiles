@@ -68,12 +68,17 @@ function snippet() {
         psql_array=($(add_prefix "--" "${psql_array[@]}"))
         tmux_array=($(add_prefix "--" "${tmux_array[@]}"))
         echo -e "Usage: ${BASH_SOURCE[0]:-$0} [docker | git | psql | tmux] [--help | -h]" 0>&2
+        echo -e "  common: show common snippets."
         echo -e "  docker: show snippets for docker with the following options. [$(echo "${docker_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  git: show snippets for git with the following options. [$(echo "${git_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  psql: show snippets for psql with the following options. [$(echo "${psql_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  tmux: show snippets for tmux with the following options. [$(echo "${tmux_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
 				# exit 1
 				;;
+      common)
+          here_are_the_available_snippets "common"
+        cat $ZHOMEDIR/snippets/common/common.txt
+        ;;
       docker)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${docker_array[@]}"; then
@@ -102,10 +107,6 @@ function snippet() {
           echo "Here are the available snippets for Tmux."
           cat $ZHOMEDIR/snippets/tmux/$snippet_file.txt
         fi
-        ;;
-      common)
-          here_are_the_available_snippets "common"
-        cat $ZHOMEDIR/snippets/common/common.txt
         ;;
       --aliases | --build-options | --options | --run-options | --subcommands | --diff-options | --commands)
 				;;

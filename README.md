@@ -35,13 +35,22 @@ exec zsh
 4. Enjoy!
 
 ## Small install
-
 Only aliases and functions.
 ```bash
 export ZHOMEDIR=$HOME/dotfiles/.config/zsh
 export ZRCDIR=$ZHOMEDIR/rc
 source "$ZRCDIR/alias.zsh"
 source "$ZRCDIR/function.zsh"
+
+```
+
+## Snippet
+Show snippets with the following shell command.
+```bash
+# snippet
+snippet --help
+# alias
+alias
 
 ```
 
