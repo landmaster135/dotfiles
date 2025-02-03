@@ -41,6 +41,8 @@ alias git-a='git add .'
 alias git-c='git commit -m'
 alias git-publish='BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); git push --set-upstream origin "$BRANCH_NAME"; unset BRANCH_NAME;'
 alias git-push-afo='git push --all --force origin'
+alias git-res='git reset --soft HEAD^'
+alias git-reh='git reset --hard HEAD^'
 
 # chmod
 alias 644='chmod 644'
