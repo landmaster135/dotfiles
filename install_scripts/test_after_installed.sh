@@ -6,6 +6,8 @@
 
 snippet --help
 snippet -h
+snippet apt --commands-for-disk
+snippet common
 snippet docker --aliases
 snippet docker --build-options
 snippet docker --options

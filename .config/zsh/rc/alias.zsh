@@ -66,8 +66,8 @@ alias py-vi='py-ve; py-va; pip-id;'
 alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
 
 # uvicorn
-alias uvi='uvicorn app:app --reload --port 8000 --host 0.0.0.0'
-alias uvi-kill='sudo lsof -t -i tcp:8000 | xargs kill -9'
+alias uvi='uvicorn src.app:app --reload --host 0.0.0.0 --port 8080'
+alias uvi-kill='sudo lsof -t -i tcp:8080 | xargs kill -9'
 
 # python
 alias py='python'
