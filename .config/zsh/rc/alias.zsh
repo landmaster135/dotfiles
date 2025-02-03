@@ -71,12 +71,14 @@ alias uvi-kill='sudo lsof -t -i tcp:8080 | xargs kill -9'
 
 # python
 alias py='python'
-alias py-sa='python src/app.py'
-alias py-sm='python src/main.py'
+alias py-sa='python ./src/app.py'
+alias py-sm='python ./src/main.py'
 
 # pytest
 alias pyt-d='python -m pytest --durations=0 --tb=short'
 alias pyt-c='python -m pytest --cov=src --cov-branch --tb=short'
+alias pyt-v='python -m pytest --cov=src --cov-branch --tb=short -vv'
+alias pyt-vs='python -m pytest --cov=src --cov-branch --tb=short -vv -s'
 alias pyt-r='python -m pytest -n auto --cov=src --cov-branch --cov-report=html --tb=short'
 
 #==============================================================#
@@ -84,7 +86,7 @@ alias pyt-r='python -m pytest -n auto --cov=src --cov-branch --cov-report=html -
 #==============================================================#
 
 # setting
-alias getja='sudo apt-get install language-pack-ja -y'
+alias apt-ja='sudo apt-get install language-pack-ja -y'
 
 # postgresql
 alias pg-re='sudo /sbin/service postgresql restart'
