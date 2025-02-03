@@ -1,7 +1,12 @@
-psql -d postgres  Opening DDL session.
+sudo /sbin/service postgresql restart  Restart PostgreSQL.
+sudo /sbin/service postgresql start  Start PostgreSQL.
+sudo /sbin/service postgresql stop  Stop PostgreSQL.
+sudo su - postgres  Switch to PostgreSQL user.
 
-CREATE USER <USER_NAME> WITH PASSWORD <PASSWORD>; Create user to access database.
-CREATE DATABASE <DB_NAME> OWNER <USER_NAME> ENCODING 'UTF8' lc_collate 'ja_JP.UTF-8' lc_ctype 'ja_JP.UTF-8' template 'template0'; Create database, set owner and encoding.
+psql -d postgres  Open DDL session.
+
+CREATE USER <USER_NAME> WITH PASSWORD <PASSWORD>;  Create user to access database.
+CREATE DATABASE <DB_NAME> OWNER <USER_NAME> ENCODING 'UTF8' lc_collate 'ja_JP.UTF-8' lc_ctype 'ja_JP.UTF-8' template 'template0';  Create database, set owner and encoding.
 GRANT ALL PRIVILEGES ON DATABASE <DB_NAME> TO <USER_NAME>;  Grant all privileges on database to user in PostgreSQL.
 GRANT USAGE, CREATE ON SCHEMA PUBLIC TO <USER_NAME>;  Grant privileges on schema to user in PostgreSQL.
 
@@ -12,8 +17,8 @@ ALTER DATABASE <DB_NAME> RESET ALL;  Reset all configuration parameters.
 
 \l  Ascertain existing Databases.
 psql -d <DB_NAME>  Ascertain existing Databases.
-\dt Ascertain existing tables.
-\du Ascertain existing users.
+\dt  Ascertain existing tables.
+\du  Ascertain existing users.
 
 DROP DATABASE <DB_NAME>;  Drop database.
 DROP USER <USER_NAME>;  Drop user.
