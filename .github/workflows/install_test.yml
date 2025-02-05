@@ -14,8 +14,8 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install dotfiles
         run: |
-          chmod 777 install_scripts/dotsinstaller.sh
-          install_scripts/dotsinstaller.sh install
+          chmod 777 ./install.sh
+          ./install.sh
 
   fedora:
     runs-on: ubuntu-latest

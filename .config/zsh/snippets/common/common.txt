@@ -1,0 +1,4 @@
+getpids Show process ids with 'ps' and 'grep'
+du-ah Show the directory with the largest size
+git-erase Erase the character from the git history
+snippet Show the snippets to utilize on the Bash/Zsh terminal

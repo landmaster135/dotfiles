@@ -1,0 +1,14 @@
+lsof
+zsh
+git
+tmux
+bc
+curl
+wget
+gawk
+python3-pip
+unzip
+sqlite3
+gettext
+procps
+jq
