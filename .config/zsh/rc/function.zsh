@@ -15,6 +15,39 @@ function git-erase() {
   git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
 }
 
+function _append_history_line() {
+  _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
+  _width=$(tput cols)
+
+  printf "%$(( $_width - ${#_date} - 1 ))s" | tr ' ' '-'
+  echo " $_date"
+}
+
+function _current_branch() {
+  _git_branch=$(git branch --show-current 2>/dev/null) && echo "[branch: $_git_branch] "
+}
+
+function edit-ps1-env() {
+  case ${1} in
+    --activate | -a)
+      echo 'Activate venv now......'
+      export _OLD_VIRTUAL_PS1="$MY_PS1"
+      _my_venv_dir='.venv'
+      PS1=${MY_PS1/'$(_append_history_line)'/'$(_append_history_line)'"\[\033[01;31m\]($_my_venv_dir)\[\033[00m\] "}
+      return 0
+      ;;
+    --deactivate | -d)
+      # nothing to do
+      echo 'Deactivate venv now......'
+      return 0
+      ;;
+    *)
+      echo "[ERROR] invalid options: '${1}'"
+      return 1
+      ;;
+  esac
+}
+
 function snippet() {
   function contains_element() {
     local target="$1"
