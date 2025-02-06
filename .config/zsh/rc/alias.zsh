@@ -26,6 +26,7 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias histgrep='history | grep'
 alias ps-grep='ps -fA | grep -e UID -e'
+alias apt-grep='apt list --installed | grep -e'
 
 # disk
 alias df='df -h'
@@ -62,8 +63,8 @@ alias pip-l='pip list'
 
 # virtual env
 alias py-ve='python -m venv .venv'
-alias py-va='source .venv/bin/activate'
-alias py-vd='deactivate'
+alias py-va='source .venv/bin/activate; edit-ps1-env -a;'
+alias py-vd='deactivate; edit-ps1-env -d;'
 alias py-vi='py-ve; py-va; pip-id;'
 alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
 
