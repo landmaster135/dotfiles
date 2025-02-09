@@ -1,0 +1,31 @@
+build  builds a Go package and executable file
+build -o  builds a Go package and executable file with a specified name
+GOOS=linux GOARCH=amd64 go build -o  builds a Go package and executable file for Linux
+GOOS=windows GOARCH=amd64 go build -o  builds a Go package and executable file for Windows
+clean -cache  removes cache for build
+clean -modcache  removes cache for modules
+clean -testcache  removes cache for result of test
+doc  autocreates documentation about your Go module
+doc -h  helps about go doc
+env  shows env variables and configuration
+fmt ./...  formats all files in your project
+gofmt -d  shows diff between a specified file and its formatted version
+gofmt -s  simplifies a specified file
+gofmt -w  formats a specified file
+get  installs modules
+get -u  upgrades modules in go.mod
+golint ./...  checks codes if it is on the Go style guide (installation required)
+install  installs a executable file
+list  lists information about a package
+list -m  lists information about a module
+list -u  lists information and show upgradable versions of modules
+list -m -u all  lists information about all modules in go.mod
+mod init  initializes your Go module and create go.mod file
+mod tidy  removes unused modules from go.mod to clean up dependencies
+run  executes a Go package
+test ./...  executes all test files in *_test.go
+test -v ./...  executes all test files with details
+test -cover ./...  executes all test files and show coverage
+test -bench=.  executes all benchmark tests in *_test.go
+version  shows the version of Go
+vet ./...  inspects codes for potential problems

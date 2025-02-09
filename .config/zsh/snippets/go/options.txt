@@ -1,0 +1,2 @@
+-work  leaves temporary product materials on the execution
+-x  shows info about execution
