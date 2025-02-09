@@ -93,6 +93,7 @@ function snippet() {
     apt_array=("commands-for-disk")
     docker_array=("aliases" "build-options" "options" "run-options" "subcommands")
     git_array=("diff-options" "options" "subcommands")
+    go_array=("options" "subcommands")
     psql_array=("commands")
     tmux_array=("options" "subcommands")
     case ${1} in
@@ -100,13 +101,15 @@ function snippet() {
         apt_array=($(add_prefix "--" "${apt_array[@]}"))
         docker_array=($(add_prefix "--" "${docker_array[@]}"))
         git_array=($(add_prefix "--" "${git_array[@]}"))
+        go_array=($(add_prefix "--" "${go_array[@]}"))
         psql_array=($(add_prefix "--" "${psql_array[@]}"))
         tmux_array=($(add_prefix "--" "${tmux_array[@]}"))
-        echo -e "Usage: ${BASH_SOURCE[0]:-$0} [common | apt | docker | git | psql | tmux] [--help | -h]" 0>&2
+        echo -e "Usage: ${BASH_SOURCE[0]:-$0} [common | apt | docker | git | go | psql | tmux] [--help | -h]" 0>&2
         echo -e "  common: show common snippets."
         echo -e "  apt: show snippets for Debian/Ubuntu terminals with the following options. [$(echo "${apt_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  docker: show snippets for docker with the following options. [$(echo "${docker_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  git: show snippets for git with the following options. [$(echo "${git_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
+        echo -e "  go: show snippets for go with the following options. [$(echo "${go_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  psql: show snippets for psql with the following options. [$(echo "${psql_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         echo -e "  tmux: show snippets for tmux with the following options. [$(echo "${tmux_array[*]}" | tr ' ' '|' | sed 's/|/ | /g')]"
         return 0
@@ -135,6 +138,14 @@ function snippet() {
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${git_array[@]}"; then
           here_are_the_available_snippets "Git"
+          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+        fi
+        return 0
+        ;;
+      go)
+        snippet_file=$(remove_substring_sed $2 "--")
+        if contains_element $(remove_substring_sed $2 "--") "${go_array[@]}"; then
+          here_are_the_available_snippets "Go"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0

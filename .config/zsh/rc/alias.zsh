@@ -1,5 +1,5 @@
 #==============================================================#
-##          General aliases                                   ##
+##          Common aliases                                    ##
 #==============================================================#
 
 # common
@@ -31,10 +31,12 @@ alias apt-grep='apt list --installed | grep -e'
 # disk
 alias df='df -h'
 alias du-sh='du -sh'
-alias rm-cache='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
+alias du-ah='du-ah ~ 20'
+alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
+alias rm-cache='rm -rf ~/.cache/*'
 
 # git
 alias git-ba='git branch -a'
@@ -118,9 +120,12 @@ alias gc-auth='gcloud auth application-default login'
 #==============================================================#
 
 # Go
-alias go-list='go list -m -u all'
+alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
-alias go-t='go test -v -coverpkg=./mypkg ./...'
-alias go-b='go build'
+alias go-t='go test -v ./... -coverpkg=./mypkg -covermode=count'
+alias go-b='go build -o'
+alias go-bl='GOOS=linux GOARCH=amd64 go build -o'
+alias go-bw='GOOS=windows GOARCH=amd64 go build -o'
 alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
+alias gofmt-all='gofmt -w ./...'
