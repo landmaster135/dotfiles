@@ -23,6 +23,7 @@ list -m -u all  lists information about all modules in go.mod
 mod init  initializes your Go module and create go.mod file
 mod tidy  removes unused modules from go.mod to clean up dependencies
 run  executes a Go package
+run -trimpath  executes a Go package with showing relative path
 test ./...  executes all test files in *_test.go
 test -v ./...  executes all test files with details
 test -cover ./...  executes all test files and show coverage
