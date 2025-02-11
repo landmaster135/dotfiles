@@ -21,12 +21,12 @@ alias lal='ls -alF --color=auto'
 alias lsoi='lsof -i'
 
 # grep
-alias grep='grep -H -n -I --color=auto'
+alias grep='grep -H -n -I -i --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias histgrep='history | grep'
 alias ps-grep='ps -fA | grep -e UID -e'
-alias apt-grep='apt list --installed | grep -e'
+alias apt-grep='apt list --installed | grep -e -i'
 
 # disk
 alias df='df -h'
@@ -62,6 +62,7 @@ alias pip-ip='pip install --no-cache-dir -r requirements.txt'
 alias pip-id='pip install --no-cache-dir -r requirements/dev.txt'
 alias pip-vu='pip -V; sudo python3 -m pip install --upgrade pip'
 alias pip-l='pip list'
+alias pip-grep='pip list | grep -i'
 
 # virtual env
 alias py-ve='python -m venv .venv'
