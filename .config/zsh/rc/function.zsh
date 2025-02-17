@@ -48,6 +48,31 @@ function edit-ps1-env() {
   esac
 }
 
+function clean_go_pkg() {
+  # --help が指定された場合は使い方とサンプルのドライランを表示
+  if [ "$1" = "--help" ]; then
+    cat <<EOF
+Usage: clean_pkg <package_path>
+
+This function does the following:
+  1. Removes the package directory at: \${go_path}/pkg/mod/*
+EOF
+    return 0
+  fi
+
+  # パッケージパスが指定されていない場合はエラーを表示
+  if [ -z "$1" ]; then
+    echo "Error: package path is required."
+    echo "Usage: clean_pkg <package_path>"
+    return 1
+  fi
+
+  local go_path="~/gopath"
+
+  echo "Removing directory: ${target_dir}"
+  rm -rf "${go_path}/pkg/mod/*"
+}
+
 function snippet() {
   function contains_element() {
     local target="$1"
