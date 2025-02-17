@@ -15,6 +15,13 @@ function git-erase() {
   git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
 }
 
+function git-nb() {
+  # e.g. git-nb initialCommit
+  local branch_name="$1"
+  git branch $branch_name
+  git checkout $branch_name
+}
+
 function _append_history_line() {
   _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
   _width=$(tput cols)
