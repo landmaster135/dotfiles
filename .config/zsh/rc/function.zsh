@@ -15,6 +15,19 @@ function git-erase() {
   git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
 }
 
+function git-repat() {
+  local pat="$1"
+  local current_url=$(git remote -v | awk '/origin/ {print $2; exit}')
+  if [[ "$current_url" =~ github\.com[:/]([^/]+)/([^/]+)$ ]]; then
+    local username="${BASH_REMATCH[1]}"
+    local repository="${BASH_REMATCH[2]}"
+  else
+    echo "URL extraction failed"
+  fi
+  local new_url="https://$username:$pat@github.com/$username/$repository.git"
+  git remote set-url origin $new_url
+}
+
 function git-nb() {
   # e.g. git-nb initialCommit
   local branch_name="$1"
