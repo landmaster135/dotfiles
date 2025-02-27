@@ -29,10 +29,39 @@ function git-repat() {
 }
 
 function git-nb() {
+  # 'git-nb' means 'git-new-branch'
   # e.g. git-nb initialCommit
   local branch_name="$1"
   git branch $branch_name
   git checkout $branch_name
+}
+
+function cron_help() {
+  # 'cron_help' shows how to describe cron.
+  cat << 'EOF'
+cronの書き方:
+
+形式:
+  * * * * * command
+  | | | | |
+  | | | | ----- 曜日 (0-7, 0または7は日曜日)
+  | | | ------- 月 (1-12)
+  | | --------- 日 (1-31)
+  | ----------- 時間 (0-23)
+  ------------- 分 (0-59)
+
+例:
+1. 毎日午前5時に実行:
+   0 5 * * * command
+
+2. 毎時15分ごとに実行:
+   */15 * * * * command
+
+3. 毎週月曜日の午後2時に実行:
+   0 14 * * 1 command
+
+※ 各フィールドで「*」は任意の値を意味します。
+EOF
 }
 
 function _append_history_line() {
@@ -127,10 +156,12 @@ function snippet() {
   }
 
   function here_are_the_available_snippets() {
+    local len=${#1}
+    local hashes=$(printf "%${len}s" "" | tr ' ' '#')
     echo -e ""
-    echo "####################################################################"
+    echo "#######################################################$hashes"
     echo "######   Here are the available snippets for $1.   ######"
-    echo "####################################################################"
+    echo "#######################################################$hashes"
     echo -e ""
   }
 
@@ -162,19 +193,19 @@ function snippet() {
       apt)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${apt_array[@]}"; then
-          here_are_the_available_snippets "Debian/Ubuntu"
+          here_are_the_available_snippets "Debian/Ubuntu on $snippet_file"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
       common)
-          here_are_the_available_snippets "common"
+          here_are_the_available_snippets "common on $snippet_file"
         cat $ZHOMEDIR/snippets/$1/common.txt
         ;;
       docker)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${docker_array[@]}"; then
-          here_are_the_available_snippets "Docker"
+          here_are_the_available_snippets "Docker on $snippet_file"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
@@ -182,7 +213,7 @@ function snippet() {
       git)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${git_array[@]}"; then
-          here_are_the_available_snippets "Git"
+          here_are_the_available_snippets "Git on $snippet_file"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
@@ -190,7 +221,7 @@ function snippet() {
       go)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${go_array[@]}"; then
-          here_are_the_available_snippets "Go"
+          here_are_the_available_snippets "Go on $snippet_file"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
@@ -198,7 +229,7 @@ function snippet() {
       psql)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${psql_array[@]}"; then
-          here_are_the_available_snippets "PostgreSQL"
+          here_are_the_available_snippets "PostgreSQL on $snippet_file"
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
@@ -206,7 +237,7 @@ function snippet() {
       tmux)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${tmux_array[@]}"; then
-          here_are_the_available_snippets "Docker"
+          here_are_the_available_snippets "Tmux on $snippet_file"
           echo "Here are the available snippets for Tmux."
           cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
         fi
