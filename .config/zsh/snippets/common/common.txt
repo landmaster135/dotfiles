@@ -1,7 +1,7 @@
 getpids Shows process ids with 'ps' and 'grep'
 du-ah Shows the directory with the largest size
 git-erase Erases the character from the git history
-git-repat Sets PAT for Git authentication
+git-repat Resets Git URL with PAT for authorized process
 git-nb Creates new Git branch in the current repository
 cron_help Shows how to describe cron
 snippet Shows the snippets to utilize on the Bash/Zsh terminal
