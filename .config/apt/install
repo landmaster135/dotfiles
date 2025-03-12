@@ -12,3 +12,5 @@ sqlite3
 gettext
 procps
 jq
+fzf
+git

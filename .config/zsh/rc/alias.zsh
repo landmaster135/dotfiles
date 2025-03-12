@@ -1,5 +1,5 @@
 #==============================================================#
-##          General aliases                                   ##
+##          Common aliases                                    ##
 #==============================================================#
 
 # common
@@ -21,19 +21,23 @@ alias lal='ls -alF --color=auto'
 alias lsoi='lsof -i'
 
 # grep
-alias grep='grep -H -n -I --color=auto'
+alias grep='grep -H -n -I -i --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias histgrep='history | grep'
 alias ps-grep='ps -fA | grep -e UID -e'
+alias apt-grep='apt list --installed | grep -e'
+alias ali-grep='alias | grep -e'
 
 # disk
 alias df='df -h'
 alias du-sh='du -sh'
-alias rm-cache='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
+alias du-ah='du-ah ~ 20'
+alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
+alias rm-cache='rm -rf ~/.cache/*'
 
 # git
 alias git-ba='git branch -a'
@@ -49,6 +53,15 @@ alias 644='chmod 644'
 alias 755='chmod 755'
 alias 777='chmod 777'
 
+# snippet
+alias sni-co='snippet common;'
+alias sni-apt='snippet apt --commands-for-disk;'
+alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands;'
+alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands;'
+alias sni-go='snippet go --options; snippet go --subcommands;'
+alias sni-ps='snippet psql --commands;'
+alias sni-tm='snippet tmux --options; snippet tmux --subcommands;'
+
 #==============================================================#
 ##          Python aliases                                    ##
 #==============================================================#
@@ -59,11 +72,12 @@ alias pip-ip='pip install --no-cache-dir -r requirements.txt'
 alias pip-id='pip install --no-cache-dir -r requirements/dev.txt'
 alias pip-vu='pip -V; sudo python3 -m pip install --upgrade pip'
 alias pip-l='pip list'
+alias pip-grep='pip list | grep -i'
 
 # virtual env
 alias py-ve='python -m venv .venv'
-alias py-va='source .venv/bin/activate'
-alias py-vd='deactivate'
+alias py-va='source .venv/bin/activate; edit-ps1-env -a;'
+alias py-vd='deactivate; edit-ps1-env -d;'
 alias py-vi='py-ve; py-va; pip-id;'
 alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
 
@@ -98,6 +112,12 @@ alias su-pg='sudo su - postgres'
 alias pg-status='sudo /sbin/service postgresql status'
 
 #==============================================================#
+##          SQLite aliases                                    ##
+#==============================================================#
+
+alias sq3='sqlite3'
+
+#==============================================================#
 ##          Gcloud aliases                                    ##
 #==============================================================#
 
@@ -117,9 +137,15 @@ alias gc-auth='gcloud auth application-default login'
 #==============================================================#
 
 # Go
-alias go-list='go list -m -u all'
+alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
-alias go-t='go test -v -coverpkg=./mypkg ./...'
-alias go-b='go build'
+alias go-r='go run -trimpath'
+alias go-t='go test -v ./... -coverpkg=./mypkg -covermode=count'
+alias go-b='go build -o'
+alias go-bl='GOOS=linux GOARCH=amd64 go build -o'
+alias go-bw='GOOS=windows GOARCH=amd64 go build -o'
 alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
+alias gofmt-all='gofmt -w ./...'
+alias go-cn='go clean -i -n'
+alias go-c='go clean -i'

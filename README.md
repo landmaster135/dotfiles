@@ -42,6 +42,11 @@ export ZRCDIR=$ZHOMEDIR/rc
 source "$ZRCDIR/alias.zsh"
 source "$ZRCDIR/function.zsh"
 
+export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+
+HISTCONTROL=erasedups
+
 ```
 
 ## Snippet

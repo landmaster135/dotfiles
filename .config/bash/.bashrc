@@ -40,15 +40,22 @@ eval "$(pyenv init -)"
 HOSTNAME="$HOST"
 HISTFILE="${ZDATADIR}/zsh_history"
 HISTSIZE=10000                    # Number of histories in memory
+HISTFILESIZE=100000
 SAVEHIST=100000                   # Number of histories to be saved
 HISTORY_IGNORE="(ls|cd|pwd|zsh|exit|cd ..)"
+HISTCONTROL=erasedups
 LISTMAX=1000                      # number of completion listings to ask for (1=shut up, 0=ask when window overflows)
 # KEYTIMEOUT=1 # conflict with zsh-autocomplete
-
+export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
 
 #==============================================================#
 ##          Options                                           ##
 #==============================================================#
+shopt -s autocd
+shopt -s histappend
+shopt -s globstar
+
 # setopt extended_history      # Record start time and elapsed time in history file
 # setopt append_history        # Add history (instead of creating .zhistory every time)
 # setopt hist_ignore_all_dups  # Delete older command lines if they overlap
