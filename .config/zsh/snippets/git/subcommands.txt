@@ -84,7 +84,7 @@ parse-remote	routines to help parsing remote repository access parameters
 patch-id	compute unique ID for a patch
 prune	prune all unreachable objects from the object database
 prune-packed	remove extra objects that are already in pack files
-pull	fetch from and merge with another repository or local branch
+pull	fetch from and merge with another repository or local branch. ... However, 'fetch' + 'merge' is better.
 push	update remote refs along with associated objects
 quiltimport	apply a quilt patchset
 range-diff	compare two commit ranges
