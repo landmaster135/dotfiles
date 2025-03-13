@@ -13,6 +13,11 @@ alias fc='fc -r'
 alias ..='cd ..'
 alias ps-fa='ps -fA'
 
+# common custom function
+alias getpids='getpids'
+alias cron_help='cron_help'
+alias compare_json='compare_json'
+
 # ls
 alias ls='ls --color=auto'
 alias la='ls -AF --color=auto'
@@ -47,6 +52,9 @@ alias git-publish='BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); git push --se
 alias git-push-afo='git push --all --force origin'
 alias git-res='git reset --soft HEAD^'
 alias git-reh='git reset --hard HEAD^'
+alias git-erase='git-erase'
+alias git-repat='git-repat'
+alias git-nb='git-nb'
 
 # chmod
 alias 644='chmod 644'
@@ -149,3 +157,4 @@ alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
 alias gofmt-all='gofmt -w ./...'
 alias go-cn='go clean -i -n'
 alias go-c='go clean -i'
+alias clean_go_pkg='clean_go_pkg'
