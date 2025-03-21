@@ -1,0 +1,20 @@
+{
+  // ユーザー情報が入れ子になっている例
+  "company.user": {
+    "name": "Alice", // 名前
+    "details": {
+      "age": 30, // 年齢
+      "city": "Tokyo", // 居住地
+      "single": true
+    },
+    "hairStyle": {},
+    "family": []
+  },
+  "farm.user": {
+    "name": "Alice", // 名前
+    "details": {
+      "age": 30, // 年齢
+      "city": "Tokyo" // 居住地
+    }
+  }
+}

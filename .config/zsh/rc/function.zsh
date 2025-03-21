@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #==============================================================#
 ##         New Commands                                      ##
 #==============================================================#
@@ -120,6 +122,198 @@ EOF
 
   echo "Removing directory: ${target_dir}"
   rm -rf "${go_path}/pkg/mod/*"
+}
+
+# JSONCファイルのコメントを削除する（単純な実装）
+function strip_jsonc() {
+  # 行コメント（//）を削除
+  sed -E 's://.*$::g' "$1" | \
+  # ブロックコメント（/* ... */）を削除（複数行にまたがる場合に対応）
+  sed -E ':a;N;$!ba;s:/\*([^*]|\*+[^*/])*\*+/::g'
+}
+
+# ファイルの内容をロード。コメント除去を実施
+function load_json() {
+  local file="$1"
+  if [[ "$file" == *.json ]] || [[ "$file" == *.jsonc ]]; then
+    strip_jsonc "$file"
+  else
+    cat "$file"
+  fi
+}
+
+# not applicable...
+# TEST: compare_json $HOME/Dev/dotfiles/.config/zsh/test/compare_json_01.json $HOME/Dev/dotfiles/.config/zsh/test/compare_json_02.json
+function compare_json() {
+  local FUNC_NAME="compare_json"
+  local USAGE="Usage: ${FUNC_NAME}
+
+このスクリプトは、2つのJSONまたはJSONCファイルのトップレベルのキーと値を比較し、
+・片方のみに存在するフィールド
+・もう片方のみに存在するフィールド
+・両方に存在するが値が異なるフィールド
+を列挙します。
+
+使用例:
+  ./compare_json.sh file1.json[.jsonc] file2.json[.jsonc]
+
+--help パラメータを渡すと、使用方法を表示します。
+"
+
+  # --helpパラメータの処理
+  if [ "$1" == "--help" ]; then
+    echo "[INFO] $USAGE"
+    return 0
+  fi
+
+  if [ "$#" -ne 2 ]; then
+    echo "[ERROR] Usage: compare_json file1.json[.jsonc] file2.json[.jsonc]"
+    return 1
+  fi
+
+  local file1="$1"
+  local file2="$2"
+
+  # 入力ファイルの存在チェック
+  if [ ! -f "$file1" ]; then
+    echo "[ERROR] File not found: $file1"
+    return 1
+  fi
+  if [ ! -f "$file2" ]; then
+    echo "[ERROR] File not found: $file2"
+    return 1
+  fi
+
+  # ファイル内容のロード（JSONCならコメント除去）
+  local data1 data2
+  data1=$(load_json "$file1")
+  data2=$(load_json "$file2")
+
+  # JSONとしてフラット化: 各行 "keypath<TAB>value" を出力
+  local flat1 flat2
+  flat1=$(echo "$data1" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
+  if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to parse JSON from file: $file1"
+    return 1
+  fi
+  flat2=$(echo "$data2" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
+  if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to parse JSON from file: $file2"
+    return 1
+  fi
+
+  # 連想配列に格納（bash4以降が必要）
+  declare -A dict1
+  declare -A dict2
+
+  local line key value
+  while IFS=$'\t' read -r key value; do
+    dict1["$key"]="$value"
+  done <<< "$flat1"
+
+  while IFS=$'\t' read -r key value; do
+    dict2["$key"]="$value"
+  done <<< "$flat2"
+
+  # 片方のみ存在するフィールド（file1のみ）
+  echo "[INFO] ${file1} のみ存在するフィールド:"
+  for key in "${!dict1[@]}"; do
+    if [[ -z "${dict2[$key]+x}" ]]; then
+      echo "$key -> ${dict1[$key]}"
+    fi
+  done
+
+  echo ""
+  # もう片方のみ存在するフィールド（file2のみ）
+  echo "[INFO] ${file2} のみ存在するフィールド:"
+  for key in "${!dict2[@]}"; do
+    if [[ -z "${dict1[$key]+x}" ]]; then
+      echo "$key -> ${dict2[$key]}"
+    fi
+  done
+
+  echo ""
+  # 両方に存在するが、値が異なるフィールド
+  echo "両方に存在するが、値が異なるフィールド"
+  for key in "${!dict1[@]}"; do
+    if [[ -n "${dict2[$key]+x}" ]]; then
+      if [ "${dict1[$key]}" != "${dict2[$key]}" ]; then
+        echo "$key -> $file1: ${dict1[$key]} | $file2: ${dict2[$key]}"
+      fi
+    fi
+  done
+}
+
+function diff_files() {
+  if [ "$#" -ne 2 ]; then
+    echo "Usage: diff_files file1 file2"
+    return 1
+  fi
+
+  if [ ! -f "$1" ]; then
+    echo "Error: '$1' は存在しないか、ファイルではありません。"
+    return 1
+  fi
+
+  if [ ! -f "$2" ]; then
+    echo "Error: '$2' は存在しないか、ファイルではありません。"
+    return 1
+  fi
+
+  diff -u "$1" "$2"
+}
+
+function diff_dirs() {
+  if [ "$#" -lt 2 ]; then
+    echo "Usage: diff_dirs dir1 dir2 [exclude_pattern...]"
+    echo "Example: diff_dirs dir1 dir2 \"*.log\" \"temp*\""
+    return 1
+  fi
+
+  local dir1="$1"
+  local dir2="$2"
+  shift 2
+
+  # 残りの引数を除外パターンとして配列に格納
+  local exclude_patterns=("$@")
+
+  if [ ! -d "$dir1" ]; then
+    echo "Error: '$dir1' はディレクトリではありません。"
+    return 1
+  fi
+
+  if [ ! -d "$dir2" ]; then
+    echo "Error: '$dir2' はディレクトリではありません。"
+    return 1
+  fi
+
+  for file in "$dir1"/*; do
+    local filename
+    filename=$(basename "$file")
+
+    # 除外パターンに一致する場合はスキップ
+    local skip=0
+    for pattern in "${exclude_patterns[@]}"; do
+      if [[ "$filename" == $pattern ]]; then
+        skip=1
+        break
+      fi
+    done
+    if [ $skip -eq 1 ]; then
+      continue
+    fi
+
+    # 両ディレクトリに同名の通常ファイルがあれば diff_files を実行
+    if [ -f "$file" ] && [ -f "$dir2/$filename" ]; then
+      echo "========== $filename の差分 =========="
+      echo ""
+      diff_files "$file" "$dir2/$filename"
+      echo ""
+      echo "-----------------------------------------"
+      echo ""
+      echo ""
+    fi
+  done
 }
 
 function snippet() {
@@ -255,4 +449,10 @@ function snippet() {
     echo -e ""
 		shift
 	done
+}
+
+function upload_file_into_gcs() {
+  local src_file=$1
+  local dest_dir=$2
+  gsutil cp $1 $2
 }
