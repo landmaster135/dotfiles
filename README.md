@@ -35,7 +35,7 @@ exec zsh
 4. Enjoy!
 
 ## Small install
-Only aliases and functions. (CRLF break code)
+Only aliases and functions. (LF break code)
 ```bash
 export ZHOMEDIR=$HOME/dotfiles/.config/zsh
 export ZRCDIR=$ZHOMEDIR/rc

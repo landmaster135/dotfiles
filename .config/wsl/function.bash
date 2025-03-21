@@ -66,6 +66,12 @@ cronの書き方:
 EOF
 }
 
+function change_carriage_return() {
+  # 'change_carriage_return' changes the line feed code to the carriage return code.
+  # e.g. change_carriage_return dir_1
+  find $1 -type f -exec dos2unix {} \;
+}
+
 function _append_history_line() {
   _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
   _width=$(tput cols)
