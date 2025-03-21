@@ -376,3 +376,9 @@ function snippet() {
 		shift
 	done
 }
+
+function upload_file_into_gcs() {
+  local src_file=$1
+  local dest_dir=$2
+  gsutil cp $1 $2
+}
