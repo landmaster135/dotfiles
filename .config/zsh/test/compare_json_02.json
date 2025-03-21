@@ -1,0 +1,21 @@
+{
+  // ユーザー情報が入れ子になっている例
+  "company.user": {
+    "name": "Alice", // 名前（同じ値）
+    "details": {
+      "age": 25, // 年齢が異なる
+      "country": "Japan", // 追加フィールド：国
+      "single": false
+    },
+    "hairStyle": {},
+    "family": [],
+    "childFamily": []
+  },
+  "factory.user": {
+    "name": "Alice", // 名前
+    "details": {
+      "age": 30, // 年齢
+      "city": "Tokyo" // 居住地
+    }
+  }
+}
