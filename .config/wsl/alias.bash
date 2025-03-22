@@ -79,6 +79,9 @@ alias sni-tm='snippet tmux --options; snippet tmux --subcommands;'
 ##          Python aliases                                    ##
 #==============================================================#
 
+# python version
+alias python='python3'
+
 # pip
 alias pip-i='pip install --no-cache-dir'
 alias pip-ip='pip install --no-cache-dir -r requirements.txt'
@@ -106,6 +109,7 @@ alias py-sm='python ./src/main.py'
 # pytest
 alias pyt-d='python -m pytest --durations=0 --tb=short'
 alias pyt-c='python -m pytest --cov=src --cov-branch --tb=short'
+alias pyt-a='analyze_pytest_results "allowed_test_failures_on_local.txt"'
 alias pyt-v='python -m pytest --cov=src --cov-branch --tb=short -vv'
 alias pyt-vs='python -m pytest --cov=src --cov-branch --tb=short -vv -s'
 alias pyt-r='python -m pytest -n auto --cov=src --cov-branch --cov-report=html --tb=short'
