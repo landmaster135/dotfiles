@@ -47,10 +47,12 @@ alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
 
 # git
+alias git-chup-main='git-chup-main'
 alias git-ba='git branch -a'
+alias git-bd='git branch -d'
 alias git-a='git add .'
 alias git-c='git commit -m'
-alias git-publish='BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); git push --set-upstream origin "$BRANCH_NAME"; unset BRANCH_NAME;'
+alias git-publish='git-publish'
 alias git-push-afo='git push --all --force origin'
 alias git-res='git reset --soft HEAD^'
 alias git-reh='git reset --hard HEAD^'

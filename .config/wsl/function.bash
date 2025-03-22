@@ -26,8 +26,15 @@ function git-repat() {
   else
     echo "URL extraction failed"
   fi
-  local new_url="https://$username:$pat@github.com/$username/$repository.git"
+  local new_url="https://$username:$pat@github.com/$username/$repository"
   git remote set-url origin $new_url
+}
+
+function git-chup-main() {
+  # 'git-chup-main' means 'git checkout and update local main branch'
+  # e.g. git-chup
+  git checkout main
+  git pull origin main
 }
 
 function git-nb() {
@@ -36,6 +43,11 @@ function git-nb() {
   local branch_name="$1"
   git branch $branch_name
   git checkout $branch_name
+}
+
+function git-publish() {
+  local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+  git push --set-upstream origin "$BRANCH_NAME"
 }
 
 function cron_help() {
