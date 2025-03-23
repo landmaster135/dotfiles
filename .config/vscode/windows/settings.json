@@ -4052,7 +4052,8 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
     },
-    "editor.suggest.snippetsPreventQuickSuggestions": false
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.defaultFormatter": "golang.go"
   },
   // Configure settings to be overridden for the handlebars language.
   "[handlebars]": {
@@ -4827,7 +4828,7 @@
   //  - goformat: Configurable gofmt, see https://github.com/mbenkmann/goformat.
   //  - gofumpt: Stricter version of gofmt, see https://github.com/mvdan/gofumpt. . Use `gopls.format.gofumpt` instead)
   //  - custom: Formats using the custom tool specified as `customFormatter` in the `go.alternateTools` setting. The tool should take the input as STDIN and output the formatted code as STDOUT.
-  "go.formatTool": "default",
+  "go.formatTool": "gofmt",
   // Additional command line flags to pass to `gotests` for generating tests.
   "go.generateTestsFlags": [
     "-template",
@@ -4968,7 +4969,9 @@
   // Specifies the timeout for go test in ParseDuration format.
   "go.testTimeout": "30s",
   // Environment variables that will be passed to the tools that run the Go tools (e.g. CGO_CFLAGS) and debuggee process launched by Delve. Format as string key:value pairs. When debugging, merged with `envFile` and `env` values with precedence `env` > `envFile` > `go.toolsEnvVars`.
-  "go.toolsEnvVars": {},
+  "go.toolsEnvVars": {
+    "GO111MODULE": "on"
+  },
   // Automatically update the tools used by the extension, without prompting the user.
   "go.toolsManagement.autoUpdate": false,
   // Specify whether to prompt about new versions of Go and the Go tools (currently, only `gopls`) the extension depends on
@@ -4997,7 +5000,9 @@
   //  - off: do not run vet automatically
   "go.vetOnSave": "package",
   // Configure the default Go language server ('gopls'). In most cases, configuring this section is unnecessary. See [the documentation](https://github.com/golang/tools/blob/master/gopls/doc/settings.md) for all available settings.
-  "gopls": {},
+  "gopls": {
+    "expandWorkspaceToModule": true
+  },
   // Controls enablement of Grunt task detection. Grunt task detection can cause files in any open workspace to be executed.
   "grunt.autoDetect": "off",
   // Controls enablement of Gulp task detection. Gulp task detection can cause files in any open workspace to be executed.
