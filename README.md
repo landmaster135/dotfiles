@@ -38,21 +38,6 @@ exec zsh
 Only aliases and functions. (LF break code)
 ```bash
 export ZHOMEDIR=$HOME/dotfiles/.config/zsh
-export ZRCDIR=$ZHOMEDIR/rc
-source "$ZRCDIR/alias.zsh"
-source "$ZRCDIR/function.zsh"
-
-export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-
-HISTCONTROL=erasedups
-
-```
-
-## WSL
-Only aliases and functions. (LF break code)
-```bash
-export ZHOMEDIR=$HOME/dotfiles/.config/zsh
 export ZRCDIR=$ZHOMEDIR
 export WSLHOMEDIR=$HOME/dotfiles/.config/wsl
 source "$WSLHOMEDIR/alias.bash"
@@ -62,6 +47,21 @@ export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian
 export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
 
 HISTCONTROL=erasedups
+
+```
+
+## Install IaC functions
+```bash
+export IACHOMEDIR=$HOME/dotfiles/iac
+source "$IACHOMEDIR/gcloud/init.sh"
+source "$IACHOMEDIR/gcloud/compute.sh"
+source "$IACHOMEDIR/gcloud/container.sh"
+source "$IACHOMEDIR/gcloud/db.sh"
+source "$IACHOMEDIR/gcloud/iam.sh"
+source "$IACHOMEDIR/gcloud/scheduler.sh"
+source "$IACHOMEDIR/gcloud/secret.sh"
+source "$IACHOMEDIR/gcloud/storage.sh"
+source "$IACHOMEDIR/gcloud/util.sh"
 
 ```
 
