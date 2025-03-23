@@ -13,7 +13,7 @@ Parameters:
   Embedのフッターテキスト : Embedフッターに表示するテキスト
   EmbedのアイコンのURL   : Embedフッターに表示するアイコンのURL
   Embedの色             : Embedの色（10進数の数値または以下の文字列指定が可能）
-  DISCORD_WEBHOOK_URL    : (任意) DiscordのWebhook URL。省略した場合は環境変数DISCORD_WEBHOOK_URLを使用します。
+  DISCORD_WEBHOOK_URL    : (任意) DiscordのWebhook URL。省略した場合は環境変数DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUDを使用します。
 
 Color Samples:
   green     : 4569935   (0x45BB4F)
@@ -40,26 +40,6 @@ EOF
 
   local message embed_text embed_footer_text embed_icon_url embed_color webhook_url
 
-  # Embedなし
-  # 引数の個数チェック
-  if [ "$#" -eq 1 ]; then
-    message="$1"
-    webhook_url="${DISCORD_WEBHOOK_URL}"
-    # JSONペイロードの作成
-    local payload=$(cat <<EOF
-{
-  "content": "$message"
-}
-EOF
-    )
-    # curlでDiscordのWebhookにPOSTリクエストを送信
-    curl -H "Content-Type: application/json" \
-      -X POST \
-      -d "$payload" \
-      "$webhook_url"
-    return 0
-  fi
-
   echo "[DEBUG] ${func_name}: parameters are following."
   echo "\$1: $1"
   echo "\$2: $2"
@@ -67,6 +47,29 @@ EOF
   echo "\$4: $4"
   echo "\$5: $5"
   echo "\$6: $6"
+
+  # Embedなし
+  # 引数の個数チェック
+  if [ "$#" -eq 1 ]; then
+    message="$1"
+    webhook_url="${DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD}"
+    # JSONペイロードの作成
+    local payload=$(cat <<EOF
+{
+  "content": "$message"
+}
+EOF
+    )
+    echo "[DEBUG] ${func_name}: message and webhook are following."
+    echo "\$message: $message"
+    echo "\$webhook_url: $webhook_url"
+    # curlでDiscordのWebhookにPOSTリクエストを送信
+    curl -H "Content-Type: application/json" \
+      -X POST \
+      -d "$payload" \
+      "$webhook_url"
+    return 0
+  fi
 
   # Embedあり
   # 引数の個数チェック
@@ -76,7 +79,7 @@ EOF
     embed_footer_text="$3"
     embed_icon_url="$4"
     embed_color="$5"
-    webhook_url="${DISCORD_WEBHOOK_URL}"
+    webhook_url="${DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD}"
   elif [ "$#" -eq 6 ]; then
     message="$1"
     embed_text="$2"
@@ -118,7 +121,7 @@ EOF
       echo "[ERROR] ${func_name}: Embedの色が空文字です。"
     fi
     if [ -z "$webhook_url" ]; then
-      echo "[ERROR] ${func_name}: DISCORD_WEBHOOK_URLが空文字です。"
+      echo "[ERROR] ${func_name}: DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUDが空文字です。"
     fi
     cat <<EOF
 Usage: ${FUNCNAME[0]} <通知テキスト> <Embedのテキスト> <Embedのフッターテキスト> <EmbedのアイコンのURL> <Embedの色> [DISCORD_WEBHOOK_URL];
@@ -199,7 +202,7 @@ function send_discord_notification_about_gce() {
   local embed_color="$3"
   local embed_footer_text="GoogleComputeEngine"
   local embed_icon_url=$GCE_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
@@ -216,7 +219,7 @@ function send_discord_notification_about_gsm() {
   local embed_color="$3"
   local embed_footer_text="GoogleSecretManager"
   local embed_icon_url=$GSM_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
@@ -233,7 +236,7 @@ function send_discord_notification_about_gcs() {
   local embed_color="$3"
   local embed_footer_text="GoogleCloudStorage"
   local embed_icon_url=$GCS_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
@@ -251,7 +254,7 @@ function send_discord_notification_about_gcscheduler() {
   local embed_color="$3"
   local embed_footer_text="GoogleCloudScheduler"
   local embed_icon_url=$GCSCHEDULER_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   echo "[DEBUG] ${func_name}: parameters are following."
   echo "\$message: $message"
@@ -277,7 +280,7 @@ function send_discord_notification_about_gciam() {
   local embed_color="$3"
   local embed_footer_text="GoogleCloudIAM"
   local embed_icon_url=$GCIAM_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   echo "[DEBUG] ${func_name}: parameters are following."
   echo "\$message: $message"
@@ -302,7 +305,7 @@ function send_discord_notification_about_gcloud_run() {
   local embed_color="$3"
   local embed_footer_text="GoogleCloudRun"
   local embed_icon_url=$GCLOUD_RUN_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
@@ -319,7 +322,7 @@ function send_discord_notification_about_gcloud_run_function() {
   local embed_color="$3"
   local embed_footer_text="GoogleCloudRunFunction"
   local embed_icon_url=$GCLOUD_RUN_FUNCTION_ICON_URL
-  local webhook_url=$DISCORD_WEBHOOK_URL
+  local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
