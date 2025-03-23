@@ -197,6 +197,11 @@ cython_debug/
 
 ### setting files ###
 .editorconfig
+env.yml
+env.yaml
+
+### WSL ###
+*:Zone.Identifier
 
 ### migration files for alembic
 alembic.ini
