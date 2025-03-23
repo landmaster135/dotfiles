@@ -5,14 +5,14 @@
 #==============================================================#
 
 # common
-# alias tree="pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g'"
+alias tree="pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g'"
 alias nano='nano -m'
 alias mv='mv -i'
 alias cp='cp -irf'
 alias cl='clear'
-# alias wc-l='awk '\''END { print NR, FILENAME }'\'''
+alias wc-l='awk '\''END { print NR, FILENAME }'\'''
 alias fc='fc -r'
-# alias ..='cd ..'
+alias ..='cd ..'
 alias ps-fa='ps -fA'
 
 # common custom function
