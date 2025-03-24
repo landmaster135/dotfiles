@@ -40,10 +40,10 @@ Check whether the configuration file uses LF break codes.
 # Only aliases and functions.
 export ZHOMEDIR=$HOME/dotfiles/.config/zsh
 export ZRCDIR=$ZHOMEDIR
-export WSLHOMEDIR=$HOME/dotfiles/.config/wsl
-source "$WSLHOMEDIR/alias.bash"
-source "$WSLHOMEDIR/function.bash"
-source "$WSLHOMEDIR/extract_blog_articles.bash"
+export BASHHOMEDIR=$HOME/dotfiles/.config/bash
+source "$BASHHOMEDIR/alias.bash"
+source "$BASHHOMEDIR/function.bash"
+source "$BASHHOMEDIR/extract_blog_articles.bash"
 
 export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
 export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
