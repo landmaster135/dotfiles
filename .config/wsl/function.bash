@@ -84,6 +84,106 @@ function change_carriage_return() {
   find $1 -type f -exec dos2unix {} \;
 }
 
+# 引数からテキストファイルのパスを受け取り、テスト結果を分析する関数
+function analyze_pytest_results() {
+  local allowed_failures_file="$1"
+
+  # ファイルが存在するか確認
+  if [ ! -f "$allowed_failures_file" ]; then
+    echo "エラー: 指定されたファイル '$allowed_failures_file' が見つかりません。"
+    return 1
+  fi
+
+  # ファイルから許容される失敗テストのリストを読み込む
+  # コメント行と空行を除外
+  allowed_failures=()
+  while IFS= read -r line; do
+    # 空行やコメント行をスキップ
+    if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+      continue
+    fi
+    # 行の前後の空白を削除
+    line=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    allowed_failures+=("$line")
+  done < "$allowed_failures_file"
+
+  # 許容される失敗テストのリストが空かどうかチェック
+  if [ ${#allowed_failures[@]} -eq 0 ]; then
+    echo "警告: 許容される失敗テストのリストが空です。"
+  fi
+
+  # python -m pytest -v を実行してすべての結果を取得
+  echo "テストを実行中..."
+  pytest_output=$(python -m pytest -v)
+
+  # すべての失敗テストを抽出
+  all_failures=()
+  while IFS= read -r line; do
+    # FAILEDの後に空白があり、その後に::を含むテスト名があるパターンにマッチ
+    if [[ "$line" =~ FAILED[[:space:]]([^[:space:]]+::[^[:space:]]+) ]]; then
+      test_name="${BASH_REMATCH[1]}"
+      all_failures+=("$test_name")
+    fi
+  done < <(echo "$pytest_output")
+
+  # 本当の失敗（許容されない失敗）を特定
+  true_failures=()
+  for failure in "${all_failures[@]}"; do
+    is_allowed=false
+
+    for allowed in "${allowed_failures[@]}"; do
+      if [[ "$failure" == "$allowed" ]]; then
+        is_allowed=true
+        break
+      fi
+    done
+
+    if [[ "$is_allowed" == "false" ]]; then
+      true_failures+=("$failure")
+    fi
+  done
+
+  # 結果の表示
+  echo
+  echo "=== テスト実行結果のサマリー ==="
+  echo
+
+  # すべてのテスト結果の要約を表示（pytestの最後の行を抽出）
+  summary=$(echo "$pytest_output" | grep -E "= .* tests, .* deselected" | tail -1)
+  echo "全体の結果: $summary"
+  echo
+
+  echo "許容される失敗テスト:"
+  for allowed in "${allowed_failures[@]}"; do
+    # 実際に失敗したかチェック
+    is_failed=false
+    for failure in "${all_failures[@]}"; do
+      if [[ "$failure" == "$allowed" ]]; then
+        is_failed=true
+        break
+      fi
+    done
+
+    if [[ "$is_failed" == "true" ]]; then
+      echo "  ✓ $allowed (予期された失敗)"
+    else
+      echo "  - $allowed (失敗しませんでした)"
+    fi
+  done
+  echo
+
+  if [ ${#true_failures[@]} -eq 0 ]; then
+    echo "✅ 重要なテストはすべて成功しました！"
+    return 0
+  else
+    echo "❌ 対応が必要な失敗テスト:"
+    for failure in "${true_failures[@]}"; do
+      echo "  - $failure"
+    done
+    return 1
+  fi
+}
+
 function _append_history_line() {
   _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
   _width=$(tput cols)
