@@ -434,6 +434,72 @@ function diff_dirs() {
   done
 }
 
+function find_single_quotes() {
+  local FUNCNAME="find_single_quotes"
+
+  # ヘルプメッセージの表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${FUNCNAME}: このツールはファイル内の二重引用符の外側にある一重引用符が2つ以上ある行を検出します"
+    echo "使用法: ${FUNCNAME} <ファイルパス>"
+    echo "例: ${FUNCNAME} ./my_file.txt"
+    return 0
+  fi
+
+  # パラメータのチェック
+  if [[ $# -eq 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルパスが指定されていません"
+    echo "[INFO] ${FUNCNAME}: 使用法を確認するには '${FUNCNAME} --help' を実行してください"
+    return 1
+  fi
+
+  local file_path="$1"
+
+  # ファイルの存在チェック
+  if [[ ! -f "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' が見つかりません"
+    return 1
+  fi
+
+  # ファイルの読み取り権限チェック
+  if [[ ! -r "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' の読み取り権限がありません"
+    return 1
+  fi
+
+  # 一重引用符が2つ以上あり、二重引用符の外側にある行を検出
+  echo "[INFO] ${FUNCNAME}: ファイル '$file_path' を処理しています..."
+
+  # AWKスクリプトで処理
+  awk '
+  {
+    in_double_quote = 0
+    single_quote_count = 0
+
+    for (i = 1; i <= length($0); i++) {
+      char = substr($0, i, 1)
+
+      if (char == "\"" && substr($0, i-1, 1) != "\\") {
+        in_double_quote = !in_double_quote
+      } else if (char == "\x27" && !in_double_quote && substr($0, i-1, 1) != "\\") {
+        single_quote_count++
+      }
+    }
+
+    if (single_quote_count >= 2) {
+      printf "行番号 %d: %s\n", NR, $0
+    }
+  }
+  ' "$file_path"
+
+  if [[ $? -ne 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルの処理中にエラーが発生しました"
+    return 1
+  fi
+
+  echo "[INFO] ${FUNCNAME}: 処理が完了しました"
+  return 0
+}
+
 function snippet() {
   function contains_element() {
     local target="$1"
