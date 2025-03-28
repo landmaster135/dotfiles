@@ -32,6 +32,7 @@ function list_dns_zones_on_gcloud() {
     echo "  ${func_name}"
     echo "  ${func_name} --project=my-project"
     echo "  ${func_name} --format=json"
+    echo "More detail: https://cloud.google.com/sdk/gcloud/reference/dns/managed-zones/list"
     return 0
   fi
 
