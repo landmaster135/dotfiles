@@ -53,13 +53,20 @@ HISTCONTROL=erasedups
 # Install IaC functions
 export IACHOMEDIR=$HOME/dotfiles/iac
 source "$IACHOMEDIR/gcloud/init.sh"
+source "$IACHOMEDIR/gcloud/bigquery.sh"
+source "$IACHOMEDIR/gcloud/billing.sh"
 source "$IACHOMEDIR/gcloud/compute.sh"
 source "$IACHOMEDIR/gcloud/container.sh"
 source "$IACHOMEDIR/gcloud/db.sh"
+source "$IACHOMEDIR/gcloud/deployment.sh"
+source "$IACHOMEDIR/gcloud/dns.sh"
 source "$IACHOMEDIR/gcloud/iam.sh"
+source "$IACHOMEDIR/gcloud/logging.sh"
+source "$IACHOMEDIR/gcloud/monitoring.sh"
 source "$IACHOMEDIR/gcloud/scheduler.sh"
 source "$IACHOMEDIR/gcloud/secret.sh"
 source "$IACHOMEDIR/gcloud/storage.sh"
+source "$IACHOMEDIR/gcloud/task.sh"
 source "$IACHOMEDIR/gcloud/util.sh"
 
 ```

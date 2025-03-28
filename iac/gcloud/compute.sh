@@ -127,7 +127,7 @@ function add_startup_script_to_gce_instance() {
   # gcloud コマンドの実行
   if ! gcloud compute instances add-metadata "${VM_NAME}" --zone="${ZONE}" --metadata-from-file startup-script="${FILE_PATH}"; then
     echo "[ERROR] ${funcName}: Failed to add metadata from file '${FILE_PATH}' to instance '${VM_NAME}' in zone '${ZONE}'." >&2
-    send_discord_notification_about_gce "失敗…" "VMのスタートアップスクリプトを反映できなかったよ…" "green"
+    send_discord_notification_about_gce "失敗…" "VMのスタートアップスクリプトを反映できなかったよ…" "red"
     return 1
   fi
 
@@ -512,7 +512,7 @@ function set_gce_instance_metadata_from_yaml() {
     send_discord_notification "VMの環境変数を設定したよ！"
     echo "[INFO] ${fn_name}: Env variables of instance '${vm_name}' have set successfully."
   else
-    send_discord_notification_about_gce "失敗…" "VMの環境変数を設定できなかったよ…" "green"
+    send_discord_notification_about_gce "失敗…" "VMの環境変数を設定できなかったよ…" "red"
     echo "[ERROR] ${fn_name}: Failed to set env variables for instance '${vm_name}'."
     return $ret_code
   fi
