@@ -1,6 +1,6 @@
 #!/bin/sh
 function create_gcloud_scheduler_job_for_cloud_run_function() {
-  local FUNC_NAME="create_gcloud_scheduler_job_for_cloud_run_function"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "ジョブを作成するよ！"
   local USAGE="[INFO] Usage: ${FUNC_NAME} -j <JOB_NAME> -p <PROJECT_ID> [-l <LOCATION>] -t <PUBSUB_TOPIC> -d <DB_INSTANCE_ID> [-w <DISCORD_WEBHOOK_URL>] [-c <ICON_URL>] [-S <SCHEDULE>] [-D <DESCRIPTION>] [-z <TIME_ZONE>] [-m <MESSAGE_BODY>]
 
@@ -402,7 +402,7 @@ Example:
 }
 
 function create_gcloud_scheduler_job_for_cloud_sql_instance() {
-  local FUNC_NAME="create_gcloud_scheduler_job_for_cloud_sql_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "ジョブを作成するよ！"
   local USAGE="[INFO] Usage: \$${FUNC_NAME} -j <JOB_NAME> -p <PROJECT_ID> [-l <LOCATION>] -t <PUBSUB_TOPIC> -d <DB_INSTANCE_ID> [-w <DISCORD_WEBHOOK_URL>] [-c <ICON_URL>] [-A <ACTION>] [-S <SCHEDULE>] [-D <DESCRIPTION>] [-z <TIME_ZONE>]
 

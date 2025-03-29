@@ -1,6 +1,6 @@
 #!/bin/sh
 function deploy_cloud_run_container() {
-  local FUNC_NAME="deploy_cloud_run_container"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "コンテナをデプロイするよ！"
 
   # --help オプションのチェック
@@ -67,7 +67,7 @@ function deploy_cloud_run_container() {
 
 function update_env_for_cloud_run_container() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="update_env_for_cloud_run_container"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "コンテナの環境変数を更新するよ！"
 
   # --help オプションが指定された場合、利用方法を表示して終了
@@ -156,7 +156,7 @@ function update_env_for_cloud_run_container() {
 }
 
 function deploy_cloud_run_function() {
-  local FUNC_NAME="deploy_cloud_run_function"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "関数をデプロイするよ！"
 
   # --help が最初の引数の場合、使い方を表示して終了
@@ -232,7 +232,7 @@ function deploy_cloud_run_function() {
 }
 
 function deploy_cloud_run_function_triggered_by_pubsub() {
-  local FUNC_NAME="deploy_cloud_run_function_triggered_by_pubsub"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "関数をデプロイするよ！"
   local USAGE="[INFO] Usage: $FUNC_NAME -f <FUNCTION_NAME> -p <PROJECT> -s <SERVICE_ACCOUNT> -t <TOPIC_ID> [-r <REGION>] [-E <ENTRY_POINT>] [-c <API_CLIENT_ID>] [-k <API_CLIENT_SECRET>] [-e <API_ENDPOINT>]
 (defaults: --region=us-central1, --entry-point=ProcessPubSub)
@@ -406,7 +406,7 @@ Examples:
 
 function update_env_for_cloud_run_function() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="update_env_for_cloud_run_function"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "関数の環境変数を更新するよ！"
 
   # --help オプションが指定された場合、利用方法を表示して終了
@@ -474,7 +474,7 @@ function update_env_for_cloud_run_function() {
 
 function update_env_for_cloud_run_service() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="update_env_for_cloud_run_service"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "サービスの環境変数を更新するよ！"
 
   # --help オプションが指定された場合、利用方法を表示して終了
@@ -556,7 +556,7 @@ function update_env_for_cloud_run_service() {
 }
 
 function create_cloud_pubsub_topic() {
-  local funcName="create_cloud_pubsub_topic"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -592,7 +592,7 @@ function create_cloud_pubsub_topic() {
 }
 
 function list_cloud_pubsub_topics() {
-  local funcName="list_cloud_pubsub_topics"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -624,7 +624,7 @@ function list_cloud_pubsub_topics() {
 }
 
 function list_cloud_pubsub_subscriptions() {
-  local funcName="list_cloud_pubsub_subscriptions"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -684,7 +684,7 @@ function list_cloud_pubsub_subscriptions() {
 }
 
 function create_cloud_pubsub_subscription() {
-  local funcName="create_cloud_pubsub_subscription"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -763,7 +763,7 @@ function create_cloud_pubsub_subscription() {
 }
 
 function delete_cloud_pubsub_subscriptions_and_topics() {
-  local funcName="delete_cloud_pubsub_subscriptions_and_topics"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -838,7 +838,7 @@ function delete_cloud_pubsub_subscriptions_and_topics() {
 }
 
 function delete_cloud_pubsub_subscriptions() {
-  local funcName="delete_cloud_pubsub_subscriptions"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -871,7 +871,7 @@ function delete_cloud_pubsub_subscriptions() {
 }
 
 function delete_cloud_pubsub_topics() {
-  local funcName="delete_cloud_pubsub_topics"
+  local funcName="${FUNCNAME[0]}"
 
   # --help オプションが指定された場合、利用方法を表示する
   if [[ "$1" == "--help" ]]; then
@@ -903,7 +903,7 @@ function delete_cloud_pubsub_topics() {
 
 function delete_cloud_run_function() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="delete_cloud_run_function"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # 必要なパラメータの初期化
   local service_name=""

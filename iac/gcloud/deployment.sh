@@ -1,6 +1,6 @@
 #!/bin/sh
 function list_deployments() {
-    local FUNC_NAME="list_deployments"
+    local FUNC_NAME="${FUNCNAME[0]}"
     local PROJECT=""
     local FILTER=""
     local FORMAT="table(name,insertTime,operation.operationType,operation.status,description)"

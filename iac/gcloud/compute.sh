@@ -1,6 +1,6 @@
 #!/bin/sh
 function create_gce_instance() {
-  local FUNC_NAME="create_gce_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "VMを構築するよ！"
 
   # --help オプションのチェック
@@ -47,7 +47,7 @@ function create_gce_instance() {
 }
 
 function create_gce_instance_and_configure() {
-  local FUNC_NAME="create_gce_instance_and_configure"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -98,7 +98,7 @@ function create_gce_instance_and_configure() {
 }
 
 function add_startup_script_to_gce_instance() {
-  local funcName="add_startup_script_to_gce_instance"
+  local funcName="${FUNCNAME[0]}"
   local DEFAULT_ZONE="us-central1-a"
   local DEFAULT_FILE_PATH="./shell/setup_scripts/startup-script.sh"
   send_discord_notification "VMのスタートアップスクリプトを反映するよ！"
@@ -137,7 +137,7 @@ function add_startup_script_to_gce_instance() {
 }
 
 function create_gce_instance_with_startup_script() {
-  local funcName="create_gce_instance_with_startup_script"
+  local funcName="${FUNCNAME[0]}"
   local DEFAULT_ZONE="us-central1-a"
   local DEFAULT_MACHINE_TYPE="e2-medium"
   local DEFAULT_FILE_PATH="./shell/setup_scripts/startup-script.sh"
@@ -183,7 +183,7 @@ function create_gce_instance_with_startup_script() {
 }
 
 function create_gce_router_and_nat() {
-  local FUNC_NAME="create_gce_router_and_nat"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -237,7 +237,7 @@ function create_gce_router_and_nat() {
 }
 
 function create_gce_iap_ssh_firewall_rule() {
-  local FUNC_NAME="create_gce_iap_ssh_firewall_rule"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -279,7 +279,7 @@ function create_gce_iap_ssh_firewall_rule() {
 }
 
 function create_gce_ingress_ssh_firewall_rule() {
-  local FUNC_NAME="create_gce_ingress_ssh_firewall_rule"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -315,7 +315,7 @@ function create_gce_ingress_ssh_firewall_rule() {
 }
 
 function copy_gce_ssh_key() {
-  local FUNC_NAME="copy_gce_ssh_key"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -356,7 +356,7 @@ function copy_gce_ssh_key() {
 }
 
 function connect_gce_instance() {
-  local FUNC_NAME="connect_gce_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -399,7 +399,7 @@ function connect_gce_instance() {
 }
 
 function setup_gce_firewall_and_ssh() {
-  local FUNC_NAME="setup_gce_firewall_and_ssh"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -462,10 +462,10 @@ function setup_gce_firewall_and_ssh() {
 }
 
 function set_gce_instance_metadata_from_yaml() {
+  local fn_name="${FUNCNAME[0]}"
   local vm_name="$1"
   local zone="$2"
   local yaml_file="${3:-env.yml}"
-  local fn_name="set_gce_instance_metadata_from_yaml"
   send_discord_notification "VMの環境変数をYAMLから設定するよ！"
 
   # ヘルプオプション
@@ -547,7 +547,7 @@ function list_gcloud_instances() {
 }
 
 function start_gce_instance() {
-  local fn_name="start_gce_instance"
+  local fn_name="${FUNCNAME[0]}"
   send_discord_notification "VMを起動するよ！"
   # --help が指定された場合、使い方を表示して終了
   if [[ "$1" == "--help" ]]; then
@@ -607,7 +607,7 @@ function start_gce_instance() {
 
 function stop_gce_instance() {
   # ローカル変数に関数名をセット
-  local FUNC_NAME="stop_gce_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "VMを停止するよ！"
 
   # --help が指定された場合は利用方法を表示して終了
@@ -669,7 +669,7 @@ function stop_gce_instance() {
 
 function reboot_gce_instance() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="reboot_gce_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "VMを再起動するよ！"
 
   # --help が指定された場合、利用方法を表示して終了
@@ -731,7 +731,7 @@ function reboot_gce_instance() {
 
 function delete_gce_instance() {
   # ローカル変数に関数名を設定
-  local FUNC_NAME="delete_gce_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "VMを削除するよ！"
 
   # --help オプションが指定された場合、利用方法を表示して終了
