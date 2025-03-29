@@ -1,6 +1,6 @@
 #!/bin/sh
 function delete_cloud_sql_instance() {
-  local FUNC_NAME="delete_cloud_sql_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # Display usage information if '--help' is passed or no parameter is provided
   if [[ "$1" == "--help" || -z "$1" ]]; then
@@ -35,7 +35,7 @@ function delete_cloud_sql_instance() {
 }
 
 function patch_deletion_protection_of_cloud_sql_instance() {
-  local FUNC_NAME="patch_deletion_protection_of_cloud_sql_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # Display usage if '--help' is passed or if parameters are missing
   if [[ "$1" == "--help" || -z "$1" || -z "$2" ]]; then
@@ -75,7 +75,7 @@ function patch_deletion_protection_of_cloud_sql_instance() {
 }
 
 function patch_activation_policy() {
-  local FUNC_NAME="patch_activation_policy"
+  local FUNC_NAME="${FUNCNAME[0]}"
 
   # Display usage information if '--help' is passed or if parameters are missing
   if [[ "$1" == "--help" || -z "$1" || -z "$2" ]]; then
@@ -116,7 +116,7 @@ function patch_activation_policy() {
 }
 
 function start_cloud_sql_instance() {
-  local FUNC_NAME="start_cloud_sql_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   local INSTANCE_NAME="$1"
 
   # Display usage information if '--help' is passed or if parameters are missing
@@ -132,7 +132,7 @@ function start_cloud_sql_instance() {
 }
 
 function stop_cloud_sql_instance() {
-  local FUNC_NAME="stop_cloud_sql_instance"
+  local FUNC_NAME="${FUNCNAME[0]}"
   local INSTANCE_NAME="$1"
 
   # Display usage information if '--help' is passed or if parameters are missing
