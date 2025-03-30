@@ -50,6 +50,18 @@ function git-publish() {
   git push --set-upstream origin "$BRANCH_NAME"
 }
 
+function docker-cp() {
+  local container_id=$1
+  local executing_file_path=$2
+  docker cp $container_id:$executing_file_path .
+}
+
+function docker-build() {
+  local tag=$2
+  local path=$1
+  docker build -t $2 $1
+}
+
 function cron_help() {
   # 'cron_help' shows how to describe cron.
   cat << 'EOF'

@@ -40,11 +40,15 @@ alias ali-grep='alias | grep -e'
 alias df='df -h'
 alias du-sh='du -sh'
 alias du-ah='du-ah ~ 20'
-alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
-alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
+
+# apt
+alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
+alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
+alias apt-li='apt list --installed'
+alias apt-ligrep='apt list --installed | grep'
 
 # git
 alias git-chup-main='git-chup-main'
@@ -167,3 +171,20 @@ alias gofmt-all='gofmt -w ./...'
 alias go-cn='go clean -i -n'
 alias go-c='go clean -i'
 alias clean_go_pkg='clean_go_pkg'
+
+#==============================================================#
+##          Docker aliases                                    ##
+#==============================================================#
+
+# Docker
+alias docker='sudo docker'
+alias dc-b='docker-build .'
+alias dc-rm='docker rm'
+alias dc-il='docker image ls'
+alias dc-sdf='docker system df'
+alias dc-rmi='docker rmi'
+alias dc-lsic='docker images | grep none | cut -b 50-64'
+alias dc-rmic='docker rmi `docker images | grep none | cut -b 50-64`'
+alias dc-prune='docker system prune -a'
+alias dc-ps='docker ps'
+alias dc-cp='docker-cp'
