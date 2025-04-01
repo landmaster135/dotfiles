@@ -12,6 +12,48 @@ function du-ah() {
   du -ah $1 | sort -rh | head -n $2
 }
 
+function count_lines_in_dir() {
+  local FUNC_NAME="${FUNCNAME[0]}"
+  local DIR=""
+
+  # ヘルプメッセージの表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${FUNC_NAME}: 指定されたディレクトリ内のすべてのファイルの行数を合計して表示します"
+    echo "使用法: ${FUNC_NAME} [ディレクトリパス]"
+    echo "例: ${FUNC_NAME} /path/to/directory"
+    echo "パラメータが指定されない場合は、カレントディレクトリが使用されます"
+    return 0
+  fi
+
+  # パラメータの処理
+  if [[ $# -eq 0 ]]; then
+    DIR="$(pwd)"
+    echo "[INFO] ${FUNC_NAME}: パラメータが指定されていないため、カレントディレクトリを使用します: ${DIR}"
+  else
+    DIR="$1"
+  fi
+
+  # ディレクトリの存在確認
+  if [[ ! -d "${DIR}" ]]; then
+    echo "[ERROR] ${FUNC_NAME}: 指定されたディレクトリが存在しません: ${DIR}"
+    return 1
+  fi
+
+  # 実行コマンドの表示と行数の合計計算
+  echo "[INFO] ${FUNC_NAME}: 実行コマンド: find \"${DIR}\" -type f -exec wc -l {} \; | awk '{sum += \$1} END {print sum}'"
+
+  local TOTAL_LINES=$(find "${DIR}" -type f -exec wc -l {} \; | awk '{sum += $1} END {print sum}')
+
+  # 結果の表示
+  if [[ $? -eq 0 ]]; then
+    echo "[INFO] ${FUNC_NAME}: ディレクトリ ${DIR} 内のファイルの合計行数: ${TOTAL_LINES}"
+    return 0
+  else
+    echo "[ERROR] ${FUNC_NAME}: 行数のカウント中にエラーが発生しました"
+    return 1
+  fi
+}
+
 function git-erase() {
   # e.g. git-erase credential.json
   git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
@@ -47,6 +89,7 @@ function git-nb() {
 
 function git-publish() {
   local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+  git push HEAD "$BRANCH_NAME"
   git push --set-upstream origin "$BRANCH_NAME"
 }
 
