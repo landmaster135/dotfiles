@@ -74,6 +74,8 @@ Global configurations
 For boolean variables, use a verb as prefix: isLoading, hasError, canSubmit
 
 ## Go
+
+### Points to keep in mind during development
 - When creating functions, basically make them as methods of a struct. When creating test functions, it's fine to make them as standalone functions.
 - When testing modules, execute with `go test -coverprofile=coverage.out ./...`.
 - Once the implemented test code passes normally, check the coverage and report it to the user. Then, to improve coverage, run the `go tool cover -html=coverage.out -o coverage.html` command. From the results, add test cases to cover the parts of the functionality you were implementing that aren't covered by tests yet.
@@ -114,7 +116,7 @@ Special cases:
 - Test files: named as filename + "_test.go"
 
 ### How to TDD with mock
-1. Code processes with interface for HTTP request.
+1. Code processes with interface for the following process: HTTP request, OS file, runtime calling and etc...
 e.g. `util.go` for HTTP request:
 ```go
 package github
