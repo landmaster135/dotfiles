@@ -14,6 +14,14 @@
 - Test methods are implemented based on the Arrange-Act-Assert pattern.
 - Once the implemented test code passes normally, check the coverage and report it to the user. Then, improve the coverage.
 
+## SOLID principles
+Be mindful of SOLID principles. SOLID acronym stands for five design principles that help make software more maintainable and scalable:
+- Single Responsibility Principle
+- Open/Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
+
 ## Python
 - When creating functions, basically make them as instance methods of a class. When creating test functions, also create a test class and make them as instance methods.
 - When testing modules, execute with `python -m pytest --cov=src --cov-branch --tb=short -vv`.
