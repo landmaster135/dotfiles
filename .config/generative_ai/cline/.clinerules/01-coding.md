@@ -77,8 +77,10 @@ For boolean variables, use a verb as prefix: isLoading, hasError, canSubmit
 
 ### Points to keep in mind during development
 - When creating functions, basically make them as methods of a struct. When creating test functions, it's fine to make them as standalone functions.
+- When creating test functions, include the name of the struct after the prefix 'Test'. And, add the suffix '_Normal' for test case names that test the normal path.
 - When testing modules, execute with `go test -coverprofile=coverage.out ./...`.
 - Once the implemented test code passes normally, check the coverage and report it to the user. Then, to improve coverage, run the `go tool cover -html=coverage.out -o coverage.html` command. From the results, add test cases to cover the parts of the functionality you were implementing that aren't covered by tests yet.
+- When the 'imported and not used' error appears, wait until it is fixed by the user.
 
 ### Naming Conventions
 Use PascalCase for the following:
