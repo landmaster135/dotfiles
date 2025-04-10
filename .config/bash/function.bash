@@ -454,7 +454,7 @@ EOF
 }
 
 #==============================================================#
-##          Diff Functions                                    ##
+##          JSON Functions                                    ##
 #==============================================================#
 # JSONCファイルのコメントを削除する（単純な実装）
 function strip_jsonc() {
@@ -576,6 +576,187 @@ function compare_json() {
   done
 }
 
+function convert_json_log_timestamps() {
+  local funcname="${FUNCNAME[0]}"
+  local directory=""
+  local tool_dir="."
+  local verbose=false
+
+  # ヘルプ表示
+  function show_help() {
+    echo "使用方法: ${funcname} [オプション] <ディレクトリ>"
+    echo ""
+    echo "オプション:"
+    echo "  --help          このヘルプメッセージを表示"
+    echo "  --verbose       詳細な処理情報を表示"
+    echo "  --tool-dir DIR  json-timestamp-modifier が存在するディレクトリを指定（デフォルト: カレントディレクトリ）"
+    echo ""
+    echo "説明:"
+    echo "  指定されたディレクトリ内のすべての log_yyyyMMdd-hhmmss.json 形式のファイルに対して、"
+    echo "  ファイル名からUNIXタイムスタンプを抽出し、json-timestamp-modifier を使用して"
+    echo "  JSONファイルのoutput_atフィールドを更新します。"
+    echo ""
+    echo "使用例:"
+    echo "  ${funcname} ./logs"
+    echo "  ${funcname} --verbose --tool-dir /path/to/tools /path/to/logs"
+    echo ""
+    echo "注意:"
+    echo "  'json-timestamp-modifier'の実行ファイルが必要です。"
+    return 0
+  }
+
+  # 引数解析
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --help)
+        show_help
+        return 0
+        ;;
+      --verbose)
+        verbose=true
+        shift
+        ;;
+      --tool-dir)
+        if [[ -n "$2" ]]; then
+          tool_dir="$2"
+          shift 2
+        else
+          echo "[ERROR] ${funcname}: --tool-dir オプションには引数が必要です。"
+          return 1
+        fi
+        ;;
+      *)
+        if [[ -z "$directory" ]]; then
+          directory="$1"
+        else
+          echo "[ERROR] ${funcname}: 複数のディレクトリが指定されています。一度に処理できるのは1ディレクトリのみです。"
+          return 1
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  # ディレクトリ名チェック
+  if [[ -z "$directory" ]]; then
+    echo "[ERROR] ${funcname}: ディレクトリが指定されていません。"
+    echo "[INFO] ${funcname}: ヘルプを表示するには --help オプションを使用してください。"
+    return 1
+  fi
+
+  # ディレクトリの存在チェック
+  if [[ ! -d "$directory" ]]; then
+    echo "[ERROR] ${funcname}: ディレクトリ '$directory' が見つかりません。"
+    return 1
+  fi
+
+  # tool_dir の存在チェック
+  if [[ ! -d "$tool_dir" ]]; then
+    echo "[ERROR] ${funcname}: ツールディレクトリ '$tool_dir' が見つかりません。"
+    return 1
+  fi
+
+  # json-modifier の存在確認
+  local tool_path="${tool_dir}/json-modifier"
+  if [[ ! -f "$tool_path" ]]; then
+    echo "[ERROR] ${funcname}: '$tool_path' が見つかりません。"
+    return 1
+  fi
+
+  if [[ ! -x "$tool_path" ]]; then
+    echo "[ERROR] ${funcname}: '$tool_path' に実行権限がありません。"
+    return 1
+  fi
+
+  # 対象ファイルを検索
+  local files=()
+  while IFS= read -r -d $'\0' file; do
+    files+=("$file")
+  done < <(find "$directory" -type f -name "log_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].json" -print0)
+
+  # ファイルが見つからない場合
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "[ERROR] ${funcname}: ディレクトリ '$directory' 内に対象となるログファイルが見つかりません。"
+    return 1
+  fi
+
+  echo "[INFO] ${funcname}: ${#files[@]} 件のファイルを処理します。"
+
+  # 各ファイルを処理
+  local success_count=0
+  local error_count=0
+
+  for filename in "${files[@]}"; do
+    local basename=$(basename "$filename")
+
+    if $verbose; then
+      echo "[INFO] ${funcname}: ファイル '$basename' を処理中..."
+    fi
+
+    # ファイル名から日付と時間の部分を抽出
+    local datepart=${basename:4:8}
+    local timepart=${basename:13:6}
+
+    # 年、月、日、時、分、秒を分解
+    local year=${datepart:0:4}
+    local month=${datepart:4:2}
+    local day=${datepart:6:2}
+    local hour=${timepart:0:2}
+    local minute=${timepart:2:2}
+    local second=${timepart:4:2}
+
+    # システムに応じた date コマンドの使用
+    local timestamp
+    if [[ "$(uname)" == "Darwin" ]]; then
+      # macOS
+      if $verbose; then
+        echo "[INFO] ${funcname}: macOS システムが検出されました。"
+        echo "[INFO] ${funcname}: コマンド実行: date -u -j -f \"%Y-%m-%d %H:%M:%S\" \"${year}-${month}-${day} ${hour}:${minute}:${second}\" +%s"
+      fi
+      timestamp=$(date -u -j -f "%Y-%m-%d %H:%M:%S" "${year}-${month}-${day} ${hour}:${minute}:${second}" +%s 2>/dev/null)
+    else
+      # Linux/その他
+      if $verbose; then
+        echo "[INFO] ${funcname}: Linux/その他のシステムが検出されました。"
+        echo "[INFO] ${funcname}: コマンド実行: date -u -d \"${year}-${month}-${day} ${hour}:${minute}:${second}\" +%s"
+      fi
+      timestamp=$(date -u -d "${year}-${month}-${day} ${hour}:${minute}:${second}" +%s 2>/dev/null)
+    fi
+
+    # timestamp の取得確認
+    if [[ -z "$timestamp" || "$timestamp" == *"illegal"* || "$timestamp" == *"invalid"* ]]; then
+      echo "[ERROR] ${funcname}: ファイル '$basename' の日付からタイムスタンプへの変換に失敗しました。"
+      ((error_count++))
+      continue
+    fi
+
+    # 実行するコマンドを表示
+    echo "[INFO] ${funcname}: 以下のコマンドを実行します:"
+    echo "[INFO] ${funcname}: \"$tool_path\" -file \"$filename\" -key \"output_at\" -set $timestamp"
+
+    # コマンド実行
+    if "$tool_path" -file "$filename" -key output_at -set "$timestamp"; then
+      echo "[INFO] ${funcname}: ファイル '$basename' のoutput_atフィールドを正常に更新しました。タイムスタンプ: $timestamp"
+      ((success_count++))
+    else
+      echo "[ERROR] ${funcname}: ファイル '$basename' の更新に失敗しました。"
+      ((error_count++))
+    fi
+  done
+
+  # 処理結果の表示
+  echo "[INFO] ${funcname}: 処理完了。成功: $success_count 件、失敗: $error_count 件"
+
+  if [[ $error_count -gt 0 ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+#==============================================================#
+##          Diff Functions                                    ##
+#==============================================================#
 function diff_files() {
   if [ "$#" -ne 2 ]; then
     echo "Usage: diff_files file1 file2"

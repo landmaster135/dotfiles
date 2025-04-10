@@ -29,7 +29,11 @@ alias ls='ls --color=auto'
 alias la='ls -AF --color=auto'
 alias l1='ls -1A --color=auto'
 alias lal='ls -alF --color=auto'
+alias lh='ls $HOME'
 alias lsoi='lsof -i'
+
+# cd
+alias cdh='cd $HOME'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
