@@ -55,7 +55,7 @@ function count_lines_in_dir() {
 }
 
 #==============================================================#
-##          Git functions                                     ##
+##          Git Functions                                     ##
 #==============================================================#
 
 function git-erase() {
@@ -186,7 +186,7 @@ function configure_git_user() {
 }
 
 #==============================================================#
-##          Common aliases                                    ##
+##          Common Functions                                  ##
 #==============================================================#
 
 function cron_help() {
@@ -223,6 +223,45 @@ function change_carriage_return() {
   find $1 -type f -exec dos2unix {} \;
 }
 
+#==============================================================#
+##          Configuration Functions                           ##
+#==============================================================#
+function _append_history_line() {
+  _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
+  _width=$(tput cols)
+
+  printf "%$(( $_width - ${#_date} - 1 ))s" | tr ' ' '-'
+  echo " $_date"
+}
+
+function _current_branch() {
+  _git_branch=$(git branch --show-current 2>/dev/null) && echo "[branch: $_git_branch] "
+}
+
+function edit-ps1-env() {
+  case ${1} in
+    --activate | -a)
+      echo 'Activate venv now......'
+      export _OLD_VIRTUAL_PS1="$MY_PS1"
+      _my_venv_dir='.venv'
+      PS1=${MY_PS1/'$(_append_history_line)'/'$(_append_history_line)'"\[\033[01;31m\]($_my_venv_dir)\[\033[00m\] "}
+      return 0
+      ;;
+    --deactivate | -d)
+      # nothing to do
+      echo 'Deactivate venv now......'
+      return 0
+      ;;
+    *)
+      echo "[ERROR] invalid options: '${1}'"
+      return 1
+      ;;
+  esac
+}
+
+#==============================================================#
+##          Functions for each language                       ##
+#==============================================================#
 # 引数からテキストファイルのパスを受け取り、テスト結果を分析する関数
 function analyze_pytest_results() {
   local allowed_failures_file="$1"
@@ -323,37 +362,70 @@ function analyze_pytest_results() {
   fi
 }
 
-function _append_history_line() {
-  _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
-  _width=$(tput cols)
+function find_single_quotes() {
+  local FUNCNAME="find_single_quotes"
 
-  printf "%$(( $_width - ${#_date} - 1 ))s" | tr ' ' '-'
-  echo " $_date"
-}
+  # ヘルプメッセージの表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${FUNCNAME}: このツールはファイル内の二重引用符の外側にある一重引用符が2つ以上ある行を検出します"
+    echo "使用法: ${FUNCNAME} <ファイルパス>"
+    echo "例: ${FUNCNAME} ./my_file.txt"
+    return 0
+  fi
 
-function _current_branch() {
-  _git_branch=$(git branch --show-current 2>/dev/null) && echo "[branch: $_git_branch] "
-}
+  # パラメータのチェック
+  if [[ $# -eq 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルパスが指定されていません"
+    echo "[INFO] ${FUNCNAME}: 使用法を確認するには '${FUNCNAME} --help' を実行してください"
+    return 1
+  fi
 
-function edit-ps1-env() {
-  case ${1} in
-    --activate | -a)
-      echo 'Activate venv now......'
-      export _OLD_VIRTUAL_PS1="$MY_PS1"
-      _my_venv_dir='.venv'
-      PS1=${MY_PS1/'$(_append_history_line)'/'$(_append_history_line)'"\[\033[01;31m\]($_my_venv_dir)\[\033[00m\] "}
-      return 0
-      ;;
-    --deactivate | -d)
-      # nothing to do
-      echo 'Deactivate venv now......'
-      return 0
-      ;;
-    *)
-      echo "[ERROR] invalid options: '${1}'"
-      return 1
-      ;;
-  esac
+  local file_path="$1"
+
+  # ファイルの存在チェック
+  if [[ ! -f "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' が見つかりません"
+    return 1
+  fi
+
+  # ファイルの読み取り権限チェック
+  if [[ ! -r "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' の読み取り権限がありません"
+    return 1
+  fi
+
+  # 一重引用符が2つ以上あり、二重引用符の外側にある行を検出
+  echo "[INFO] ${FUNCNAME}: ファイル '$file_path' を処理しています..."
+
+  # AWKスクリプトで処理
+  awk '
+  {
+    in_double_quote = 0
+    single_quote_count = 0
+
+    for (i = 1; i <= length($0); i++) {
+      char = substr($0, i, 1)
+
+      if (char == "\"" && substr($0, i-1, 1) != "\\") {
+        in_double_quote = !in_double_quote
+      } else if (char == "\x27" && !in_double_quote && substr($0, i-1, 1) != "\\") {
+        single_quote_count++
+      }
+    }
+
+    if (single_quote_count >= 2) {
+      printf "行番号 %d: %s\n", NR, $0
+    }
+  }
+  ' "$file_path"
+
+  if [[ $? -ne 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルの処理中にエラーが発生しました"
+    return 1
+  fi
+
+  echo "[INFO] ${FUNCNAME}: 処理が完了しました"
+  return 0
 }
 
 function clean_go_pkg() {
@@ -381,6 +453,9 @@ EOF
   rm -rf "${go_path}/pkg/mod/*"
 }
 
+#==============================================================#
+##          Diff Functions                                    ##
+#==============================================================#
 # JSONCファイルのコメントを削除する（単純な実装）
 function strip_jsonc() {
   # 行コメント（//）を削除
@@ -648,72 +723,6 @@ function cat_grep_by_line() {
   cat "$CAT_FILE" | grep "$PATTERN"
 }
 
-function find_single_quotes() {
-  local FUNCNAME="find_single_quotes"
-
-  # ヘルプメッセージの表示
-  if [[ "$1" == "--help" ]]; then
-    echo "[INFO] ${FUNCNAME}: このツールはファイル内の二重引用符の外側にある一重引用符が2つ以上ある行を検出します"
-    echo "使用法: ${FUNCNAME} <ファイルパス>"
-    echo "例: ${FUNCNAME} ./my_file.txt"
-    return 0
-  fi
-
-  # パラメータのチェック
-  if [[ $# -eq 0 ]]; then
-    echo "[ERROR] ${FUNCNAME}: ファイルパスが指定されていません"
-    echo "[INFO] ${FUNCNAME}: 使用法を確認するには '${FUNCNAME} --help' を実行してください"
-    return 1
-  fi
-
-  local file_path="$1"
-
-  # ファイルの存在チェック
-  if [[ ! -f "$file_path" ]]; then
-    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' が見つかりません"
-    return 1
-  fi
-
-  # ファイルの読み取り権限チェック
-  if [[ ! -r "$file_path" ]]; then
-    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' の読み取り権限がありません"
-    return 1
-  fi
-
-  # 一重引用符が2つ以上あり、二重引用符の外側にある行を検出
-  echo "[INFO] ${FUNCNAME}: ファイル '$file_path' を処理しています..."
-
-  # AWKスクリプトで処理
-  awk '
-  {
-    in_double_quote = 0
-    single_quote_count = 0
-
-    for (i = 1; i <= length($0); i++) {
-      char = substr($0, i, 1)
-
-      if (char == "\"" && substr($0, i-1, 1) != "\\") {
-        in_double_quote = !in_double_quote
-      } else if (char == "\x27" && !in_double_quote && substr($0, i-1, 1) != "\\") {
-        single_quote_count++
-      }
-    }
-
-    if (single_quote_count >= 2) {
-      printf "行番号 %d: %s\n", NR, $0
-    }
-  }
-  ' "$file_path"
-
-  if [[ $? -ne 0 ]]; then
-    echo "[ERROR] ${FUNCNAME}: ファイルの処理中にエラーが発生しました"
-    return 1
-  fi
-
-  echo "[INFO] ${FUNCNAME}: 処理が完了しました"
-  return 0
-}
-
 #==============================================================#
 ##          Snippet functions                                 ##
 #==============================================================#
@@ -790,19 +799,19 @@ function snippet() {
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${apt_array[@]}"; then
           here_are_the_available_snippets "Debian/Ubuntu on $snippet_file"
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
       common)
           here_are_the_available_snippets "common on $snippet_file"
-        cat $ZHOMEDIR/snippets/$1/common.txt
+        cat $BASH_HOMEDIR/snippets/$1/common.txt
         ;;
       docker)
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${docker_array[@]}"; then
           here_are_the_available_snippets "Docker on $snippet_file"
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
@@ -810,7 +819,7 @@ function snippet() {
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${git_array[@]}"; then
           here_are_the_available_snippets "Git on $snippet_file"
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
@@ -818,7 +827,7 @@ function snippet() {
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${go_array[@]}"; then
           here_are_the_available_snippets "Go on $snippet_file"
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
@@ -826,7 +835,7 @@ function snippet() {
         snippet_file=$(remove_substring_sed $2 "--")
         if contains_element $(remove_substring_sed $2 "--") "${psql_array[@]}"; then
           here_are_the_available_snippets "PostgreSQL on $snippet_file"
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;
@@ -835,7 +844,7 @@ function snippet() {
         if contains_element $(remove_substring_sed $2 "--") "${tmux_array[@]}"; then
           here_are_the_available_snippets "Tmux on $snippet_file"
           echo "Here are the available snippets for Tmux."
-          cat $ZHOMEDIR/snippets/$1/$snippet_file.txt
+          cat $BASH_HOMEDIR/snippets/$1/$snippet_file.txt
         fi
         return 0
         ;;

@@ -35,42 +35,18 @@ exec zsh
 4. Enjoy!
 
 ## Small install
-Check whether the configuration file uses LF break codes.
-```bash
-# Only aliases and functions.
-export ZHOMEDIR=$HOME/dotfiles/.config/zsh
-export ZRCDIR=$ZHOMEDIR
-export BASHHOMEDIR=$HOME/dotfiles/.config/bash
-source "$BASHHOMEDIR/alias.bash"
-source "$BASHHOMEDIR/function.bash"
-source "$BASHHOMEDIR/extract_blog_articles.bash"
-export DOTFILE_HOMEDIR=$HOME/dotfiles
-source "$BASHHOMEDIR/set_env.bash" "$DOTFILE_HOMEDIR/env.yml"
+**Check** whether the configuration file uses LF break codes.
+Execute the following processes if you haven't set up.
 
-export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+1. Backup.
+`mkdir $HOME/backup && mv $HOME/.bashrc $HOME/backup`
 
-HISTCONTROL=erasedups
+2. Set symbolic link
+`ln -s $HOME/dotfiles/.config/bash/.bashrc $HOME`
 
-# Install IaC functions
-export IACHOMEDIR=$HOME/dotfiles/iac
-source "$IACHOMEDIR/gcloud/init.sh"
-source "$IACHOMEDIR/gcloud/bigquery.sh"
-source "$IACHOMEDIR/gcloud/billing.sh"
-source "$IACHOMEDIR/gcloud/compute.sh"
-source "$IACHOMEDIR/gcloud/container.sh"
-source "$IACHOMEDIR/gcloud/db.sh"
-source "$IACHOMEDIR/gcloud/deployment.sh"
-source "$IACHOMEDIR/gcloud/dns.sh"
-source "$IACHOMEDIR/gcloud/iam.sh"
-source "$IACHOMEDIR/gcloud/logging.sh"
-source "$IACHOMEDIR/gcloud/monitoring.sh"
-source "$IACHOMEDIR/gcloud/scheduler.sh"
-source "$IACHOMEDIR/gcloud/secret.sh"
-source "$IACHOMEDIR/gcloud/storage.sh"
-source "$IACHOMEDIR/gcloud/task.sh"
-source "$IACHOMEDIR/gcloud/util.sh"
-```
+3. Restart bash.
+
+4. Enjoy!
 
 ## Snippet
 Show snippets with the following shell command.
