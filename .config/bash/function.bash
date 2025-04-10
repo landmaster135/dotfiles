@@ -54,6 +54,10 @@ function count_lines_in_dir() {
   fi
 }
 
+#==============================================================#
+##          Git functions                                     ##
+#==============================================================#
+
 function git-erase() {
   # e.g. git-erase credential.json
   git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
@@ -104,6 +108,86 @@ function docker-build() {
   local path=$1
   docker build -t $2 $1
 }
+
+function configure_git_user() {
+  local func_name="${FUNCNAME[0]}"
+  local email="${GITHUB_ACCOUNT_EMAIL:-}"
+  local name="${GITHUB_ACCOUNT_NAME:-}"
+  local show_help=false
+
+  # パラメータの解析
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --email=*)
+        email="${1#*=}"
+        shift
+        ;;
+      --name=*)
+        name="${1#*=}"
+        shift
+        ;;
+      --help)
+        show_help=true
+        shift
+        ;;
+      *)
+        echo "[ERROR] $func_name: 不明なパラメータ: $1"
+        return 1
+        ;;
+    esac
+  done
+
+  # ヘルプ表示
+  if [[ "$show_help" = true ]]; then
+    echo "使用方法: $func_name --email=メールアドレス --name=ユーザー名"
+    echo ""
+    echo "オプション:"
+    echo "  --email=EMAIL    Gitに設定するメールアドレス (デフォルト: 環境変数 GITHUB_ACCOUNT_EMAIL)"
+    echo "  --name=NAME      Gitに設定するユーザー名 (デフォルト: 環境変数 GITHUB_ACCOUNT_NAME)"
+    echo "  --help           このヘルプメッセージを表示"
+    echo ""
+    echo "使用例:"
+    echo "  $func_name --email=user@example.com --name=\"John Doe\""
+    return 0
+  fi
+
+  # パラメータ検証
+  if [[ -z "$email" ]]; then
+    echo "[ERROR] $func_name: メールアドレスが指定されていません。--email=パラメータか環境変数GITHUB_ACCOUNT_EMAILを設定してください。"
+    return 1
+  fi
+
+  if [[ -z "$name" ]]; then
+    echo "[ERROR] $func_name: ユーザー名が指定されていません。--name=パラメータか環境変数GITHUB_ACCOUNT_NAMEを設定してください。"
+    return 1
+  fi
+
+  # .gitディレクトリの存在を確認
+  if [[ ! -d ".git" ]]; then
+    echo "[ERROR] $func_name: カレントディレクトリにGitリポジトリが見つかりません。"
+    return 1
+  fi
+
+  # コマンド実行
+  echo "[INFO] $func_name: 実行コマンド: git config --local user.email \"$email\""
+  if ! git config --local user.email "$email"; then
+    echo "[ERROR] $func_name: メールアドレスの設定に失敗しました。"
+    return 1
+  fi
+
+  echo "[INFO] $func_name: 実行コマンド: git config --local user.name \"$name\""
+  if ! git config --local user.name "$name"; then
+    echo "[ERROR] $func_name: ユーザー名の設定に失敗しました。"
+    return 1
+  fi
+
+  echo "[INFO] $func_name: Gitユーザー設定が完了しました。(email: $email, name: $name)"
+  return 0
+}
+
+#==============================================================#
+##          Common aliases                                    ##
+#==============================================================#
 
 function cron_help() {
   # 'cron_help' shows how to describe cron.
@@ -489,6 +573,81 @@ function diff_dirs() {
   done
 }
 
+# 任意のファイルのcat結果を別ファイルの指定行の特定範囲文字でgrepする関数
+function cat_grep_by_line() {
+  # 引数のチェック
+  if [ $# -ne 5 ]; then
+    echo "使用方法: cat_grep_by_line <cat対象ファイル> <grep用ファイル> <行番号> <開始位置> <終了位置>"
+    return 1
+  fi
+
+  local CAT_FILE="$1"
+  local GREP_FILE="$2"
+  local LINE_NUM="$3"
+  local START_POS="$4"
+  local END_POS="$5"
+
+  # ファイルの存在チェック
+  if [ ! -f "$CAT_FILE" ]; then
+    echo "エラー: cat対象ファイル '$CAT_FILE' が見つかりません"
+    return 1
+  fi
+
+  if [ ! -f "$GREP_FILE" ]; then
+    echo "エラー: grep用ファイル '$GREP_FILE' が見つかりません"
+    return 1
+  fi
+
+  # 数値チェック
+  if ! [[ "$START_POS" =~ ^[0-9]+$ ]] || ! [[ "$END_POS" =~ ^[0-9]+$ ]]; then
+    echo "エラー: 開始位置と終了位置は数値である必要があります"
+    return 1
+  fi
+
+  if [ "$START_POS" -gt "$END_POS" ]; then
+    echo "エラー: 開始位置は終了位置以下である必要があります"
+    return 1
+  fi
+
+  # 指定ファイルの指定行を取得
+  local LINE=$(sed -n "${LINE_NUM}p" "$GREP_FILE")
+
+  if [ -z "$LINE" ]; then
+    echo "警告: 指定された行 $LINE_NUM は空か存在しません"
+    return 1
+  fi
+
+  # 行から指定範囲の文字を抽出
+  local LINE_LENGTH=${#LINE}
+
+  if [ "$START_POS" -gt "$LINE_LENGTH" ]; then
+    echo "エラー: 開始位置が行の長さを超えています"
+    return 1
+  fi
+
+  local ACTUAL_END=$END_POS
+  if [ "$END_POS" -gt "$LINE_LENGTH" ]; then
+    ACTUAL_END=$LINE_LENGTH
+    echo "警告: 終了位置が行の長さを超えています。行の終わりまでを使用します"
+  fi
+
+  # 文字列の切り出し（bash では文字列のインデックスは0から始まる）
+  local START_IDX=$((START_POS - 1))
+  local LENGTH=$((ACTUAL_END - START_POS + 1))
+  local PATTERN=${LINE:$START_IDX:$LENGTH}
+
+  # 特殊文字をエスケープ
+  PATTERN=$(echo "$PATTERN" | sed 's/[]\/$*.^[]/\\&/g')
+
+  if [ -z "$PATTERN" ]; then
+    echo "警告: 指定された範囲の文字列は空です"
+    return 1
+  fi
+
+  # catの結果を指定パターンでgrep
+  cat "$CAT_FILE" | grep "$PATTERN"
+}
+
 function find_single_quotes() {
   local FUNCNAME="find_single_quotes"
 
@@ -554,6 +713,10 @@ function find_single_quotes() {
   echo "[INFO] ${FUNCNAME}: 処理が完了しました"
   return 0
 }
+
+#==============================================================#
+##          Snippet functions                                 ##
+#==============================================================#
 
 function snippet() {
   function contains_element() {
