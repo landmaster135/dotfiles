@@ -223,6 +223,28 @@ function change_carriage_return() {
   find $1 -type f -exec dos2unix {} \;
 }
 
+function list_available_commands() {
+  echo "==== 利用可能なコマンド一覧 ===="
+  echo "システムパスにあるコマンド:"
+  compgen -c | sort | uniq
+
+  echo ""
+  echo "ビルトイン Bash コマンド:"
+  compgen -b | sort | uniq
+
+  echo ""
+  echo "エイリアス:"
+  alias | sed 's/alias \([^=]*\)=.*/\1/'
+
+  echo ""
+  echo "キーワード:"
+  compgen -k | sort | uniq
+
+  echo ""
+  echo "関数:"
+  compgen -A function | sort | uniq
+}
+
 #==============================================================#
 ##          Configuration Functions                           ##
 #==============================================================#
