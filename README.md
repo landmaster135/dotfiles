@@ -35,19 +35,18 @@ exec zsh
 4. Enjoy!
 
 ## Small install
-Only aliases and functions.
-```bash
-export ZHOMEDIR=$HOME/dotfiles/.config/zsh
-export ZRCDIR=$ZHOMEDIR/rc
-source "$ZRCDIR/alias.zsh"
-source "$ZRCDIR/function.zsh"
+**Check** whether the configuration file uses LF break codes.
+Execute the following processes if you haven't set up.
 
-export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+1. Backup.
+`mkdir $HOME/backup && mv $HOME/.bashrc $HOME/backup`
 
-HISTCONTROL=erasedups
+2. Set symbolic link
+`ln -s $HOME/dotfiles/.config/bash/.bashrc $HOME`
 
-```
+3. Restart bash.
+
+4. Enjoy!
 
 ## Snippet
 Show snippets with the following shell command.

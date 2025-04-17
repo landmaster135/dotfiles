@@ -10,10 +10,14 @@ alias nano='nano -m'
 alias mv='mv -i'
 alias cp='cp -irf'
 alias cl='clear'
-alias wc-l='awk '\''END { print NR, FILENAME }'\'''
+alias wc-l='awk '\''END { print NR }'\'''
+alias cat-grepl='cat_grep_by_line'
+# alias wc-l='awk '\''END { print NR, FILENAME }'\'''
+alias wc-ld='count_lines_in_dir'
 alias fc='fc -r'
 alias ..='cd ..'
 alias ps-fa='ps -fA'
+alias sst='ss -tulpn'
 
 # common custom function
 alias getpids='getpids'
@@ -25,7 +29,15 @@ alias ls='ls --color=auto'
 alias la='ls -AF --color=auto'
 alias l1='ls -1A --color=auto'
 alias lal='ls -alF --color=auto'
+alias lh='ls $HOME'
 alias lsoi='lsof -i'
+
+# cd
+alias cdh='cd $HOME'
+
+# env variable
+alias senvy='set_env_from_yaml'
+alias senvy-u='set_env_from_yaml --unset'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
@@ -34,29 +46,38 @@ alias egrep='egrep --color=auto'
 alias histgrep='history | grep'
 alias ps-grep='ps -fA | grep -e UID -e'
 alias apt-grep='apt list --installed | grep -e'
-alias ali-grep='alias | grep -e'
+# alias ali-grep='alias | grep -e'
+alias arep='alias | grep -e'
 
 # disk
 alias df='df -h'
 alias du-sh='du -sh'
 alias du-ah='du-ah ~ 20'
-alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
-alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
 
+# apt
+alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
+alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
+alias apt-li='apt list --installed'
+alias apt-ligrep='apt list --installed | grep'
+
 # git
+alias git-chup-main='git-chup-main'
 alias git-ba='git branch -a'
+alias git-bd='git branch -d'
 alias git-a='git add .'
 alias git-c='git commit -m'
-alias git-publish='BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD); git push --set-upstream origin "$BRANCH_NAME"; unset BRANCH_NAME;'
+alias git-publish='git-publish'
 alias git-push-afo='git push --all --force origin'
 alias git-res='git reset --soft HEAD^'
-alias git-reh='git reset --hard HEAD^'
+alias git-reh='git reset --hard HEAD'
+alias git-reh-1='git reset --hard HEAD^'
 alias git-erase='git-erase'
 alias git-repat='git-repat'
 alias git-nb='git-nb'
+alias git-cfg='configure_git_user'
 
 # chmod
 alias 644='chmod 644'
@@ -76,6 +97,9 @@ alias sni-tm='snippet tmux --options; snippet tmux --subcommands;'
 #==============================================================#
 ##          Python aliases                                    ##
 #==============================================================#
+
+# python version
+alias python='python3'
 
 # pip
 alias pip-i='pip install --no-cache-dir'
@@ -153,8 +177,16 @@ alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
 alias go-r='go run -trimpath'
-alias go-t='go test -v ./... -coverpkg=./mypkg -covermode=count'
-alias go-b='go build -o'
+alias go-t='go test'
+alias go-tc='go test -cover'
+alias go-tc-a='go test -cover ./...'
+alias go-tco='go test -coverprofile=coverage.out'
+alias go-tco-a='go test -coverprofile=coverage.out ./...'
+alias go-tcc-='go test -v -covermode=count -coverpkg='
+alias go-th='go tool cover -html=coverage.out -o coverage.html'
+alias go-tco-ah='go test -coverprofile=coverage.out ./...; go-th'
+alias go-b='go build'
+alias go-bo='go build -o'
 alias go-bl='GOOS=linux GOARCH=amd64 go build -o'
 alias go-bw='GOOS=windows GOARCH=amd64 go build -o'
 alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
@@ -162,3 +194,22 @@ alias gofmt-all='gofmt -w ./...'
 alias go-cn='go clean -i -n'
 alias go-c='go clean -i'
 alias clean_go_pkg='clean_go_pkg'
+alias go-rmcb='rm -rf ~/.cache/go-build/*'
+
+#==============================================================#
+##          Docker aliases                                    ##
+#==============================================================#
+
+# Docker
+alias docker='sudo docker'
+alias dc-b='docker-build .'
+alias dc-rm='docker rm'
+alias dc-il='docker image ls'
+alias dc-sdf='docker system df'
+alias dc-rmi='docker rmi'
+alias dc-rmif='docker rmi -f'
+alias dc-lsic='docker images | grep none | cut -b 50-64'
+alias dc-rmic='docker rmi `docker images | grep none | cut -b 50-64`'
+alias dc-prune='docker system prune -a'
+alias dc-ps='docker ps'
+alias dc-cp='docker-cp'
