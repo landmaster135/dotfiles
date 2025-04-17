@@ -35,6 +35,10 @@ alias lsoi='lsof -i'
 # cd
 alias cdh='cd $HOME'
 
+# env variable
+alias senvy='set_env_from_yaml'
+alias senvy-u='set_env_from_yaml --unset'
+
 # grep
 alias grep='grep -H -n -I -i --color=auto'
 alias fgrep='fgrep --color=auto'
@@ -173,6 +177,7 @@ alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
 alias go-r='go run -trimpath'
+alias go-t='go test'
 alias go-tc='go test -cover'
 alias go-tc-a='go test -cover ./...'
 alias go-tco='go test -coverprofile=coverage.out'

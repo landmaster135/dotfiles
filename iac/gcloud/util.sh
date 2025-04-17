@@ -40,13 +40,16 @@ EOF
 
   local message embed_text embed_footer_text embed_icon_url embed_color webhook_url
 
-  echo "[DEBUG] ${func_name}: parameters are following."
+  echo ""
+  echo "[DEBUG] ${func_name}: parameters are following. ================================================="
   echo "\$1: $1"
   echo "\$2: $2"
   echo "\$3: $3"
   echo "\$4: $4"
   echo "\$5: $5"
   echo "\$6: $6"
+  echo "=========================================================================================================================="
+  echo ""
 
   # Embedなし
   # 引数の個数チェック
@@ -95,13 +98,15 @@ EOF
     return 1
   fi
 
-  echo "[DEBUG] ${func_name}: translated parameters are following."
+  echo "[DEBUG] ${func_name}: translated parameters are following. ================================================="
   echo "\$message: $message"
   echo "\$embed_text: $embed_text"
   echo "\$embed_footer_text: $embed_footer_text"
   echo "\$embed_icon_url: $embed_icon_url"
   echo "\$embed_color: $embed_color"
   echo "\$webhook_url: $webhook_url"
+  echo "=========================================================================================================================="
+  echo ""
 
   # いずれかの引数が空文字だった場合のエラーハンドリング
   if [ -z "$message" ] || [ -z "$embed_text" ] || [ -z "$embed_footer_text" ] || [ -z "$embed_icon_url" ] || [ -z "$embed_color" ] || [ -z "$webhook_url" ]; then
@@ -256,13 +261,16 @@ function send_discord_notification_about_gcscheduler() {
   local embed_icon_url=$GCSCHEDULER_ICON_URL
   local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
-  echo "[DEBUG] ${func_name}: parameters are following."
+  echo ""
+  echo "[DEBUG] ${func_name}: parameters are following. ================================================="
   echo "\$message: $message"
   echo "\$embed_text: $embed_text"
   echo "\$embed_color: $embed_color"
   echo "\$embed_footer_text: $embed_footer_text"
   echo "\$embed_icon_url: $embed_icon_url"
   echo "\$webhook_url: $webhook_url"
+  echo "========================================================================================================================"
+  echo ""
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
@@ -282,13 +290,16 @@ function send_discord_notification_about_gciam() {
   local embed_icon_url=$GCIAM_ICON_URL
   local webhook_url=$DISCORD_WEBHOOK_URL_FOR_IAC_ON_GCLOUD
 
-  echo "[DEBUG] ${func_name}: parameters are following."
+  echo ""
+  echo "[DEBUG] ${func_name}: parameters are following. ================================================="
   echo "\$message: $message"
   echo "\$embed_text: $embed_text"
   echo "\$embed_color: $embed_color"
   echo "\$embed_footer_text: $embed_footer_text"
   echo "\$embed_icon_url: $embed_icon_url"
   echo "\$webhook_url: $webhook_url"
+  echo "========================================================================================================================"
+  echo ""
 
   # webhook_url が空でないかチェックし、あれば最後の引数として渡す
   if [ -n "$webhook_url" ]; then
