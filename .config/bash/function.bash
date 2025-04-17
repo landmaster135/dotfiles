@@ -78,9 +78,20 @@ function git-repat() {
 
 function git-chup-main() {
   # 'git-chup-main' means 'git checkout and update local main branch'
-  # e.g. git-chup
+  # e.g. git-chup-main
   git checkout main
   git pull origin main
+}
+
+function git-renew() {
+  # 'git-renew' processes 'git checkout and update local branch'
+  # e.g. git-renew a_branch
+  local working_branch="$1"
+  git checkout main
+  git pull origin main
+
+  git checkout $working_branch
+  git merge main
 }
 
 function git-nb() {
