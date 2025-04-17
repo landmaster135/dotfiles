@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #==============================================================#
 ##         New Commands                                      ##
 #==============================================================#
@@ -24,8 +26,15 @@ function git-repat() {
   else
     echo "URL extraction failed"
   fi
-  local new_url="https://$username:$pat@github.com/$username/$repository.git"
+  local new_url="https://$username:$pat@github.com/$username/$repository"
   git remote set-url origin $new_url
+}
+
+function git-chup-main() {
+  # 'git-chup-main' means 'git checkout and update local main branch'
+  # e.g. git-chup
+  git checkout main
+  git pull origin main
 }
 
 function git-nb() {
@@ -34,6 +43,11 @@ function git-nb() {
   local branch_name="$1"
   git branch $branch_name
   git checkout $branch_name
+}
+
+function git-publish() {
+  local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+  git push --set-upstream origin "$BRANCH_NAME"
 }
 
 function cron_help() {
@@ -62,6 +76,106 @@ cronの書き方:
 
 ※ 各フィールドで「*」は任意の値を意味します。
 EOF
+}
+
+# 引数からテキストファイルのパスを受け取り、テスト結果を分析する関数
+function analyze_pytest_results() {
+  local allowed_failures_file="$1"
+
+  # ファイルが存在するか確認
+  if [ ! -f "$allowed_failures_file" ]; then
+    echo "エラー: 指定されたファイル '$allowed_failures_file' が見つかりません。"
+    return 1
+  fi
+
+  # ファイルから許容される失敗テストのリストを読み込む
+  # コメント行と空行を除外
+  allowed_failures=()
+  while IFS= read -r line; do
+    # 空行やコメント行をスキップ
+    if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+      continue
+    fi
+    # 行の前後の空白を削除
+    line=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    allowed_failures+=("$line")
+  done < "$allowed_failures_file"
+
+  # 許容される失敗テストのリストが空かどうかチェック
+  if [ ${#allowed_failures[@]} -eq 0 ]; then
+    echo "警告: 許容される失敗テストのリストが空です。"
+  fi
+
+  # python -m pytest -v を実行してすべての結果を取得
+  echo "テストを実行中..."
+  pytest_output=$(python -m pytest -v)
+
+  # すべての失敗テストを抽出
+  all_failures=()
+  while IFS= read -r line; do
+    # FAILEDの後に空白があり、その後に::を含むテスト名があるパターンにマッチ
+    if [[ "$line" =~ FAILED[[:space:]]([^[:space:]]+::[^[:space:]]+) ]]; then
+      test_name="${BASH_REMATCH[1]}"
+      all_failures+=("$test_name")
+    fi
+  done < <(echo "$pytest_output")
+
+  # 本当の失敗（許容されない失敗）を特定
+  true_failures=()
+  for failure in "${all_failures[@]}"; do
+    is_allowed=false
+
+    for allowed in "${allowed_failures[@]}"; do
+      if [[ "$failure" == "$allowed" ]]; then
+        is_allowed=true
+        break
+      fi
+    done
+
+    if [[ "$is_allowed" == "false" ]]; then
+      true_failures+=("$failure")
+    fi
+  done
+
+  # 結果の表示
+  echo
+  echo "=== テスト実行結果のサマリー ==="
+  echo
+
+  # すべてのテスト結果の要約を表示（pytestの最後の行を抽出）
+  summary=$(echo "$pytest_output" | grep -E "= .* tests, .* deselected" | tail -1)
+  echo "全体の結果: $summary"
+  echo
+
+  echo "許容される失敗テスト:"
+  for allowed in "${allowed_failures[@]}"; do
+    # 実際に失敗したかチェック
+    is_failed=false
+    for failure in "${all_failures[@]}"; do
+      if [[ "$failure" == "$allowed" ]]; then
+        is_failed=true
+        break
+      fi
+    done
+
+    if [[ "$is_failed" == "true" ]]; then
+      echo "  ✓ $allowed (予期された失敗)"
+    else
+      echo "  - $allowed (失敗しませんでした)"
+    fi
+  done
+  echo
+
+  if [ ${#true_failures[@]} -eq 0 ]; then
+    echo "✅ 重要なテストはすべて成功しました！"
+    return 0
+  else
+    echo "❌ 対応が必要な失敗テスト:"
+    for failure in "${true_failures[@]}"; do
+      echo "  - $failure"
+    done
+    return 1
+  fi
 }
 
 function _append_history_line() {
@@ -158,88 +272,226 @@ function compare_json() {
 --help パラメータを渡すと、使用方法を表示します。
 "
 
-    # --helpパラメータの処理
-    if [ "$1" == "--help" ]; then
-        echo "[INFO] $USAGE"
-        return 0
+  # --helpパラメータの処理
+  if [ "$1" == "--help" ]; then
+    echo "[INFO] $USAGE"
+    return 0
+  fi
+
+  if [ "$#" -ne 2 ]; then
+    echo "[ERROR] Usage: compare_json file1.json[.jsonc] file2.json[.jsonc]"
+    return 1
+  fi
+
+  local file1="$1"
+  local file2="$2"
+
+  # 入力ファイルの存在チェック
+  if [ ! -f "$file1" ]; then
+    echo "[ERROR] File not found: $file1"
+    return 1
+  fi
+  if [ ! -f "$file2" ]; then
+    echo "[ERROR] File not found: $file2"
+    return 1
+  fi
+
+  # ファイル内容のロード（JSONCならコメント除去）
+  local data1 data2
+  data1=$(load_json "$file1")
+  data2=$(load_json "$file2")
+
+  # JSONとしてフラット化: 各行 "keypath<TAB>value" を出力
+  local flat1 flat2
+  flat1=$(echo "$data1" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
+  if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to parse JSON from file: $file1"
+    return 1
+  fi
+  flat2=$(echo "$data2" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
+  if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to parse JSON from file: $file2"
+    return 1
+  fi
+
+  # 連想配列に格納（bash4以降が必要）
+  declare -A dict1
+  declare -A dict2
+
+  local line key value
+  while IFS=$'\t' read -r key value; do
+    dict1["$key"]="$value"
+  done <<< "$flat1"
+
+  while IFS=$'\t' read -r key value; do
+    dict2["$key"]="$value"
+  done <<< "$flat2"
+
+  # 片方のみ存在するフィールド（file1のみ）
+  echo "[INFO] ${file1} のみ存在するフィールド:"
+  for key in "${!dict1[@]}"; do
+    if [[ -z "${dict2[$key]+x}" ]]; then
+      echo "$key -> ${dict1[$key]}"
     fi
+  done
 
-    if [ "$#" -ne 2 ]; then
-        echo "[ERROR] Usage: compare_json file1.json[.jsonc] file2.json[.jsonc]"
-        return 1
+  echo ""
+  # もう片方のみ存在するフィールド（file2のみ）
+  echo "[INFO] ${file2} のみ存在するフィールド:"
+  for key in "${!dict2[@]}"; do
+    if [[ -z "${dict1[$key]+x}" ]]; then
+      echo "$key -> ${dict2[$key]}"
     fi
+  done
 
-    local file1="$1"
-    local file2="$2"
-
-    # 入力ファイルの存在チェック
-    if [ ! -f "$file1" ]; then
-        echo "[ERROR] File not found: $file1"
-        return 1
+  echo ""
+  # 両方に存在するが、値が異なるフィールド
+  echo "両方に存在するが、値が異なるフィールド"
+  for key in "${!dict1[@]}"; do
+    if [[ -n "${dict2[$key]+x}" ]]; then
+      if [ "${dict1[$key]}" != "${dict2[$key]}" ]; then
+        echo "$key -> $file1: ${dict1[$key]} | $file2: ${dict2[$key]}"
+      fi
     fi
-    if [ ! -f "$file2" ]; then
-        echo "[ERROR] File not found: $file2"
-        return 1
-    fi
+  done
+}
 
-    # ファイル内容のロード（JSONCならコメント除去）
-    local data1 data2
-    data1=$(load_json "$file1")
-    data2=$(load_json "$file2")
+function diff_files() {
+  if [ "$#" -ne 2 ]; then
+    echo "Usage: diff_files file1 file2"
+    return 1
+  fi
 
-    # JSONとしてフラット化: 各行 "keypath<TAB>value" を出力
-    local flat1 flat2
-    flat1=$(echo "$data1" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] Failed to parse JSON from file: $file1"
-        return 1
-    fi
-    flat2=$(echo "$data2" | jq -r 'paths(scalars) as $p | "\($p | map(tostring) | join("::"))\t\(getpath($p))"')
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] Failed to parse JSON from file: $file2"
-        return 1
-    fi
+  if [ ! -f "$1" ]; then
+    echo "Error: '$1' は存在しないか、ファイルではありません。"
+    return 1
+  fi
 
-    # 連想配列に格納（bash4以降が必要）
-    declare -A dict1
-    declare -A dict2
+  if [ ! -f "$2" ]; then
+    echo "Error: '$2' は存在しないか、ファイルではありません。"
+    return 1
+  fi
 
-    local line key value
-    while IFS=$'\t' read -r key value; do
-        dict1["$key"]="$value"
-    done <<< "$flat1"
+  diff -u "$1" "$2"
+}
 
-    while IFS=$'\t' read -r key value; do
-        dict2["$key"]="$value"
-    done <<< "$flat2"
+function diff_dirs() {
+  if [ "$#" -lt 2 ]; then
+    echo "Usage: diff_dirs dir1 dir2 [exclude_pattern...]"
+    echo "Example: diff_dirs dir1 dir2 \"*.log\" \"temp*\""
+    return 1
+  fi
 
-    # 片方のみ存在するフィールド（file1のみ）
-    echo "[INFO] ${file1} のみ存在するフィールド:"
-    for key in "${!dict1[@]}"; do
-        if [[ -z "${dict2[$key]+x}" ]]; then
-            echo "$key -> ${dict1[$key]}"
-        fi
+  local dir1="$1"
+  local dir2="$2"
+  shift 2
+
+  # 残りの引数を除外パターンとして配列に格納
+  local exclude_patterns=("$@")
+
+  if [ ! -d "$dir1" ]; then
+    echo "Error: '$dir1' はディレクトリではありません。"
+    return 1
+  fi
+
+  if [ ! -d "$dir2" ]; then
+    echo "Error: '$dir2' はディレクトリではありません。"
+    return 1
+  fi
+
+  for file in "$dir1"/*; do
+    local filename
+    filename=$(basename "$file")
+
+    # 除外パターンに一致する場合はスキップ
+    local skip=0
+    for pattern in "${exclude_patterns[@]}"; do
+      if [[ "$filename" == $pattern ]]; then
+        skip=1
+        break
+      fi
     done
+    if [ $skip -eq 1 ]; then
+      continue
+    fi
 
-    echo ""
-    # もう片方のみ存在するフィールド（file2のみ）
-    echo "[INFO] ${file2} のみ存在するフィールド:"
-    for key in "${!dict2[@]}"; do
-        if [[ -z "${dict1[$key]+x}" ]]; then
-            echo "$key -> ${dict2[$key]}"
-        fi
-    done
+    # 両ディレクトリに同名の通常ファイルがあれば diff_files を実行
+    if [ -f "$file" ] && [ -f "$dir2/$filename" ]; then
+      echo "========== $filename の差分 =========="
+      echo ""
+      diff_files "$file" "$dir2/$filename"
+      echo ""
+      echo "-----------------------------------------"
+      echo ""
+      echo ""
+    fi
+  done
+}
 
-    echo ""
-    # 両方に存在するが、値が異なるフィールド
-    echo "両方に存在するが、値が異なるフィールド"
-    for key in "${!dict1[@]}"; do
-        if [[ -n "${dict2[$key]+x}" ]]; then
-            if [ "${dict1[$key]}" != "${dict2[$key]}" ]; then
-                echo "$key -> $file1: ${dict1[$key]} | $file2: ${dict2[$key]}"
-            fi
-        fi
-    done
+function find_single_quotes() {
+  local FUNCNAME="find_single_quotes"
+
+  # ヘルプメッセージの表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${FUNCNAME}: このツールはファイル内の二重引用符の外側にある一重引用符が2つ以上ある行を検出します"
+    echo "使用法: ${FUNCNAME} <ファイルパス>"
+    echo "例: ${FUNCNAME} ./my_file.txt"
+    return 0
+  fi
+
+  # パラメータのチェック
+  if [[ $# -eq 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルパスが指定されていません"
+    echo "[INFO] ${FUNCNAME}: 使用法を確認するには '${FUNCNAME} --help' を実行してください"
+    return 1
+  fi
+
+  local file_path="$1"
+
+  # ファイルの存在チェック
+  if [[ ! -f "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' が見つかりません"
+    return 1
+  fi
+
+  # ファイルの読み取り権限チェック
+  if [[ ! -r "$file_path" ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイル '$file_path' の読み取り権限がありません"
+    return 1
+  fi
+
+  # 一重引用符が2つ以上あり、二重引用符の外側にある行を検出
+  echo "[INFO] ${FUNCNAME}: ファイル '$file_path' を処理しています..."
+
+  # AWKスクリプトで処理
+  awk '
+  {
+    in_double_quote = 0
+    single_quote_count = 0
+
+    for (i = 1; i <= length($0); i++) {
+      char = substr($0, i, 1)
+
+      if (char == "\"" && substr($0, i-1, 1) != "\\") {
+        in_double_quote = !in_double_quote
+      } else if (char == "\x27" && !in_double_quote && substr($0, i-1, 1) != "\\") {
+        single_quote_count++
+      }
+    }
+
+    if (single_quote_count >= 2) {
+      printf "行番号 %d: %s\n", NR, $0
+    }
+  }
+  ' "$file_path"
+
+  if [[ $? -ne 0 ]]; then
+    echo "[ERROR] ${FUNCNAME}: ファイルの処理中にエラーが発生しました"
+    return 1
+  fi
+
+  echo "[INFO] ${FUNCNAME}: 処理が完了しました"
+  return 0
 }
 
 function snippet() {
