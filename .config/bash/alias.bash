@@ -64,7 +64,7 @@ alias apt-li='apt list --installed'
 alias apt-ligrep='apt list --installed | grep'
 
 # git
-alias git-renew='git-chup-main-work'
+alias git-renew='git-renew'
 alias git-ba='git branch -a'
 alias git-bd='git branch -d'
 alias git-a='git add .'
@@ -213,3 +213,16 @@ alias dc-rmic='docker rmi `docker images | grep none | cut -b 50-64`'
 alias dc-prune='docker system prune -a'
 alias dc-ps='docker ps'
 alias dc-cp='docker-cp'
+
+#==============================================================#
+##          Flutter aliases                                   ##
+#==============================================================#
+
+# Flutter
+alias fl-c='fvm flutter create'
+alias fl-pg='fvm flutter pub get'
+alias fl-r='fvm flutter run'
+alias fl-rw='fvm flutter run -d web-server --web-port=8080'
+alias fl-d='fvm flutter doctor'
+alias fv-d='fvm doctor'
+alias fv-l='fvm list'
