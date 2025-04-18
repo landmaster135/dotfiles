@@ -213,3 +213,14 @@ shopt -s globstar
 echo ""
 echo "[INFO] .bashrc process terminated !!"
 echo ""
+
+# Flutter SDK
+export FLUTTER_ROOT=$HOME/flutter
+export PATH=$PATH:$FLUTTER_ROOT/bin
+
+# FVM (Flutter Version Management)
+export PATH="$PATH:$HOME/.pub-cache/bin"
+export FLUTTER_ROOT="$HOME/fvm/default/"
+export PATH="$PATH:$FLUTTER_ROOT/bin"
+# export FLUTTER_ROOT="$HOME/fvm/versions/3.29.3"
+# export PATH="$PATH:$FLUTTER_ROOT/bin"

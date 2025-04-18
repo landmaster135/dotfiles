@@ -4,12 +4,107 @@
 ##         New Commands                                      ##
 #==============================================================#
 function getpids() {
-  echo `ps x | grep $1 | awk '{print $1}'`
+  local func_name="${FUNCNAME[0]}"
+  local process_pattern=""
+  local pids=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <process_pattern>"
+    echo "[INFO] ${func_name}: This function returns the PIDs of processes matching the given pattern."
+    echo "[INFO] ${func_name}: Example: ${func_name} firefox"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Process pattern is required."
+    return 1
+  fi
+
+  process_pattern="$1"
+
+  echo "[INFO] ${func_name}: Finding processes matching pattern '${process_pattern}'..."
+
+  # Execute ps command
+  echo "[INFO] ${func_name}: Executing: ps x | grep ${process_pattern} | awk '{print \$1}'"
+  pids=$(ps x | grep "${process_pattern}" | grep -v "grep ${process_pattern}" | awk '{print $1}')
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to get process IDs."
+    return ${exit_code}
+  fi
+
+  # Check if any PIDs were found
+  if [[ -z "${pids}" ]]; then
+    echo "[INFO] ${func_name}: No processes found matching pattern '${process_pattern}'."
+    return 0
+  fi
+
+  # Output the PIDs
+  echo "[INFO] ${func_name}: Found the following PIDs:"
+  echo "${pids}"
+
+  return 0
 }
 
 function du-ah() {
-  # e.g. du-ah / 20
-  du -ah $1 | sort -rh | head -n $2
+  local func_name="${FUNCNAME[0]}"
+  local directory=""
+  local num_entries=20  # Default number of entries to show
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <directory> [num_entries]"
+    echo "[INFO] ${func_name}: This function shows the largest files/directories in a given path."
+    echo "[INFO] ${func_name}: Parameters:"
+    echo "[INFO] ${func_name}:   <directory>   - Directory to analyze (required)"
+    echo "[INFO] ${func_name}:   [num_entries] - Number of entries to show (optional, default: 20)"
+    echo "[INFO] ${func_name}: Example: ${func_name} /home/user 10"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Directory path is required."
+    return 1
+  fi
+
+  directory="$1"
+
+  # Check if directory exists
+  echo "[INFO] ${func_name}: Checking if directory '${directory}' exists..."
+  if [[ ! -d "${directory}" && ! -f "${directory}" ]]; then
+    echo "[ERROR] ${func_name}: Path '${directory}' does not exist."
+    return 2
+  fi
+
+  # Second parameter (optional)
+  if [[ -n "$2" ]]; then
+    # Check if the second parameter is a number
+    if [[ "$2" =~ ^[0-9]+$ ]]; then
+      num_entries="$2"
+    else
+      echo "[ERROR] ${func_name}: Number of entries must be a positive integer."
+      return 3
+    fi
+  fi
+
+  echo "[INFO] ${func_name}: Analyzing disk usage in '${directory}', showing top ${num_entries} entries..."
+
+  # Execute du command
+  echo "[INFO] ${func_name}: Executing: du -ah ${directory} | sort -rh | head -n ${num_entries}"
+  du -ah "${directory}" | sort -rh | head -n "${num_entries}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to analyze disk usage in '${directory}'."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Disk usage analysis completed."
+  return 0
 }
 
 function count_lines_in_dir() {
@@ -59,65 +154,348 @@ function count_lines_in_dir() {
 #==============================================================#
 
 function git-erase() {
-  # e.g. git-erase credential.json
-  git filter-branch --force --index-filter "git rm --cached --ignore-unmatch $1" -- --all
+  local func_name="${FUNCNAME[0]}"
+  local file_pattern=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <file_pattern>"
+    echo "[INFO] ${func_name}: This function removes a file from the entire git history."
+    echo "[INFO] ${func_name}: Example: ${func_name} credential.json"
+    echo "[INFO] ${func_name}: WARNING: This rewrites git history. Use with caution!"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: File pattern is required."
+    return 1
+  fi
+
+  file_pattern="$1"
+
+  # Confirm the operation
+  echo "[INFO] ${func_name}: This will permanently remove '${file_pattern}' from the entire git history."
+  echo "[INFO] ${func_name}: This operation rewrites git history and cannot be undone."
+  read -p "[INFO] ${func_name}: Are you sure you want to continue? (y/n) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "[INFO] ${func_name}: Operation cancelled."
+    return 0
+  fi
+
+  # Execute git filter-branch
+  echo "[INFO] ${func_name}: Executing: git filter-branch --force --index-filter \"git rm --cached --ignore-unmatch ${file_pattern}\" -- --all"
+  git filter-branch --force --index-filter "git rm --cached --ignore-unmatch ${file_pattern}" -- --all
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to remove '${file_pattern}' from git history."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully removed '${file_pattern}' from git history."
+  echo "[INFO] ${func_name}: You may need to force-push to update the remote repository."
+  echo "[INFO] ${func_name}: Example: git push origin --force --all"
+
+  return 0
 }
 
 function git-repat() {
-  local pat="$1"
-  local current_url=$(git remote -v | awk '/origin/ {print $2; exit}')
-  if [[ "$current_url" =~ github\.com[:/]([^/]+)/([^/]+)$ ]]; then
-    local username="${BASH_REMATCH[1]}"
-    local repository="${BASH_REMATCH[2]}"
-  else
-    echo "URL extraction failed"
+  local func_name="${FUNCNAME[0]}"
+  local pat=""
+  local current_url=""
+  local username=""
+  local repository=""
+  local new_url=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <personal_access_token>"
+    echo "[INFO] ${func_name}: This function updates the git remote URL with a personal access token."
+    echo "[INFO] ${func_name}: Example: ${func_name} ghp_1234abcd5678efgh"
+    return 0
   fi
-  local new_url="https://$username:$pat@github.com/$username/$repository"
-  git remote set-url origin $new_url
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Personal Access Token (PAT) is required."
+    return 1
+  fi
+
+  pat="$1"
+
+  # Get current remote URL
+  echo "[INFO] ${func_name}: Getting current remote URL..."
+  current_url=$(git remote -v | awk '/origin/ && /fetch/ {print $2; exit}')
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 || -z "${current_url}" ]]; then
+    echo "[ERROR] ${func_name}: Failed to get current remote URL."
+    return 2
+  fi
+
+  echo "[INFO] ${func_name}: Current remote URL found."
+
+  # Extract username and repository from URL
+  echo "[INFO] ${func_name}: Extracting username and repository..."
+  if [[ "${current_url}" =~ github\.com[:/]([^/]+)/([^/]+)(\.git)?$ ]]; then
+    username="${BASH_REMATCH[1]}"
+    # Remove .git extension if present
+    repository="${BASH_REMATCH[2]}"
+    repository="${repository%.git}"
+  else
+    echo "[ERROR] ${func_name}: Failed to extract username and repository from URL: ${current_url}"
+    return 3
+  fi
+
+  echo "[INFO] ${func_name}: Username: ${username}, Repository: ${repository}"
+
+  # Create new URL with PAT
+  new_url="https://${username}:${pat}@github.com/${username}/${repository}.git"
+
+  # Update remote URL
+  echo "[INFO] ${func_name}: Executing: git remote set-url origin <URL with PAT>"
+  # Not showing the actual URL with PAT for security reasons
+  git remote set-url origin "${new_url}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to update remote URL."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully updated remote URL with Personal Access Token."
+  return 0
 }
 
 function git-chup-main() {
-  # 'git-chup-main' means 'git checkout and update local main branch'
-  # e.g. git-chup-main
+  local func_name="${FUNCNAME[0]}"
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name}"
+    echo "[INFO] ${func_name}: This function checks out the main branch and pulls the latest changes."
+    echo "[INFO] ${func_name}: Example: ${func_name}"
+    return 0
+  fi
+
+  # No parameters expected for this function
+  if [[ -n "$1" ]]; then
+    echo "[INFO] ${func_name}: Note - this function does not require parameters."
+  fi
+
+  # Checkout main
+  echo "[INFO] ${func_name}: Executing: git checkout main"
   git checkout main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to checkout main branch."
+    return ${exit_code}
+  fi
+
+  # Pull from main
+  echo "[INFO] ${func_name}: Executing: git pull origin main"
   git pull origin main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to pull changes from main."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully updated main branch."
+  return 0
 }
 
 function git-renew() {
-  # 'git-renew' processes 'git checkout and update local branch'
-  # e.g. git-renew a_branch
-  local working_branch="$1"
-  git checkout main
-  git pull origin main
+  local func_name="${FUNCNAME[0]}"
+  local working_branch=""
+  local exit_code=0
+  local branch_exists=false
 
-  git checkout $working_branch
-  git merge main
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <branch_name>"
+    echo "[INFO] ${func_name}: This function checks out main branch, pulls latest changes,"
+    echo "[INFO] ${func_name}: then checks out your working branch (creates it if not exists)"
+    echo "[INFO] ${func_name}: and merges main into it."
+    echo "[INFO] ${func_name}: Example: ${func_name} feature_branch"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Working branch name is required."
+    return 1
+  fi
+
+  working_branch="$1"
+
+  # Check if branch exists
+  echo "[INFO] ${func_name}: Checking if branch '${working_branch}' exists..."
+  if git show-ref --verify --quiet refs/heads/"${working_branch}"; then
+    branch_exists=true
+    echo "[INFO] ${func_name}: Branch '${working_branch}' exists."
+  else
+    echo "[INFO] ${func_name}: Branch '${working_branch}' does not exist. Will create it later."
+  fi
+
+  # Checkout main
+  echo "[INFO] ${func_name}: Executing: git checkout main"
+  git checkout main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to checkout main branch."
+    return ${exit_code}
+  fi
+
+  # Pull from main
+  echo "[INFO] ${func_name}: Executing: git pull origin main"
+  git pull origin main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to pull changes from main."
+    return ${exit_code}
+  fi
+
+  # Checkout working branch (create if doesn't exist)
+  if [[ "${branch_exists}" == true ]]; then
+    echo "[INFO] ${func_name}: Executing: git checkout ${working_branch}"
+    git checkout "${working_branch}"
+  else
+    echo "[INFO] ${func_name}: Executing: git checkout -b ${working_branch}"
+    git checkout -b "${working_branch}"
+  fi
+
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to checkout/create branch '${working_branch}'."
+    return ${exit_code}
+  fi
+
+  # Only merge if the branch already existed (new branch is already based on latest main)
+  if [[ "${branch_exists}" == true ]]; then
+    echo "[INFO] ${func_name}: Executing: git merge main"
+    git merge main
+    exit_code=$?
+    if [[ ${exit_code} -ne 0 ]]; then
+      echo "[ERROR] ${func_name}: Failed to merge main into '${working_branch}'."
+      return ${exit_code}
+    fi
+    echo "[INFO] ${func_name}: Successfully updated branch '${working_branch}' with changes from main."
+  else
+    echo "[INFO] ${func_name}: Branch '${working_branch}' was newly created from main, no merge needed."
+  fi
+
+  return 0
 }
 
 function git-nb() {
-  # 'git-nb' means 'git-new-branch'
-  # e.g. git-nb initialCommit
-  local branch_name="$1"
-  git branch $branch_name
-  git checkout $branch_name
+  # Get function name
+  local func_name="${FUNCNAME[0]}"
+  local branch_name=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <branch_name>"
+    echo "[INFO] ${func_name}: This function creates a new git branch and checks it out."
+    echo "[INFO] ${func_name}: Example: ${func_name} feature_branch"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Branch name is required."
+    return 1
+  fi
+
+  branch_name="$1"
+
+  # Check if branch already exists
+  echo "[INFO] ${func_name}: Checking if branch '${branch_name}' exists..."
+  if git show-ref --verify --quiet refs/heads/"${branch_name}"; then
+    echo "[ERROR] ${func_name}: Branch '${branch_name}' already exists."
+    return 2
+  fi
+
+  # Create new branch
+  echo "[INFO] ${func_name}: Executing: git branch ${branch_name}"
+  git branch "${branch_name}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to create branch '${branch_name}'."
+    return ${exit_code}
+  fi
+
+  # Checkout the new branch
+  echo "[INFO] ${func_name}: Executing: git checkout ${branch_name}"
+  git checkout "${branch_name}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to checkout branch '${branch_name}'."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully created and checked out branch '${branch_name}'."
+  return 0
 }
 
 function git-publish() {
-  local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-  git push HEAD "$BRANCH_NAME"
-  git push --set-upstream origin "$BRANCH_NAME"
-}
+  local func_name="${FUNCNAME[0]}"
+  local branch_name=""
+  local exit_code=0
 
-function docker-cp() {
-  local container_id=$1
-  local executing_file_path=$2
-  docker cp $container_id:$executing_file_path .
-}
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name}"
+    echo "[INFO] ${func_name}: This function pushes the current branch to remote and sets up tracking."
+    echo "[INFO] ${func_name}: Example: ${func_name}"
+    return 0
+  fi
 
-function docker-build() {
-  local tag=$2
-  local path=$1
-  docker build -t $2 $1
+  # No parameters expected for this function
+  if [[ -n "$1" ]]; then
+    echo "[INFO] ${func_name}: Note - this function does not require parameters."
+  fi
+
+  # Get current branch name
+  echo "[INFO] ${func_name}: Getting current branch name..."
+  branch_name=$(git rev-parse --abbrev-ref HEAD)
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to get the current branch name."
+    return ${exit_code}
+  fi
+
+  # Check if we're on a branch (not in a detached HEAD state)
+  if [[ "${branch_name}" == "HEAD" ]]; then
+    echo "[ERROR] ${func_name}: You are in a detached HEAD state, not on a branch."
+    return 1
+  fi
+
+  echo "[INFO] ${func_name}: Current branch is '${branch_name}'."
+
+  # Push HEAD to remote branch
+  echo "[INFO] ${func_name}: Executing: git push HEAD ${branch_name}"
+  git push HEAD "${branch_name}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to push HEAD to remote branch '${branch_name}'."
+    return ${exit_code}
+  fi
+
+  # Set upstream tracking
+  echo "[INFO] ${func_name}: Executing: git push --set-upstream origin ${branch_name}"
+  git push --set-upstream origin "${branch_name}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to set upstream tracking for branch '${branch_name}'."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully published branch '${branch_name}' to remote."
+  return 0
 }
 
 function configure_git_user() {
@@ -197,6 +575,124 @@ function configure_git_user() {
 }
 
 #==============================================================#
+##          Docker Functions                                  ##
+#==============================================================#
+
+function docker-cp() {
+  local func_name="${FUNCNAME[0]}"
+  local container_id=""
+  local executing_file_path=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <container_id> <file_path_in_container>"
+    echo "[INFO] ${func_name}: This function copies a file from a Docker container to the current directory."
+    echo "[INFO] ${func_name}: Example: ${func_name} abc123def456 /app/config.json"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Container ID is required."
+    return 1
+  fi
+
+  if [[ -z "$2" ]]; then
+    echo "[ERROR] ${func_name}: File path in container is required."
+    return 2
+  fi
+
+  container_id="$1"
+  executing_file_path="$2"
+
+  # Check if container exists
+  echo "[INFO] ${func_name}: Checking if container '${container_id}' exists..."
+  if ! docker ps -a | grep -q "${container_id}"; then
+    echo "[ERROR] ${func_name}: Container '${container_id}' does not exist."
+    return 3
+  fi
+
+  # Execute docker cp
+  echo "[INFO] ${func_name}: Executing: docker cp ${container_id}:${executing_file_path} ."
+  docker cp "${container_id}:${executing_file_path}" .
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to copy '${executing_file_path}' from container '${container_id}'."
+    return ${exit_code}
+  fi
+
+  # Get filename from path
+  local filename=$(basename "${executing_file_path}")
+
+  # Check if file was copied successfully
+  if [[ -e "${filename}" ]]; then
+    echo "[INFO] ${func_name}: Successfully copied '${filename}' to current directory."
+  else
+    echo "[ERROR] ${func_name}: File was not copied. It may not exist in the container."
+    return 4
+  fi
+
+  return 0
+}
+
+function docker-build() {
+  local func_name="${FUNCNAME[0]}"
+  local path=""
+  local tag=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <path> <tag>"
+    echo "[INFO] ${func_name}: This function builds a Docker image from a Dockerfile."
+    echo "[INFO] ${func_name}: Example: ${func_name} ./app my-image:latest"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Path to Dockerfile directory is required."
+    return 1
+  fi
+
+  if [[ -z "$2" ]]; then
+    echo "[ERROR] ${func_name}: Image tag is required."
+    return 2
+  fi
+
+  path="$1"
+  tag="$2"
+
+  # Check if path exists
+  echo "[INFO] ${func_name}: Checking if path '${path}' exists..."
+  if [[ ! -d "${path}" ]]; then
+    echo "[ERROR] ${func_name}: Directory '${path}' does not exist."
+    return 3
+  fi
+
+  # Check if Dockerfile exists in the path
+  echo "[INFO] ${func_name}: Checking if Dockerfile exists in '${path}'..."
+  if [[ ! -f "${path}/Dockerfile" ]]; then
+    echo "[ERROR] ${func_name}: Dockerfile not found in '${path}'."
+    return 4
+  fi
+
+  # Execute docker build
+  echo "[INFO] ${func_name}: Executing: docker build -t ${tag} ${path}"
+  docker build -t "${tag}" "${path}"
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to build Docker image '${tag}' from '${path}'."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully built Docker image '${tag}' from '${path}'."
+  return 0
+}
+
+
+#==============================================================#
 ##          Common Functions                                  ##
 #==============================================================#
 
@@ -229,9 +725,57 @@ EOF
 }
 
 function change_carriage_return() {
-  # 'change_carriage_return' changes the line feed code to the carriage return code.
-  # e.g. change_carriage_return dir_1
-  find $1 -type f -exec dos2unix {} \;
+  # Get function name
+  local func_name="${FUNCNAME[0]}"
+  local target_dir=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <directory>"
+    echo "[INFO] ${func_name}: This function changes line endings from CRLF to LF for all files in a directory."
+    echo "[INFO] ${func_name}: Example: ${func_name} dir_1"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Directory path is required."
+    return 1
+  fi
+
+  target_dir="$1"
+
+  # Check if directory exists
+  echo "[INFO] ${func_name}: Checking if directory '${target_dir}' exists..."
+  if [[ ! -d "${target_dir}" ]]; then
+    echo "[ERROR] ${func_name}: Directory '${target_dir}' does not exist."
+    return 2
+  fi
+
+  # Check if dos2unix is installed
+  echo "[INFO] ${func_name}: Checking if dos2unix is installed..."
+  if ! command -v dos2unix &> /dev/null; then
+    echo "[ERROR] ${func_name}: dos2unix command not found. Please install it first."
+    return 3
+  fi
+
+  # Count number of files to be processed
+  echo "[INFO] ${func_name}: Counting files in '${target_dir}'..."
+  local file_count=$(find "${target_dir}" -type f | wc -l)
+  echo "[INFO] ${func_name}: Found ${file_count} files to process."
+
+  # Execute find and dos2unix
+  echo "[INFO] ${func_name}: Executing: find ${target_dir} -type f -exec dos2unix {} \;"
+  find "${target_dir}" -type f -exec dos2unix {} \;
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to convert line endings."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully converted line endings from CRLF to LF for all files in '${target_dir}'."
+  return 0
 }
 
 function list_available_commands() {

@@ -199,6 +199,7 @@ cython_debug/
 .editorconfig
 env.yml
 env.yaml
+env_staging.yml
 
 ### WSL ###
 *:Zone.Identifier
