@@ -56,11 +56,15 @@ function deploy_cloud_run_container() {
   echo "cmd is here: ${cmd[*]}"
 
   echo "[INFO] ${FUNC_NAME}: Running command: ${cmd[*]}"
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   if ! "${cmd[@]}"; then
     send_discord_notification_about_gcloud_run "失敗…" "コンテナをデプロイできなかったよ…" "red"
     echo "[ERROR] ${FUNC_NAME}: Cloud Run サービス '$image_name' のデプロイに失敗しました。" >&2
     return 1
   fi
+  echo "============================================================================================================"
+  echo ""
 
   send_discord_notification_about_gcloud_run "デプロイしたよ！" "コンテナをデプロイしたよ！" "green"
 }
@@ -139,12 +143,16 @@ function update_env_for_cloud_run_container() {
 
   # gcloud コマンドの実行
   echo "[INFO] ${FUNC_NAME}: Deploying service with image '${image_name}'..."
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   gcloud run deploy "$image_name" \
     --image="gcr.io/${project_id}/${image_name}" \
     --region="$region" \
     --env-vars-file="$env_file";
-  local ret_code=$?
+  echo "============================================================================================================"
+  echo ""
 
+  local ret_code=$?
   if [[ $ret_code -eq 0 ]]; then
     send_discord_notification_about_gcloud_run "更新したよ！" "コンテナの環境変数を更新したよ！" "green"
     echo "[INFO] ${FUNC_NAME}: Service deployed successfully."
@@ -210,6 +218,8 @@ function deploy_cloud_run_function() {
   fi
 
   # gcloud コマンドの実行
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   gcloud functions deploy "$name" \
     --gen2 \
     --runtime=go122 \
@@ -219,6 +229,8 @@ function deploy_cloud_run_function() {
     --trigger-http \
     --allow-unauthenticated \
     --timeout=180s
+  echo "============================================================================================================"
+  echo ""
 
   # コマンド実行結果のチェック
   if [ $? -eq 0 ]; then
@@ -366,6 +378,8 @@ Examples:
   echo "[INFO] Deploying ${FUNCTION_NAME} function..."
 
   # コマンド実行（--set-env-vars は ENV_VARS が空でなければ追加）
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   if [ -n "$ENV_VARS" ]; then
     gcloud functions deploy "${FUNCTION_NAME}" \
       --gen2 \
@@ -392,6 +406,8 @@ Examples:
       --allow-unauthenticated \
       --timeout=180s
   fi
+  echo "============================================================================================================"
+  echo ""
 
   if [ $? -ne 0 ]; then
     send_discord_notification_about_gcloud_run_function "失敗…" "関数をデプロイできなかったよ…" "red"
@@ -459,9 +475,13 @@ function update_env_for_cloud_run_function() {
 
   # gcloud コマンドの実行
   echo "[INFO] ${FUNC_NAME}: Updating service '${service}' with environment variables '${env_vars}'..."
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   gcloud run services update "$service" --region "$region" --update-env-vars "$env_vars"
-  local ret_code=$?
+  echo "============================================================================================================"
+  echo ""
 
+  local ret_code=$?
   if [[ $ret_code -eq 0 ]]; then
     send_discord_notification_about_gcloud_run_function "更新したよ！" "関数の環境変数を更新したよ！" "green"
     echo "[INFO] ${FUNC_NAME}: Service '${service}' updated successfully."
@@ -539,10 +559,14 @@ function update_env_for_cloud_run_service() {
 
   # gcloud コマンドの実行
   echo "[INFO] ${FUNC_NAME}: Updating service '${service}' with environment variables from file '${file_path}'..."
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   gcloud run services update "$service" \
     --project "$project" \
     --region "$region" \
     --env-vars-file="$file_path";
+  echo "============================================================================================================"
+  echo ""
   local ret_code=$?
 
   if [[ $ret_code -eq 0 ]]; then
@@ -581,7 +605,11 @@ function create_cloud_pubsub_topic() {
   local message_retention_duration="${2:-1d}"
   echo "[INFO] ${funcName}: Creating topic '${topic_name}'..."
 
+  echo ""
+  echo "======= Deployments on Google Cloud ========================================================================"
   gcloud pubsub topics create "${topic_name}" --message-retention-duration="${message_retention_duration}"
+  echo "============================================================================================================"
+  echo ""
   local ret=$?
   if [ ${ret} -ne 0 ]; then
     echo "[ERROR] ${funcName}: Failed to create topic '${topic_name}'."
@@ -613,7 +641,11 @@ function list_cloud_pubsub_topics() {
   local filter="name.scope(topic):'${topic_name}'"
 
   echo "[INFO] ${funcName}: Listing topics with filter: ${filter}"
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   gcloud pubsub topics list --filter="${filter}"
+  echo "============================================================================================================"
+  echo ""
   local ret=$?
   if [ ${ret} -ne 0 ]; then
     echo "[ERROR] ${funcName}: Failed to list topics with filter: ${filter}"
@@ -673,7 +705,11 @@ function list_cloud_pubsub_subscriptions() {
   fi
 
   # コマンド実行
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   eval ${cmd}
+  echo "============================================================================================================"
+  echo ""
   local ret=$?
   if [ ${ret} -ne 0 ]; then
     echo "[ERROR] ${funcName}: Failed to list subscriptions."
@@ -742,6 +778,8 @@ function create_cloud_pubsub_subscription() {
   echo "        MIN_RETRY_DELAY=${min_retry_delay}"
   echo "        ACK_DEADLINE=${ack_deadline}"
 
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   gcloud pubsub subscriptions create "${subscription}" \
     --topic="${topic}" \
     --topic-project="${topic_project}" \
@@ -752,6 +790,8 @@ function create_cloud_pubsub_subscription() {
     --max-retry-delay="${max_retry_delay}" \
     --min-retry-delay="${min_retry_delay}" \
     --ack-deadline="${ack_deadline}"
+  echo "============================================================================================================"
+  echo ""
 
   local ret=$?
   if [ ${ret} -ne 0 ]; then
@@ -813,6 +853,8 @@ function delete_cloud_pubsub_subscriptions_and_topics() {
   fi
 
   # サブスクリプションの削除（指定があれば）
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   if [ ${#subscriptions[@]} -gt 0 ]; then
     echo "[INFO] ${funcName}: Deleting subscriptions: ${subscriptions[*]}"
     delete_cloud_pubsub_subscriptions "${subscriptions[@]}"
@@ -822,8 +864,12 @@ function delete_cloud_pubsub_subscriptions_and_topics() {
       return ${ret}
     fi
   fi
+  echo "============================================================================================================"
+  echo ""
 
   # トピックの削除（指定があれば）
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   if [ ${#topics[@]} -gt 0 ]; then
     echo "[INFO] ${funcName}: Deleting topics: ${topics[*]}"
     delete_cloud_pubsub_topics "${topics[@]}"
@@ -833,6 +879,8 @@ function delete_cloud_pubsub_subscriptions_and_topics() {
       return ${ret}
     fi
   fi
+  echo "============================================================================================================"
+  echo ""
 
   echo "[INFO] ${funcName}: All specified subscriptions and topics deleted successfully."
 }
@@ -858,6 +906,8 @@ function delete_cloud_pubsub_subscriptions() {
   fi
 
   # 複数のサブスクリプションをループで削除する
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   for subscription in "$@"; do
     echo "[INFO] ${funcName}: Deleting subscription '${subscription}'..."
     gcloud pubsub subscriptions delete "${subscription}"
@@ -868,6 +918,8 @@ function delete_cloud_pubsub_subscriptions() {
     fi
     echo "[INFO] ${funcName}: Subscription '${subscription}' deleted successfully."
   done
+  echo "============================================================================================================"
+  echo ""
 }
 
 function delete_cloud_pubsub_topics() {
@@ -889,6 +941,8 @@ function delete_cloud_pubsub_topics() {
   fi
 
   # 複数のトピックをループで削除する
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   for topic in "$@"; do
     echo "[INFO] ${funcName}: Deleting topic '${topic}'..."
     gcloud pubsub topics delete "${topic}"
@@ -899,6 +953,8 @@ function delete_cloud_pubsub_topics() {
     fi
     echo "[INFO] ${funcName}: Topic '${topic}' deleted successfully."
   done
+  echo "============================================================================================================"
+  echo ""
 }
 
 function delete_cloud_run_function() {
@@ -944,9 +1000,13 @@ function delete_cloud_run_function() {
 
   # gcloud コマンドの実行
   echo "[INFO] ${FUNC_NAME}: Deleting service '${service_name}' in region '${region}'..."
+  echo ""
+  echo "======= Cloud Pub/Sub on Google Cloud ======================================================================"
   gcloud run services delete "$service_name" --region="$region"
-  local ret_code=$?
+  echo "============================================================================================================"
+  echo ""
 
+  local ret_code=$?
   if [ $ret_code -eq 0 ]; then
     echo "[INFO] ${FUNC_NAME}: Service '${service_name}' deleted successfully."
   else
