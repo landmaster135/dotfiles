@@ -203,6 +203,8 @@ alias go-rmcb='rm -rf ~/.cache/go-build/*'
 # Docker
 alias docker='sudo docker'
 alias dc-b='docker-build .'
+alias dc-run='run_docker_container'
+alias dc-stop='stop_docker_container'
 alias dc-rm='docker rm'
 alias dc-il='docker image ls'
 alias dc-sdf='docker system df'
