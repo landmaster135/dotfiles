@@ -159,6 +159,7 @@ source "$BASH_HOMEDIR/set_env.bash" "$DOTFILE_HOMEDIR/env.yml"
 # Install IaC functions
 export IAC_HOMEDIR=$HOME/dotfiles/iac
 source "$IAC_HOMEDIR/gcloud/init.sh"
+source "$IAC_HOMEDIR/gcloud/ai.sh"
 source "$IAC_HOMEDIR/gcloud/bigquery.sh"
 source "$IAC_HOMEDIR/gcloud/billing.sh"
 source "$IAC_HOMEDIR/gcloud/compute.sh"

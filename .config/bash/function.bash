@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #==============================================================#
-##         New Commands                                      ##
+##         New Commands                                       ##
 #==============================================================#
 function getpids() {
   local func_name="${FUNCNAME[0]}"
@@ -691,6 +691,288 @@ function docker-build() {
   return 0
 }
 
+function run_docker_container() {
+  local func_name="${FUNCNAME[0]}"
+  local container_name=""
+  local env_vars=()
+  local image_name=""
+  local help_flag=false
+  local env_file="env.yml"
+
+  # ヘルプメッセージ表示関数
+  function show_help() {
+    echo "[INFO] ${func_name}: 使用方法:"
+    echo "  ${func_name} --name <コンテナ名> --image <イメージ名> [--env-file <YAMLファイル>] [--env KEY=VALUE] [--help]"
+    echo ""
+    echo "オプション:"
+    echo "  --name     コンテナ名を指定 (必須)"
+    echo "  --image    実行するDockerイメージ名を指定 (必須)"
+    echo "  --env-file 環境変数が記述されたYAMLファイルを指定 (デフォルト: カレントディレクトリのenv.yml)"
+    echo "  --env      追加の環境変数を指定 (複数指定可能)"
+    echo "  --help     このヘルプメッセージを表示"
+    echo ""
+    echo "使用例:"
+    echo "  ${func_name} --name my-container --image nginx"
+    echo "  ${func_name} --name db-server --image mysql --env-file db-env.yml"
+    echo "  ${func_name} --name app --image my-app:latest --env-file app-env.yml --env DEBUG=true"
+  }
+
+  # パラメータが無い場合はヘルプを表示
+  if [ $# -eq 0 ]; then
+    show_help
+    return 1
+  fi
+
+  # パラメータの解析
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --nameの後にコンテナ名を指定してください"
+          return 1
+        fi
+        container_name="$2"
+        shift 2
+        ;;
+      --image)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --imageの後にイメージ名を指定してください"
+          return 1
+        fi
+        image_name="$2"
+        shift 2
+        ;;
+      --env-file)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --env-fileの後にYAMLファイルパスを指定してください"
+          return 1
+        fi
+        env_file="$2"
+        shift 2
+        ;;
+      --env)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --envの後に環境変数を KEY=VALUE 形式で指定してください"
+          return 1
+        fi
+        if [[ ! "$2" =~ ^[A-Za-z0-9_]+=.* ]]; then
+          echo "[ERROR] ${func_name}: 環境変数は KEY=VALUE 形式で指定してください"
+          return 1
+        fi
+        env_vars+=("$2")
+        shift 2
+        ;;
+      --help)
+        help_flag=true
+        shift
+        ;;
+      *)
+        echo "[ERROR] ${func_name}: 不明なオプション: $1"
+        show_help
+        return 1
+        ;;
+    esac
+  done
+
+  # ヘルプフラグが指定されていたらヘルプを表示して終了
+  if $help_flag; then
+    show_help
+    return 0
+  fi
+
+  # 必須パラメータのチェック
+  if [ -z "$container_name" ]; then
+    echo "[ERROR] ${func_name}: コンテナ名(--name)は必須です"
+    return 1
+  fi
+
+  if [ -z "$image_name" ]; then
+    echo "[ERROR] ${func_name}: イメージ名(--image)は必須です"
+    return 1
+  fi
+
+  # YAMLファイルの存在チェック
+  if [ ! -f "$env_file" ]; then
+    echo "[ERROR] ${func_name}: 環境変数ファイル '$env_file' が見つかりません"
+    return 1
+  fi
+
+  # YAMLファイルから環境変数を読み込む
+  echo "[INFO] ${func_name}: 環境変数ファイル '$env_file' から変数を読み込みます"
+
+  # YAMLファイルを解析して環境変数を設定
+  while IFS=: read -r key value; do
+    # 空行や#で始まる行はスキップ
+    if [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]]; then
+      continue
+    fi
+
+    # キーと値からスペースを削除
+    key=$(echo "$key" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    value=$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    # 引用符を削除（シングルクォートとダブルクォート両方）
+    value=$(echo "$value" | sed -e "s/^[\"']*//" -e "s/[\"']*$//")
+
+    # 環境変数を追加
+    if [ -n "$key" ] && [ -n "$value" ]; then
+      echo "[INFO] ${func_name}: 環境変数を追加: $key=$value"
+      env_vars+=("${key}=${value}")
+    fi
+  done < "$env_file"
+
+  # コマンドの組み立て
+  local cmd="docker run --rm -d --name $container_name"
+
+  # 環境変数があれば追加
+  for env_var in "${env_vars[@]}"; do
+    cmd="$cmd -e $env_var"
+  done
+
+  # イメージ名を追加
+  cmd="$cmd $image_name"
+
+  # 実行コマンドの表示
+  echo "[INFO] ${func_name}: 実行コマンド: $cmd"
+
+  # コマンドの実行
+  eval $cmd
+  local exit_code=$?
+
+  # 実行結果の確認
+  if [ $exit_code -ne 0 ]; then
+    echo "[ERROR] ${func_name}: Dockerコンテナの起動に失敗しました (終了コード: $exit_code)"
+    return $exit_code
+  fi
+
+  echo "[INFO] ${func_name}: コンテナ '$container_name' を正常に起動しました"
+  return 0
+}
+
+function stop_docker_container() {
+  local func_name="${FUNCNAME[0]}"
+  local container_name=""
+  local help_flag=false
+  local force_flag=false
+  local time_wait=10
+
+  # ヘルプメッセージ表示関数
+  function show_help() {
+    echo "[INFO] ${func_name}: 使用方法:"
+    echo "  ${func_name} --name <コンテナ名> [--force] [--time <秒数>] [--help]"
+    echo ""
+    echo "オプション:"
+    echo "  --name    停止するコンテナ名を指定 (必須)"
+    echo "  --force   コンテナを強制的に停止する (SIGKILL を送信)"
+    echo "  --time    コンテナが正常に停止するまでの待機時間 (デフォルト: 10秒)"
+    echo "  --help    このヘルプメッセージを表示"
+    echo ""
+    echo "使用例:"
+    echo "  ${func_name} --name my-container"
+    echo "  ${func_name} --name db-server --force"
+    echo "  ${func_name} --name app --time 30"
+  }
+
+  # パラメータが無い場合はヘルプを表示
+  if [ $# -eq 0 ]; then
+    show_help
+    return 1
+  fi
+
+  # パラメータの解析
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --nameの後にコンテナ名を指定してください"
+          return 1
+        fi
+        container_name="$2"
+        shift 2
+        ;;
+      --force)
+        force_flag=true
+        shift
+        ;;
+      --time)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${func_name}: --timeの後に秒数を指定してください"
+          return 1
+        fi
+        if ! [[ "$2" =~ ^[0-9]+$ ]]; then
+          echo "[ERROR] ${func_name}: 待機時間は数値で指定してください"
+          return 1
+        fi
+        time_wait="$2"
+        shift 2
+        ;;
+      --help)
+        help_flag=true
+        shift
+        ;;
+      *)
+        echo "[ERROR] ${func_name}: 不明なオプション: $1"
+        show_help
+        return 1
+        ;;
+    esac
+  done
+
+  # ヘルプフラグが指定されていたらヘルプを表示して終了
+  if $help_flag; then
+    show_help
+    return 0
+  fi
+
+  # 必須パラメータのチェック
+  if [ -z "$container_name" ]; then
+    echo "[ERROR] ${func_name}: コンテナ名(--name)は必須です"
+    return 1
+  fi
+
+  # コンテナの存在確認
+  if ! docker ps -a --format "{{.Names}}" | grep -q "^${container_name}$"; then
+    echo "[ERROR] ${func_name}: コンテナ '$container_name' が見つかりません"
+    return 1
+  fi
+
+  # コンテナが既に停止しているか確認
+  if ! docker ps --format "{{.Names}}" | grep -q "^${container_name}$"; then
+    echo "[INFO] ${func_name}: コンテナ '$container_name' は既に停止しています"
+    return 0
+  fi
+
+  # コマンドの組み立て
+  local cmd="docker stop"
+
+  # 強制停止フラグが設定されていれば
+  if $force_flag; then
+    cmd="docker kill"
+    echo "[INFO] ${func_name}: コンテナを強制停止します"
+  else
+    # 待機時間を指定
+    cmd="$cmd --time=$time_wait"
+  fi
+
+  # コンテナ名を追加
+  cmd="$cmd $container_name"
+
+  # 実行コマンドの表示
+  echo "[INFO] ${func_name}: 実行コマンド: $cmd"
+
+  # コマンドの実行
+  eval $cmd
+  local exit_code=$?
+
+  # 実行結果の確認
+  if [ $exit_code -ne 0 ]; then
+    echo "[ERROR] ${func_name}: コンテナの停止に失敗しました (終了コード: $exit_code)"
+    return $exit_code
+  fi
+
+  echo "[INFO] ${func_name}: コンテナ '$container_name' を正常に停止しました"
+  return 0
+}
 
 #==============================================================#
 ##          Common Functions                                  ##
