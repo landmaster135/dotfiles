@@ -477,13 +477,13 @@ function git-publish() {
   echo "[INFO] ${func_name}: Current branch is '${branch_name}'."
 
   # Push HEAD to remote branch
-  echo "[INFO] ${func_name}: Executing: git push HEAD ${branch_name}"
-  git push HEAD "${branch_name}"
-  exit_code=$?
-  if [[ ${exit_code} -ne 0 ]]; then
-    echo "[ERROR] ${func_name}: Failed to push HEAD to remote branch '${branch_name}'."
-    return ${exit_code}
-  fi
+  # echo "[INFO] ${func_name}: Executing: git push HEAD ${branch_name}"
+  # git push HEAD "${branch_name}"
+  # exit_code=$?
+  # if [[ ${exit_code} -ne 0 ]]; then
+  #   echo "[ERROR] ${func_name}: Failed to push HEAD to remote branch '${branch_name}'."
+  #   return ${exit_code}
+  # fi
 
   # Set upstream tracking
   echo "[INFO] ${func_name}: Executing: git push --set-upstream origin ${branch_name}"
