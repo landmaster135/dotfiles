@@ -225,3 +225,6 @@ export FLUTTER_ROOT="$HOME/fvm/default/"
 export PATH="$PATH:$FLUTTER_ROOT/bin"
 # export FLUTTER_ROOT="$HOME/fvm/versions/3.29.3"
 # export PATH="$PATH:$FLUTTER_ROOT/bin"
+
+# Claude Code
+# alias claude="$HOME/.claude/local/claude"
