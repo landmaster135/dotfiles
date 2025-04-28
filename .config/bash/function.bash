@@ -1082,6 +1082,93 @@ function list_available_commands() {
   compgen -A function | sort | uniq
 }
 
+function find_and_sort() {
+  # ローカル変数の宣言
+  local func_name="${FUNCNAME[0]}"
+  local directory=""
+  local condition=""
+  local show_help=false
+
+  # パラメータの処理
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --help)
+        show_help=true
+        shift
+        ;;
+      --dir=*)
+        directory="${1#*=}"
+        shift
+        ;;
+      --pattern=*)
+        condition="${1#*=}"
+        shift
+        ;;
+      *)
+        echo "[ERROR] ${func_name}: 不明なパラメータ: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  # ヘルプの表示
+  if $show_help; then
+    echo "[INFO] ${func_name}: 使用方法"
+    echo "  ${func_name} --dir=<ディレクトリ> --pattern=<検索パターン>"
+    echo ""
+    echo "  パラメータ:"
+    echo "    --dir=<ディレクトリ>    : 検索するディレクトリのパス"
+    echo "    --pattern=<検索パターン>: 検索するファイル名のパターン（例: \"*.txt\"）"
+    echo "    --help                 : このヘルプメッセージを表示"
+    echo ""
+    echo "  使用例:"
+    echo "    ${func_name} --dir=/home/user/documents --pattern=\"*.pdf\""
+    echo "    ${func_name} --dir=/var/log --pattern=\"*.log\""
+    return 0
+  fi
+
+  # 必須パラメータのチェック
+  if [[ -z "$directory" ]]; then
+    echo "[ERROR] ${func_name}: ディレクトリが指定されていません。--dir=<ディレクトリ> を指定してください。" >&2
+    return 1
+  fi
+
+  if [[ -z "$condition" ]]; then
+    echo "[ERROR] ${func_name}: 検索パターンが指定されていません。--pattern=<検索パターン> を指定してください。" >&2
+    return 1
+  fi
+
+  # ディレクトリの存在チェック
+  if [[ ! -d "$directory" ]]; then
+    echo "[ERROR] ${func_name}: ディレクトリ '$directory' が存在しません。" >&2
+    return 1
+  fi
+
+  # コマンドの実行
+  echo "[INFO] ${func_name}: 実行コマンド: find \"$directory\" -type f -name \"$condition\" | sort"
+
+  # コマンドの実行と結果のキャプチャ
+  local result=$(find "$directory" -type f -name "$condition" 2>&1 | sort)
+
+  # コマンドのエラーチェック
+  if [[ $? -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: コマンド実行中にエラーが発生しました: $result" >&2
+    return 1
+  fi
+
+  # 結果が空かどうかチェック
+  if [[ -z "$result" ]]; then
+    echo "[INFO] ${func_name}: 条件に一致するファイルが見つかりませんでした。"
+    return 0
+  fi
+
+  # 結果の表示
+  echo "$result"
+
+  # 成功
+  return 0
+}
+
 #==============================================================#
 ##          Configuration Functions                           ##
 #==============================================================#
