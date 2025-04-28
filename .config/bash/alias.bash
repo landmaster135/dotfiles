@@ -23,6 +23,7 @@ alias sst='ss -tulpn'
 alias getpids='getpids'
 alias cron_help='cron_help'
 alias compare_json='compare_json'
+alias finds='find_and_sort'
 
 # ls
 alias ls='ls --color=auto'
@@ -86,13 +87,13 @@ alias 777='chmod 777'
 alias scown='sudo chown -c -R $USER:$USER $HOME'
 
 # snippet
-alias sni-co='snippet common;'
-alias sni-apt='snippet apt --commands-for-disk;'
-alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands;'
-alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands;'
-alias sni-go='snippet go --options; snippet go --subcommands;'
-alias sni-ps='snippet psql --commands;'
-alias sni-tm='snippet tmux --options; snippet tmux --subcommands;'
+alias sni-co='snippet common'
+alias sni-apt='snippet apt --commands-for-disk'
+alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands'
+alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands'
+alias sni-go='snippet go --options; snippet go --subcommands'
+alias sni-ps='snippet psql --commands'
+alias sni-tm='snippet tmux --options; snippet tmux --subcommands'
 
 #==============================================================#
 ##          Python aliases                                    ##
@@ -111,10 +112,10 @@ alias pip-grep='pip list | grep -i'
 
 # virtual env
 alias py-ve='python -m venv .venv'
-alias py-va='source .venv/bin/activate; edit-ps1-env -a;'
-alias py-vd='deactivate; edit-ps1-env -d;'
-alias py-vi='py-ve; py-va; pip-id;'
-alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
+alias py-va='source .venv/bin/activate; edit-ps1-env -a'
+alias py-vd='deactivate; edit-ps1-env -d'
+alias py-vi='py-ve; py-va; pip-id'
+alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/'
 
 # uvicorn
 alias uvi='uvicorn src.app:app --reload --host 0.0.0.0 --port 8080'
