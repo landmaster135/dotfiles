@@ -1,8 +1,263 @@
 #!/bin/bash
 
 #==============================================================#
-##         New Commands                                       ##
+##          Common Functions                                  ##
 #==============================================================#
+
+function cron_help() {
+  # 'cron_help' shows how to describe cron.
+  cat << 'EOF'
+cronの書き方:
+
+形式:
+  * * * * * command
+  | | | | |
+  | | | | ----- 曜日 (0-7, 0または7は日曜日)
+  | | | ------- 月 (1-12)
+  | | --------- 日 (1-31)
+  | ----------- 時間 (0-23)
+  ------------- 分 (0-59)
+
+例:
+1. 毎日午前5時に実行:
+   0 5 * * * command
+
+2. 毎時15分ごとに実行:
+   */15 * * * * command
+
+3. 毎週月曜日の午後2時に実行:
+   0 14 * * 1 command
+
+※ 各フィールドで「*」は任意の値を意味します。
+EOF
+}
+
+function change_carriage_return() {
+  # Get function name
+  local func_name="${FUNCNAME[0]}"
+  local target_dir=""
+  local exit_code=0
+
+  # Help parameter handling
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name} <directory>"
+    echo "[INFO] ${func_name}: This function changes line endings from CRLF to LF for all files in a directory."
+    echo "[INFO] ${func_name}: Example: ${func_name} dir_1"
+    return 0
+  fi
+
+  # Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Directory path is required."
+    return 1
+  fi
+
+  target_dir="$1"
+
+  # Check if directory exists
+  echo "[INFO] ${func_name}: Checking if directory '${target_dir}' exists..."
+  if [[ ! -d "${target_dir}" ]]; then
+    echo "[ERROR] ${func_name}: Directory '${target_dir}' does not exist."
+    return 2
+  fi
+
+  # Check if dos2unix is installed
+  echo "[INFO] ${func_name}: Checking if dos2unix is installed..."
+  if ! command -v dos2unix &> /dev/null; then
+    echo "[ERROR] ${func_name}: dos2unix command not found. Please install it first."
+    return 3
+  fi
+
+  # Count number of files to be processed
+  echo "[INFO] ${func_name}: Counting files in '${target_dir}'..."
+  local file_count=$(find "${target_dir}" -type f | wc -l)
+  echo "[INFO] ${func_name}: Found ${file_count} files to process."
+
+  # Execute find and dos2unix
+  echo "[INFO] ${func_name}: Executing: find ${target_dir} -type f -exec dos2unix {} \;"
+  find "${target_dir}" -type f -exec dos2unix {} \;
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to convert line endings."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Successfully converted line endings from CRLF to LF for all files in '${target_dir}'."
+  return 0
+}
+
+function list_available_commands() {
+  echo "==== 利用可能なコマンド一覧 ===="
+  echo "システムパスにあるコマンド:"
+  compgen -c | sort | uniq
+
+  echo ""
+  echo "ビルトイン Bash コマンド:"
+  compgen -b | sort | uniq
+
+  echo ""
+  echo "エイリアス:"
+  alias | sed 's/alias \([^=]*\)=.*/\1/'
+
+  echo ""
+  echo "キーワード:"
+  compgen -k | sort | uniq
+
+  echo ""
+  echo "関数:"
+  compgen -A function | sort | uniq
+}
+
+function find_and_sort() {
+  # ローカル変数の宣言
+  local func_name="${FUNCNAME[0]}"
+  local directory=""
+  local condition=""
+  local show_help=false
+
+  # パラメータの処理
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --help)
+        show_help=true
+        shift
+        ;;
+      --dir=*)
+        directory="${1#*=}"
+        shift
+        ;;
+      --pattern=*)
+        condition="${1#*=}"
+        shift
+        ;;
+      *)
+        echo "[ERROR] ${func_name}: 不明なパラメータ: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  # ヘルプの表示
+  if $show_help; then
+    echo "[INFO] ${func_name}: 使用方法"
+    echo "  ${func_name} --dir=<ディレクトリ> --pattern=<検索パターン>"
+    echo ""
+    echo "  パラメータ:"
+    echo "    --dir=<ディレクトリ>    : 検索するディレクトリのパス"
+    echo "    --pattern=<検索パターン>: 検索するファイル名のパターン（例: \"*.txt\"）"
+    echo "    --help                 : このヘルプメッセージを表示"
+    echo ""
+    echo "  使用例:"
+    echo "    ${func_name} --dir=/home/user/documents --pattern=\"*.pdf\""
+    echo "    ${func_name} --dir=/var/log --pattern=\"*.log\""
+    return 0
+  fi
+
+  # 必須パラメータのチェック
+  if [[ -z "$directory" ]]; then
+    echo "[ERROR] ${func_name}: ディレクトリが指定されていません。--dir=<ディレクトリ> を指定してください。" >&2
+    return 1
+  fi
+
+  if [[ -z "$condition" ]]; then
+    echo "[ERROR] ${func_name}: 検索パターンが指定されていません。--pattern=<検索パターン> を指定してください。" >&2
+    return 1
+  fi
+
+  # ディレクトリの存在チェック
+  if [[ ! -d "$directory" ]]; then
+    echo "[ERROR] ${func_name}: ディレクトリ '$directory' が存在しません。" >&2
+    return 1
+  fi
+
+  # コマンドの実行
+  echo "[INFO] ${func_name}: 実行コマンド: find \"$directory\" -type f -name \"$condition\" | sort"
+
+  # コマンドの実行と結果のキャプチャ
+  local result=$(find "$directory" -type f -name "$condition" 2>&1 | sort)
+
+  # コマンドのエラーチェック
+  if [[ $? -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: コマンド実行中にエラーが発生しました: $result" >&2
+    return 1
+  fi
+
+  # 結果が空かどうかチェック
+  if [[ -z "$result" ]]; then
+    echo "[INFO] ${func_name}: 条件に一致するファイルが見つかりませんでした。"
+    return 0
+  fi
+
+  # 結果の表示
+  echo "$result"
+
+  # 成功
+  return 0
+}
+
+function custom_tree() {
+  # ローカル変数に関数名を格納
+  local func_name="${FUNCNAME[0]}"
+
+  # ヘルプパラメータのチェック
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: カスタムツリービューを表示します"
+    echo "使用方法: ${func_name} [ディレクトリパス] [除外パターン...]"
+    echo "オプション:"
+    echo "  --help                このヘルプメッセージを表示します"
+    echo "使用例:"
+    echo "  ${func_name}          カレントディレクトリのツリーを表示"
+    echo "  ${func_name} /path/to/dir    指定したディレクトリのツリーを表示"
+    echo "  ${func_name} . node_modules  カレントディレクトリから node_modules を除外して表示"
+    return 0
+  fi
+
+  # Default to current directory if no argument is provided
+  local dir="${1:-.}"
+
+  # Check if directory exists
+  if [[ ! -d "$dir" ]]; then
+    echo "[ERROR] ${func_name}: 指定されたディレクトリ '$dir' が存在しません"
+    return 1
+  fi
+
+  # Initialize empty exclusion pattern
+  local exclude_pattern=""
+
+  # Process arguments after the first one as exclusions
+  shift
+  for excl in "$@"; do
+    # Build grep exclusion pattern
+    if [ -n "$exclude_pattern" ]; then
+      exclude_pattern="$exclude_pattern|$excl"
+    else
+      exclude_pattern="$excl"
+    fi
+  done
+
+  # Current directory
+  echo "[INFO] ${func_name}: 現在のディレクトリ: $(pwd)"
+
+  # コマンド表示
+  if [ -n "$exclude_pattern" ]; then
+    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | grep -v \"$exclude_pattern\" | sort | sed..."
+    # Find command with exclusions
+    find "$dir" | grep -v "$exclude_pattern" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
+      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
+      return 1
+    }
+  else
+    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | sort | sed..."
+    # Find command without exclusions
+    find "$dir" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
+      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
+      return 1
+    }
+  fi
+
+  return 0
+}
+
 function getpids() {
   local func_name="${FUNCNAME[0]}"
   local process_pattern=""
@@ -147,6 +402,42 @@ function count_lines_in_dir() {
     echo "[ERROR] ${FUNC_NAME}: 行数のカウント中にエラーが発生しました"
     return 1
   fi
+}
+
+#==============================================================#
+##          Configuration Functions                           ##
+#==============================================================#
+function _append_history_line() {
+  _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
+  _width=$(tput cols)
+
+  printf "%$(( $_width - ${#_date} - 1 ))s" | tr ' ' '-'
+  echo " $_date"
+}
+
+function _current_branch() {
+  _git_branch=$(git branch --show-current 2>/dev/null) && echo "[branch: $_git_branch] "
+}
+
+function edit-ps1-env() {
+  case ${1} in
+    --activate | -a)
+      echo 'Activate venv now......'
+      export _OLD_VIRTUAL_PS1="$MY_PS1"
+      _my_venv_dir='.venv'
+      PS1=${MY_PS1/'$(_append_history_line)'/'$(_append_history_line)'"\[\033[01;31m\]($_my_venv_dir)\[\033[00m\] "}
+      return 0
+      ;;
+    --deactivate | -d)
+      # nothing to do
+      echo 'Deactivate venv now......'
+      return 0
+      ;;
+    *)
+      echo "[ERROR] invalid options: '${1}'"
+      return 1
+      ;;
+  esac
 }
 
 #==============================================================#
@@ -972,300 +1263,6 @@ function stop_docker_container() {
 
   echo "[INFO] ${func_name}: コンテナ '$container_name' を正常に停止しました"
   return 0
-}
-
-#==============================================================#
-##          Common Functions                                  ##
-#==============================================================#
-
-function cron_help() {
-  # 'cron_help' shows how to describe cron.
-  cat << 'EOF'
-cronの書き方:
-
-形式:
-  * * * * * command
-  | | | | |
-  | | | | ----- 曜日 (0-7, 0または7は日曜日)
-  | | | ------- 月 (1-12)
-  | | --------- 日 (1-31)
-  | ----------- 時間 (0-23)
-  ------------- 分 (0-59)
-
-例:
-1. 毎日午前5時に実行:
-   0 5 * * * command
-
-2. 毎時15分ごとに実行:
-   */15 * * * * command
-
-3. 毎週月曜日の午後2時に実行:
-   0 14 * * 1 command
-
-※ 各フィールドで「*」は任意の値を意味します。
-EOF
-}
-
-function change_carriage_return() {
-  # Get function name
-  local func_name="${FUNCNAME[0]}"
-  local target_dir=""
-  local exit_code=0
-
-  # Help parameter handling
-  if [[ "$1" == "--help" ]]; then
-    echo "[INFO] ${func_name}: Usage: ${func_name} <directory>"
-    echo "[INFO] ${func_name}: This function changes line endings from CRLF to LF for all files in a directory."
-    echo "[INFO] ${func_name}: Example: ${func_name} dir_1"
-    return 0
-  fi
-
-  # Parameter validation
-  if [[ -z "$1" ]]; then
-    echo "[ERROR] ${func_name}: Directory path is required."
-    return 1
-  fi
-
-  target_dir="$1"
-
-  # Check if directory exists
-  echo "[INFO] ${func_name}: Checking if directory '${target_dir}' exists..."
-  if [[ ! -d "${target_dir}" ]]; then
-    echo "[ERROR] ${func_name}: Directory '${target_dir}' does not exist."
-    return 2
-  fi
-
-  # Check if dos2unix is installed
-  echo "[INFO] ${func_name}: Checking if dos2unix is installed..."
-  if ! command -v dos2unix &> /dev/null; then
-    echo "[ERROR] ${func_name}: dos2unix command not found. Please install it first."
-    return 3
-  fi
-
-  # Count number of files to be processed
-  echo "[INFO] ${func_name}: Counting files in '${target_dir}'..."
-  local file_count=$(find "${target_dir}" -type f | wc -l)
-  echo "[INFO] ${func_name}: Found ${file_count} files to process."
-
-  # Execute find and dos2unix
-  echo "[INFO] ${func_name}: Executing: find ${target_dir} -type f -exec dos2unix {} \;"
-  find "${target_dir}" -type f -exec dos2unix {} \;
-  exit_code=$?
-  if [[ ${exit_code} -ne 0 ]]; then
-    echo "[ERROR] ${func_name}: Failed to convert line endings."
-    return ${exit_code}
-  fi
-
-  echo "[INFO] ${func_name}: Successfully converted line endings from CRLF to LF for all files in '${target_dir}'."
-  return 0
-}
-
-function list_available_commands() {
-  echo "==== 利用可能なコマンド一覧 ===="
-  echo "システムパスにあるコマンド:"
-  compgen -c | sort | uniq
-
-  echo ""
-  echo "ビルトイン Bash コマンド:"
-  compgen -b | sort | uniq
-
-  echo ""
-  echo "エイリアス:"
-  alias | sed 's/alias \([^=]*\)=.*/\1/'
-
-  echo ""
-  echo "キーワード:"
-  compgen -k | sort | uniq
-
-  echo ""
-  echo "関数:"
-  compgen -A function | sort | uniq
-}
-
-function find_and_sort() {
-  # ローカル変数の宣言
-  local func_name="${FUNCNAME[0]}"
-  local directory=""
-  local condition=""
-  local show_help=false
-
-  # パラメータの処理
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --help)
-        show_help=true
-        shift
-        ;;
-      --dir=*)
-        directory="${1#*=}"
-        shift
-        ;;
-      --pattern=*)
-        condition="${1#*=}"
-        shift
-        ;;
-      *)
-        echo "[ERROR] ${func_name}: 不明なパラメータ: $1" >&2
-        return 1
-        ;;
-    esac
-  done
-
-  # ヘルプの表示
-  if $show_help; then
-    echo "[INFO] ${func_name}: 使用方法"
-    echo "  ${func_name} --dir=<ディレクトリ> --pattern=<検索パターン>"
-    echo ""
-    echo "  パラメータ:"
-    echo "    --dir=<ディレクトリ>    : 検索するディレクトリのパス"
-    echo "    --pattern=<検索パターン>: 検索するファイル名のパターン（例: \"*.txt\"）"
-    echo "    --help                 : このヘルプメッセージを表示"
-    echo ""
-    echo "  使用例:"
-    echo "    ${func_name} --dir=/home/user/documents --pattern=\"*.pdf\""
-    echo "    ${func_name} --dir=/var/log --pattern=\"*.log\""
-    return 0
-  fi
-
-  # 必須パラメータのチェック
-  if [[ -z "$directory" ]]; then
-    echo "[ERROR] ${func_name}: ディレクトリが指定されていません。--dir=<ディレクトリ> を指定してください。" >&2
-    return 1
-  fi
-
-  if [[ -z "$condition" ]]; then
-    echo "[ERROR] ${func_name}: 検索パターンが指定されていません。--pattern=<検索パターン> を指定してください。" >&2
-    return 1
-  fi
-
-  # ディレクトリの存在チェック
-  if [[ ! -d "$directory" ]]; then
-    echo "[ERROR] ${func_name}: ディレクトリ '$directory' が存在しません。" >&2
-    return 1
-  fi
-
-  # コマンドの実行
-  echo "[INFO] ${func_name}: 実行コマンド: find \"$directory\" -type f -name \"$condition\" | sort"
-
-  # コマンドの実行と結果のキャプチャ
-  local result=$(find "$directory" -type f -name "$condition" 2>&1 | sort)
-
-  # コマンドのエラーチェック
-  if [[ $? -ne 0 ]]; then
-    echo "[ERROR] ${func_name}: コマンド実行中にエラーが発生しました: $result" >&2
-    return 1
-  fi
-
-  # 結果が空かどうかチェック
-  if [[ -z "$result" ]]; then
-    echo "[INFO] ${func_name}: 条件に一致するファイルが見つかりませんでした。"
-    return 0
-  fi
-
-  # 結果の表示
-  echo "$result"
-
-  # 成功
-  return 0
-}
-
-function custom_tree() {
-  # ローカル変数に関数名を格納
-  local func_name="${FUNCNAME[0]}"
-
-  # ヘルプパラメータのチェック
-  if [[ "$1" == "--help" ]]; then
-    echo "[INFO] ${func_name}: カスタムツリービューを表示します"
-    echo "使用方法: ${func_name} [ディレクトリパス] [除外パターン...]"
-    echo "オプション:"
-    echo "  --help                このヘルプメッセージを表示します"
-    echo "使用例:"
-    echo "  ${func_name}          カレントディレクトリのツリーを表示"
-    echo "  ${func_name} /path/to/dir    指定したディレクトリのツリーを表示"
-    echo "  ${func_name} . node_modules  カレントディレクトリから node_modules を除外して表示"
-    return 0
-  fi
-
-  # Default to current directory if no argument is provided
-  local dir="${1:-.}"
-
-  # Check if directory exists
-  if [[ ! -d "$dir" ]]; then
-    echo "[ERROR] ${func_name}: 指定されたディレクトリ '$dir' が存在しません"
-    return 1
-  fi
-
-  # Initialize empty exclusion pattern
-  local exclude_pattern=""
-
-  # Process arguments after the first one as exclusions
-  shift
-  for excl in "$@"; do
-    # Build grep exclusion pattern
-    if [ -n "$exclude_pattern" ]; then
-      exclude_pattern="$exclude_pattern|$excl"
-    else
-      exclude_pattern="$excl"
-    fi
-  done
-
-  # Current directory
-  echo "[INFO] ${func_name}: 現在のディレクトリ: $(pwd)"
-
-  # コマンド表示
-  if [ -n "$exclude_pattern" ]; then
-    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | grep -v \"$exclude_pattern\" | sort | sed..."
-    # Find command with exclusions
-    find "$dir" | grep -v "$exclude_pattern" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
-      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
-      return 1
-    }
-  else
-    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | sort | sed..."
-    # Find command without exclusions
-    find "$dir" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
-      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
-      return 1
-    }
-  fi
-
-  return 0
-}
-
-#==============================================================#
-##          Configuration Functions                           ##
-#==============================================================#
-function _append_history_line() {
-  _date="[$(date '+%Y-%m-%d %H:%M:%S %Z')]"
-  _width=$(tput cols)
-
-  printf "%$(( $_width - ${#_date} - 1 ))s" | tr ' ' '-'
-  echo " $_date"
-}
-
-function _current_branch() {
-  _git_branch=$(git branch --show-current 2>/dev/null) && echo "[branch: $_git_branch] "
-}
-
-function edit-ps1-env() {
-  case ${1} in
-    --activate | -a)
-      echo 'Activate venv now......'
-      export _OLD_VIRTUAL_PS1="$MY_PS1"
-      _my_venv_dir='.venv'
-      PS1=${MY_PS1/'$(_append_history_line)'/'$(_append_history_line)'"\[\033[01;31m\]($_my_venv_dir)\[\033[00m\] "}
-      return 0
-      ;;
-    --deactivate | -d)
-      # nothing to do
-      echo 'Deactivate venv now......'
-      return 0
-      ;;
-    *)
-      echo "[ERROR] invalid options: '${1}'"
-      return 1
-      ;;
-  esac
 }
 
 #==============================================================#
