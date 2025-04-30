@@ -5,7 +5,7 @@
 #==============================================================#
 
 # common
-alias tree="pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g'"
+alias tree="custom_tree"
 alias nano='nano -m'
 alias mv='mv -i'
 alias cp='cp -irf'
@@ -186,10 +186,12 @@ alias go-tco-a='go test -coverprofile=coverage.out ./...'
 alias go-tcc-='go test -v -covermode=count -coverpkg='
 alias go-th='go tool cover -html=coverage.out -o coverage.html'
 alias go-tco-ah='go test -coverprofile=coverage.out ./...; go-th'
+alias go-tdl='go tool dist list'
 alias go-b='go build'
 alias go-bo='go build -o'
-alias go-bl='GOOS=linux GOARCH=amd64 go build -o'
-alias go-bw='GOOS=windows GOARCH=amd64 go build -o'
+alias go-bl='GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o'
+alias go-bw='GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o'
+alias go-bm='GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -trimpath -o'
 alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
 alias gofmt-all='gofmt -w ./...'
 alias go-cn='go clean -i -n'

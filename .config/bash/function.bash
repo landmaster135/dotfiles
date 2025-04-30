@@ -1169,6 +1169,69 @@ function find_and_sort() {
   return 0
 }
 
+function custom_tree() {
+  # ローカル変数に関数名を格納
+  local func_name="${FUNCNAME[0]}"
+
+  # ヘルプパラメータのチェック
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: カスタムツリービューを表示します"
+    echo "使用方法: ${func_name} [ディレクトリパス] [除外パターン...]"
+    echo "オプション:"
+    echo "  --help                このヘルプメッセージを表示します"
+    echo "使用例:"
+    echo "  ${func_name}          カレントディレクトリのツリーを表示"
+    echo "  ${func_name} /path/to/dir    指定したディレクトリのツリーを表示"
+    echo "  ${func_name} . node_modules  カレントディレクトリから node_modules を除外して表示"
+    return 0
+  fi
+
+  # Default to current directory if no argument is provided
+  local dir="${1:-.}"
+
+  # Check if directory exists
+  if [[ ! -d "$dir" ]]; then
+    echo "[ERROR] ${func_name}: 指定されたディレクトリ '$dir' が存在しません"
+    return 1
+  fi
+
+  # Initialize empty exclusion pattern
+  local exclude_pattern=""
+
+  # Process arguments after the first one as exclusions
+  shift
+  for excl in "$@"; do
+    # Build grep exclusion pattern
+    if [ -n "$exclude_pattern" ]; then
+      exclude_pattern="$exclude_pattern|$excl"
+    else
+      exclude_pattern="$excl"
+    fi
+  done
+
+  # Current directory
+  echo "[INFO] ${func_name}: 現在のディレクトリ: $(pwd)"
+
+  # コマンド表示
+  if [ -n "$exclude_pattern" ]; then
+    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | grep -v \"$exclude_pattern\" | sort | sed..."
+    # Find command with exclusions
+    find "$dir" | grep -v "$exclude_pattern" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
+      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
+      return 1
+    }
+  else
+    echo "[INFO] ${func_name}: 実行コマンド: find \"$dir\" | sort | sed..."
+    # Find command without exclusions
+    find "$dir" | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g' | sed -E 's/^\(standard input\):[0-9]+://;s/^\.//' 2>/dev/null || {
+      echo "[ERROR] ${func_name}: ツリーの生成中にエラーが発生しました"
+      return 1
+    }
+  fi
+
+  return 0
+}
+
 #==============================================================#
 ##          Configuration Functions                           ##
 #==============================================================#
