@@ -119,6 +119,7 @@ alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__
 
 # uvicorn
 alias uvi='uvicorn src.app:app --reload --host 0.0.0.0 --port 8080'
+alias uvi-ps='ps-grep python'
 alias uvi-kill='sudo lsof -t -i tcp:8080 | xargs kill -9'
 
 # python
@@ -178,14 +179,10 @@ alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
 alias go-r='go run -trimpath'
-alias go-t='go test'
 alias go-tc='go test -cover'
 alias go-tc-a='go test -cover ./...'
-alias go-tco='go test -coverprofile=coverage.out'
-alias go-tco-a='go test -coverprofile=coverage.out ./...'
-alias go-tcc-='go test -v -covermode=count -coverpkg='
-alias go-th='go tool cover -html=coverage.out -o coverage.html'
-alias go-tco-ah='go test -coverprofile=coverage.out ./...; go-th'
+alias go-td-a='go test -v -covermode=count -coverpkg=. ./...'
+alias go-tco-ah='go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out && go tool cover -html=coverage.out -o coverage.html'
 alias go-tdl='go tool dist list'
 alias go-b='go build'
 alias go-bo='go build -o'
