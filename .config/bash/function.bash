@@ -865,6 +865,69 @@ function configure_git_user() {
   return 0
 }
 
+function git-resync() {
+  local func_name="${FUNCNAME[0]}"
+  local my_branch=$1
+
+  # --helpパラメータのチェック
+  if [ "$1" = "--help" ]; then
+    echo "${func_name}: ブランチとmainブランチを同期するコマンド"
+    echo
+    echo "Usage: ${func_name} <branch_name>"
+    echo
+    echo "Example:"
+    echo "  ${func_name} feature/my-feature"
+    echo
+    echo "Description:"
+    echo "  1. mainブランチに移動"
+    echo "  2. mainブランチをpull"
+    echo "  3. 指定したブランチに移動"
+    echo "  4. 指定したブランチをfetch"
+    return 0
+  fi
+
+  # 引数チェック
+  if [ -z "$my_branch" ]; then
+    echo "[ERROR] ${func_name}: ブランチ名を指定してください。"
+    echo "[INFO] ${func_name}: ${func_name} --help で使用方法を確認してください。"
+    return 1
+  fi
+
+  # mainブランチへ移動
+  echo "[INFO] ${func_name}: mainブランチへ移動します。"
+  echo "[INFO] ${func_name}: 実行コマンド: git checkout main"
+  if ! git checkout main; then
+    echo "[ERROR] ${func_name}: mainブランチへの移動に失敗しました。"
+    return 1
+  fi
+
+  # mainブランチをpull
+  echo "[INFO] ${func_name}: mainブランチをpullします。"
+  echo "[INFO] ${func_name}: 実行コマンド: git pull"
+  if ! git pull; then
+    echo "[ERROR] ${func_name}: mainブランチのpullに失敗しました。"
+    return 1
+  fi
+
+  # 指定したブランチへ移動
+  echo "[INFO] ${func_name}: ${my_branch}ブランチへ移動します。"
+  echo "[INFO] ${func_name}: 実行コマンド: git checkout ${my_branch}"
+  if ! git checkout "$my_branch"; then
+    echo "[ERROR] ${func_name}: ${my_branch}ブランチへの移動に失敗しました。"
+    return 1
+  fi
+
+  # 指定したブランチをfetch
+  echo "[INFO] ${func_name}: ${my_branch}ブランチをfetchします。"
+  echo "[INFO] ${func_name}: 実行コマンド: git fetch"
+  if ! git fetch; then
+    echo "[ERROR] ${func_name}: ${my_branch}ブランチのfetchに失敗しました。"
+    return 1
+  fi
+
+  echo "[INFO] ${func_name}: 同期処理が正常に完了しました。"
+}
+
 #==============================================================#
 ##          Docker Functions                                  ##
 #==============================================================#
