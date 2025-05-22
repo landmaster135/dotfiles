@@ -79,6 +79,10 @@ alias git-erase='git-erase'
 alias git-repat='git-repat'
 alias git-nb='git-nb'
 alias git-cfg='configure_git_user'
+alias git-stash-u='git stash -u'
+alias git-stash-l='git stash list'
+alias git-stash-a='git stash apply'
+alias git-stash-d='git stash drop'
 
 # chmod
 alias 644='chmod 644'
