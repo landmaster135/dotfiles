@@ -6,6 +6,8 @@
 - Create functions and methods in small units whenever possible.
 - Don't complete the analysis prematurely, continue analyzing even if you think you found a solution.
 - Keep each file's line count under 1000 lines. Before adding test code, count the number of lines in the file you're planning to add to using the shell command: "awk 'END { print NR }' ". Then, determine whether that number exceeds 1000 using the MCP tool. If it's less than 1000, append to the existing test file. If it's more than 1000, create a new file in the same directory and append to that file.
+- Avoid using hard coding as much as possible.
+- Don’t forget to add logging.
 
 ## Test Driven Development (TDD)
 - When implementing features requested by users, always implement test code for those features as well.

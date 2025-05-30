@@ -6,35 +6,31 @@ function deploy_cloud_run_container() {
   # --help オプションのチェック
   for arg in "$@"; do
     if [ "$arg" = "--help" ]; then
-      echo "[INFO] ${FUNC_NAME}: Usage: ${FUNC_NAME} IMAGE_NAME PROJECT_ID [REGION]"
+      echo "[INFO] ${FUNC_NAME}: Usage: ${FUNC_NAME} IMAGE_NAME PROJECT_ID [REGION] [TIMEOUT] [SERVICE_ACCOUNT] [ALLOWS_UNAUTHENTICATED]"
       echo "  IMAGE_NAME : デプロイする Cloud Run サービスの名前"
       echo "  PROJECT_ID : 対象の GCP プロジェクトID"
       echo "  REGION     : リージョンのサフィックス (例: 'central1' → us-central1, デフォルト: central1)"
       echo "  TIMEOUT    : value for timeout (例: '40m', '1m32s' and so on. '40m' as a default.)"
       echo "  SERVICE_ACCOUNT: サービスアカウントのメールアドレス (例: my-service-account@my-project.iam.gserviceaccount.com)"
+      echo "  ALLOWS_UNAUTHENTICATED: 認証なしアクセスの許可 (true/false, デフォルト: true)"
       echo "[INFO] ${FUNC_NAME}: Notice: API reference URL: https://cloud.google.com/sdk/gcloud/reference/run/deploy"
       return 0
     fi
   done
 
-  # 引数チェック: IMAGE_NAME と PROJECT_ID は必須
-  if [ $# -lt 2 ]; then
-    echo "[ERROR] ${FUNC_NAME}: Usage: ${FUNC_NAME} IMAGE_NAME PROJECT_ID [REGION]" >&2
-    return 1
-  fi
-
-  # 引数チェック: IMAGE_NAME と PROJECT_ID は必須。最大5個の引数を許容。
-  if [ "$#" -lt 2 ] || [ "$#" -gt 5 ]; then
-    echo "[ERROR] ${FUNC_NAME}: Usage: ${FUNC_NAME} IMAGE_NAME PROJECT_ID [REGION] [TIMEOUT] [SERVICE_ACCOUNT]" >&2
+  # 引数チェック: IMAGE_NAME と PROJECT_ID は必須。最大6個の引数を許容。
+  if [ "$#" -lt 2 ] || [ "$#" -gt 6 ]; then
+    echo "[ERROR] ${FUNC_NAME}: Usage: ${FUNC_NAME} IMAGE_NAME PROJECT_ID [REGION] [TIMEOUT] [SERVICE_ACCOUNT] [ALLOWS_UNAUTHENTICATED]" >&2
     return 1
   fi
 
   # パラメータの設定
   local image_name="$1"
   local project_id="$2"
-  local full_region="${3:us-central1}"
+  local full_region="${3:-us-central1}"
   local timeout="${4:-40m}"
   local service_account="${5:-}"
+  local allows_unauthenticated="${6:-true}"
 
   # gcloud コマンドの存在確認
   if ! command -v gcloud >/dev/null 2>&1; then
@@ -49,7 +45,15 @@ function deploy_cloud_run_container() {
   fi
 
   # Cloud Run サービスのデプロイ処理
-  local cmd=( "gcloud" "run" "deploy" "$image_name" "--source" "." "--project=${project_id}" "--region=${full_region}" "--allow-unauthenticated" "--timeout=${timeout}" )
+  local cmd=( "gcloud" "run" "deploy" "$image_name" "--source" "." "--project=${project_id}" "--region=${full_region}" "--timeout=${timeout}" )
+
+  # 認証オプションの追加
+  if [ "$allows_unauthenticated" = "true" ]; then
+    cmd+=( "--allow-unauthenticated" )
+  else
+    cmd+=( "--no-allow-unauthenticated" )
+  fi
+
   if [ -n "${service_account}" ]; then
     cmd+=( "--service-account=${service_account}" )
   fi
