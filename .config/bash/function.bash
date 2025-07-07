@@ -404,6 +404,168 @@ function count_lines_in_dir() {
   fi
 }
 
+function show_file_permissions() {
+ local func_name="${FUNCNAME[0]}"
+
+ # --helpパラメータの処理
+ if [[ "$1" == "--help" ]]; then
+   echo "[INFO] ${func_name}: 使用方法"
+   echo "  ${func_name} <file_path>"
+   echo ""
+   echo "説明:"
+   echo "  指定されたファイルまたはディレクトリの権限情報を表示します。"
+   echo "  数値形式と文字形式の両方で権限を表示します。"
+   echo ""
+   echo "使用例:"
+   echo "  ${func_name} /etc/passwd"
+   echo "  ${func_name} ~/documents/file.txt"
+   echo "  ${func_name} /usr/bin/ls"
+   echo ""
+   echo "オプション:"
+   echo "  --help    この使用方法を表示します"
+   return 0
+ fi
+
+ # パラメータのチェック
+ if [[ $# -eq 0 ]]; then
+   echo "[ERROR] ${func_name}: ファイルパスが指定されていません。"
+   echo "[INFO] ${func_name}: 使用方法は '${func_name} --help' を参照してください。"
+   return 1
+ fi
+
+ if [[ $# -gt 1 ]]; then
+   echo "[ERROR] ${func_name}: パラメータが多すぎます。ファイルパスを1つ指定してください。"
+   echo "[INFO] ${func_name}: 使用方法は '${func_name} --help' を参照してください。"
+   return 1
+ fi
+
+ local file_path="$1"
+
+ # ファイルの存在チェック
+ if [[ ! -e "$file_path" ]]; then
+   echo "[ERROR] ${func_name}: ファイルまたはディレクトリが存在しません: $file_path"
+   return 1
+ fi
+
+ # ファイル情報の取得
+ echo "[INFO] ${func_name}: 実行コマンド: stat -c '%a %A %n' \"$file_path\""
+ local stat_output
+ if ! stat_output=$(stat -c '%a %A %n' "$file_path" 2>&1); then
+   echo "[ERROR] ${func_name}: ファイル情報の取得に失敗しました: $stat_output"
+   return 1
+ fi
+
+ # 結果の表示
+ echo "[INFO] ${func_name}: ファイル権限情報"
+ echo "----------------------------------------"
+ local octal_perm=$(echo "$stat_output" | cut -d' ' -f1)
+ local symbolic_perm=$(echo "$stat_output" | cut -d' ' -f2)
+ local file_name=$(echo "$stat_output" | cut -d' ' -f3-)
+
+ echo "ファイル: $file_name"
+ echo "数値権限: $octal_perm"
+ echo "文字権限: $symbolic_perm"
+
+ # 権限の詳細説明
+ echo ""
+ echo "権限の詳細:"
+ echo "  所有者: ${symbolic_perm:1:3}"
+ echo "  グループ: ${symbolic_perm:4:3}"
+ echo "  その他: ${symbolic_perm:7:3}"
+
+ # ファイルタイプの表示
+ local file_type="${symbolic_perm:0:1}"
+ case "$file_type" in
+   "-") echo "  タイプ: 通常ファイル" ;;
+   "d") echo "  タイプ: ディレクトリ" ;;
+   "l") echo "  タイプ: シンボリックリンク" ;;
+   "c") echo "  タイプ: キャラクターデバイス" ;;
+   "b") echo "  タイプ: ブロックデバイス" ;;
+   "p") echo "  タイプ: 名前付きパイプ" ;;
+   "s") echo "  タイプ: ソケット" ;;
+   *) echo "  タイプ: 不明 ($file_type)" ;;
+ esac
+
+ return 0
+}
+
+function check_ipv6_config() {
+  local func_name="${FUNCNAME[0]}"
+
+  # ヘルプメッセージの表示
+  if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "[$func_name] [INFO] 使用方法:"
+    echo "  $func_name [キー名]"
+    echo ""
+    echo "[$func_name] [INFO] 説明:"
+    echo "  IPv6の設定値を確認する関数です。"
+    echo "  キー名を指定しない場合は、デフォルトの3つのキーを確認します。"
+    echo ""
+    echo "[$func_name] [INFO] 使用例:"
+    echo "  # デフォルトのキーを確認"
+    echo "  $func_name"
+    echo ""
+    echo "  # 特定のキーを確認"
+    echo "  $func_name net.ipv6.conf.all.disable_ipv6"
+    echo ""
+    echo "  # 複数のキーを確認"
+    echo "  $func_name net.ipv6.conf.all.disable_ipv6 net.ipv6.conf.default.disable_ipv6"
+    echo ""
+    echo "[$func_name] [INFO] デフォルトで確認するキー:"
+    echo "  - net.ipv6.conf.all.disable_ipv6"
+    echo "  - net.ipv6.conf.default.disable_ipv6"
+    echo "  - net.ipv6.conf.lo.disable_ipv6"
+    return 0
+  fi
+
+  # デフォルトのキー一覧
+  local default_keys=(
+    "net.ipv6.conf.all.disable_ipv6"
+    "net.ipv6.conf.default.disable_ipv6"
+    "net.ipv6.conf.lo.disable_ipv6"
+  )
+
+  # 確認するキーの決定
+  local keys_to_check=()
+  if [[ $# -eq 0 ]]; then
+    echo "[$func_name] [INFO] パラメータが指定されていないため、デフォルトのキーを確認します"
+    keys_to_check=("${default_keys[@]}")
+  else
+    keys_to_check=("$@")
+  fi
+
+  # sysctlコマンドの存在確認
+  if ! command -v sysctl >/dev/null 2>&1; then
+    echo "[$func_name] [ERROR] sysctlコマンドが見つかりません"
+    return 1
+  fi
+
+  # 各キーの値を確認
+  local error_count=0
+  echo ""
+  for key in "${keys_to_check[@]}"; do
+    echo "[$func_name] [INFO] 実行コマンド: sysctl $key"
+
+    if sysctl "$key" 2>/dev/null; then
+      # echo "[$func_name] [INFO] キー '$key' の確認が完了しました"
+      echo ""
+    else
+      echo "[$func_name] [ERROR] キー '$key' の取得に失敗しました"
+      ((error_count++))
+    fi
+    echo ""
+  done
+
+  # 結果の表示
+  if [[ $error_count -eq 0 ]]; then
+    echo "[$func_name] [INFO] すべてのキーの確認が正常に完了しました"
+    return 0
+  else
+    echo "[$func_name] [ERROR] $error_count 個のキーで エラーが発生しました"
+    return 1
+  fi
+}
+
 #==============================================================#
 ##          Configuration Functions                           ##
 #==============================================================#
@@ -1495,6 +1657,45 @@ function find_single_quotes() {
 
   echo "[INFO] ${FUNCNAME}: 処理が完了しました"
   return 0
+}
+
+#==============================================================#
+##          Golang Functions                                  ##
+#==============================================================#
+function test_go_func() {
+  # ヘルプ表示
+  if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
+    cat << 'EOF'
+Usage: test_go_func <function_name>
+
+Description:
+  指定されたGo関数に対してテストを実行します。
+
+Arguments:
+  function_name    テストする関数名（必須）
+
+Options:
+  -h, --help      このヘルプメッセージを表示
+
+Examples:
+  test_go_func TestMyFunction
+  test_go_func "TestUser.*"
+
+Note:
+  - 関数名は正規表現として解釈されます
+  - go test -v -run <function_name> が実行されます
+  - 実行前にコマンドが表示されます
+EOF
+    return 0
+  fi
+
+  local f="$1"
+
+  # 実行するコマンドを表示
+  echo "Executing: go test -v -run \"$f\""
+
+  # コマンド実行
+  go test -v -run "$f"
 }
 
 function clean_go_pkg() {
