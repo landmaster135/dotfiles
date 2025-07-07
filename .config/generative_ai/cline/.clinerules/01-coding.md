@@ -5,7 +5,7 @@
 - When adding new functions or methods, write them after the final line of similar function groups within the file.
 - Create functions and methods in small units whenever possible.
 - Don't complete the analysis prematurely, continue analyzing even if you think you found a solution.
-- Keep each file's line count under 1000 lines. Before adding test code, count the number of lines in the file you're planning to add to using the shell command: "awk 'END { print NR }' ". Then, determine whether that number exceeds 1000 using the MCP tool. If it's less than 1000, append to the existing test file. If it's more than 1000, create a new file in the same directory and append to that file.
+- Keep each file's line count under 700 lines. Before adding test code, count the number of lines in the file you're planning to add to using the shell command: "awk 'END { print NR }' ". Then, determine whether that number exceeds 700 using the MCP tool. If it's less than 700, append to the existing test file. If it's more than 700, create a new file in the same directory and append to that file.
 - Avoid using hard coding as much as possible.
 - Don’t forget to add logging.
 
@@ -274,3 +274,7 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 | **Slice Search** | Manual loop for searching in slices | Manual implementation of binary search | `slices.BinarySearch(sortedSlice, target)` (Go 1.21+) |
 | **Slice Operations** | Manual slice concatenation and deletion | Error-prone and inefficient | Use `slices.Concat()`, `slices.Delete()` etc. (Go 1.21+) |
 | **Slice Sorting** | Verbose use of `sort.Slice()` | Lack of type safety, performance issues | `slices.Sort()`, `slices.SortFunc()` (Go 1.21+) |
+| **String Operations** | `if strings.HasPrefix(str, prefix) { str = str[len(prefix):] }` | Conditional prefix removal is verbose and error-prone | `str = strings.TrimPrefix(str, prefix)` |
+| **Function Signature** | `func process() (error, string)` | Error should be the last return value by Go convention | `func process() (string, error)` |
+| **Code Formatting** | `fmt.Printf("long format string with many args", arg1, arg2, arg3, arg4)` | Long function calls with multiple arguments on single line reduce readability | Break arguments into multiple lines with proper indentation |
+| **Static Analysis Warning** | Continuing execution after nil check in tests | Checking for nil but not stopping execution can cause nil pointer dereference | Use `t.Fatal()` or `require.NotNil()` to stop execution after nil check |

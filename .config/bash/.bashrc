@@ -228,3 +228,4 @@ export PATH="$PATH:$FLUTTER_ROOT/bin"
 
 # Claude Code
 # alias claude="$HOME/.claude/local/claude"
+alias claude="/home/nov/.claude/local/claude"
