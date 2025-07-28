@@ -1,10 +1,15 @@
 name: InstallTest
 
-on: [push]
+on:
+  push:
+
+permissions:
+  contents: write
 
 jobs:
   ubuntu:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
     container: ubuntu:latest
     steps:
       - name: Install required packages
@@ -19,6 +24,7 @@ jobs:
 
   fedora:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
     container: fedora:latest
     steps:
       - name: Install required packages
@@ -33,6 +39,7 @@ jobs:
 
   arch:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
     container: archlinux:latest
     steps:
       - name: Update packages
@@ -72,6 +79,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
     container: archlinux:latest
     steps:
       - name: Update packages
@@ -90,6 +98,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
     steps:
       - uses: actions/checkout@v4
       - name: Install PSScriptAnalyzer module

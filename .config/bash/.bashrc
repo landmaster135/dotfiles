@@ -159,6 +159,7 @@ source "$BASH_HOMEDIR/set_env.bash" "$DOTFILE_HOMEDIR/env.yml"
 # Install IaC functions
 export IAC_HOMEDIR=$HOME/dotfiles/iac
 source "$IAC_HOMEDIR/gcloud/init.sh"
+source "$IAC_HOMEDIR/gcloud/ai.sh"
 source "$IAC_HOMEDIR/gcloud/bigquery.sh"
 source "$IAC_HOMEDIR/gcloud/billing.sh"
 source "$IAC_HOMEDIR/gcloud/compute.sh"
@@ -213,3 +214,39 @@ shopt -s globstar
 echo ""
 echo "[INFO] .bashrc process terminated !!"
 echo ""
+
+#==============================================================#
+##          Flutter                                           ##
+#==============================================================#
+
+# Flutter SDK
+export FLUTTER_ROOT=$HOME/flutter
+export PATH=$PATH:$FLUTTER_ROOT/bin
+
+# FVM (Flutter Version Management)
+export PATH="$PATH:$HOME/.pub-cache/bin"
+export FLUTTER_ROOT="$HOME/fvm/default/"
+export PATH="$PATH:$FLUTTER_ROOT/bin"
+# export FLUTTER_ROOT="$HOME/fvm/versions/3.29.3"
+# export PATH="$PATH:$FLUTTER_ROOT/bin"
+
+#==============================================================#
+##          Claude Code                                       ##
+#==============================================================#
+
+# alias claude="$HOME/.claude/local/claude"
+alias claude="/home/nov/.claude/local/claude"
+
+#==============================================================#
+##          Docker                                            ##
+#==============================================================#
+
+# sudo を .bashrc で実行すると、Cline がシェルを使えなくなるのでコメントアウトしておく。
+
+# dockerグループに現在のユーザーを追加
+# sudo usermod -aG docker $USER
+
+# # 変更を反映させるために、以下のコマンドを実行。.bashrcで実行すると無限ループしてしまう
+# echo ""
+# echo "**Notice** Copy and Paste into Shell the following command: 'newgrp docker'"
+# echo ""

@@ -5,7 +5,7 @@
 #==============================================================#
 
 # common
-alias tree="pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/| /g'"
+alias tree="custom_tree"
 alias nano='nano -m'
 alias mv='mv -i'
 alias cp='cp -irf'
@@ -23,6 +23,7 @@ alias sst='ss -tulpn'
 alias getpids='getpids'
 alias cron_help='cron_help'
 alias compare_json='compare_json'
+alias finds='find_and_sort'
 
 # ls
 alias ls='ls --color=auto'
@@ -38,6 +39,7 @@ alias cdh='cd $HOME'
 # env variable
 alias senvy='set_env_from_yaml'
 alias senvy-u='set_env_from_yaml --unset'
+alias unset-gin='unset GIN_MODE'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
@@ -62,22 +64,10 @@ alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access 
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias apt-li='apt list --installed'
 alias apt-ligrep='apt list --installed | grep'
-
-# git
-alias git-chup-main='git-chup-main'
-alias git-ba='git branch -a'
-alias git-bd='git branch -d'
-alias git-a='git add .'
-alias git-c='git commit -m'
-alias git-publish='git-publish'
-alias git-push-afo='git push --all --force origin'
-alias git-res='git reset --soft HEAD^'
-alias git-reh='git reset --hard HEAD'
-alias git-reh-1='git reset --hard HEAD^'
-alias git-erase='git-erase'
-alias git-repat='git-repat'
-alias git-nb='git-nb'
-alias git-cfg='configure_git_user'
+alias apt-u='apt update'
+alias apt-i='apt install'
+alias apt-su='sudo apt update'
+alias apt-si='sudo apt install'
 
 # chmod
 alias 644='chmod 644'
@@ -86,13 +76,37 @@ alias 777='chmod 777'
 alias scown='sudo chown -c -R $USER:$USER $HOME'
 
 # snippet
-alias sni-co='snippet common;'
-alias sni-apt='snippet apt --commands-for-disk;'
-alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands;'
-alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands;'
-alias sni-go='snippet go --options; snippet go --subcommands;'
-alias sni-ps='snippet psql --commands;'
-alias sni-tm='snippet tmux --options; snippet tmux --subcommands;'
+alias sni-co='snippet common'
+alias sni-apt='snippet apt --commands-for-disk'
+alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands'
+alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands'
+alias sni-go='snippet go --options; snippet go --subcommands'
+alias sni-ps='snippet psql --commands'
+alias sni-tm='snippet tmux --options; snippet tmux --subcommands'
+
+#==============================================================#
+##          Git aliases                                       ##
+#==============================================================#
+
+# git
+alias git-renew='git-renew'
+alias git-ba='git branch -a'
+alias git-bd='git branch -d'
+alias git-a='git add .'
+alias git-c='git commit -m'
+alias git-pub='git-publish'
+alias git-push-afo='git push --all --force origin'
+alias git-res='git reset --soft HEAD^'
+alias git-reh='git reset --hard HEAD'
+alias git-reh-1='git reset --hard HEAD^'
+alias git-erase='git-erase'
+alias git-repat='git-repat'
+alias git-nb='git-nb'
+alias git-cfg='configure_git_user'
+alias git-stash-u='git stash -u'
+alias git-stash-l='git stash list'
+alias git-stash-a='git stash apply'
+alias git-stash-d='git stash drop'
 
 #==============================================================#
 ##          Python aliases                                    ##
@@ -111,13 +125,14 @@ alias pip-grep='pip list | grep -i'
 
 # virtual env
 alias py-ve='python -m venv .venv'
-alias py-va='source .venv/bin/activate; edit-ps1-env -a;'
-alias py-vd='deactivate; edit-ps1-env -d;'
-alias py-vi='py-ve; py-va; pip-id;'
-alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/;'
+alias py-va='source .venv/bin/activate; edit-ps1-env -a'
+alias py-vd='deactivate; edit-ps1-env -d'
+alias py-vi='py-ve; py-va; pip-id'
+alias rm-pyc='rm -rf __pycache__/; rm -rf .pytest_cache/; rm -rf src/__pycache__/; rm -rf tests/__pycache__/; py-vd; rm -rf .venv/'
 
 # uvicorn
 alias uvi='uvicorn src.app:app --reload --host 0.0.0.0 --port 8080'
+alias uvi-ps='ps-grep python'
 alias uvi-kill='sudo lsof -t -i tcp:8080 | xargs kill -9'
 
 # python
@@ -177,18 +192,17 @@ alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
 alias go-r='go run -trimpath'
-alias go-t='go test'
+alias go-tf='test_go_func'
 alias go-tc='go test -cover'
 alias go-tc-a='go test -cover ./...'
-alias go-tco='go test -coverprofile=coverage.out'
-alias go-tco-a='go test -coverprofile=coverage.out ./...'
-alias go-tcc-='go test -v -covermode=count -coverpkg='
-alias go-th='go tool cover -html=coverage.out -o coverage.html'
-alias go-tco-ah='go test -coverprofile=coverage.out ./...; go-th'
+alias go-td-a='go test -v -covermode=count -coverpkg=. ./...'
+alias go-tco-ah='go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out && go tool cover -html=coverage.out -o coverage.html'
+alias go-tdl='go tool dist list'
 alias go-b='go build'
 alias go-bo='go build -o'
-alias go-bl='GOOS=linux GOARCH=amd64 go build -o'
-alias go-bw='GOOS=windows GOARCH=amd64 go build -o'
+alias go-bl='GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o'
+alias go-bw='GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -trimpath -o'
+alias go-bm='GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -trimpath -o'
 alias go-predeploy='cd mypkg; go mod init a.b/mypkg; go mod tidy; cd ..'
 alias gofmt-all='gofmt -w ./...'
 alias go-cn='go clean -i -n'
@@ -203,6 +217,9 @@ alias go-rmcb='rm -rf ~/.cache/go-build/*'
 # Docker
 alias docker='sudo docker'
 alias dc-b='docker-build .'
+alias dc-run='run_docker_container'
+alias dc-start='docker start'
+alias dc-stop='stop_docker_container'
 alias dc-rm='docker rm'
 alias dc-il='docker image ls'
 alias dc-sdf='docker system df'
@@ -212,4 +229,30 @@ alias dc-lsic='docker images | grep none | cut -b 50-64'
 alias dc-rmic='docker rmi `docker images | grep none | cut -b 50-64`'
 alias dc-prune='docker system prune -a'
 alias dc-ps='docker ps'
+alias dc-psa='docker ps -a'
 alias dc-cp='docker-cp'
+alias dc-search='docker search'
+
+#==============================================================#
+##          Flutter aliases                                   ##
+#==============================================================#
+
+# Flutter
+alias fl-c='fvm flutter create'
+alias fl-pg='fvm flutter pub get'
+alias fl-r='fvm flutter run'
+alias fl-rw='fvm flutter run -d web-server --web-port=8080'
+alias fl-d='fvm flutter doctor'
+alias fv-d='fvm doctor'
+alias fv-l='fvm list'
+
+#==============================================================#
+##          Devbox aliases                                    ##
+#==============================================================#
+
+# devbox
+alias dv-cpj='create_project_files_for_devbox'
+alias dv-sgb='script_generator_to_build_for_devbox'
+alias dv-siv='service_implementing_viewer_for_devbox'
+alias dv-b='build_tool_for_devbox'
+alias dv-bm='build_mcp_tool_for_devbox'
