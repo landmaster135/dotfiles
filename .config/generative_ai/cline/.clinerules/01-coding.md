@@ -6,6 +6,7 @@
 - Create functions and methods in small units whenever possible.
 - Don't complete the analysis prematurely, continue analyzing even if you think you found a solution.
 - Keep each file's line count under 700 lines. Before adding test code, count the number of lines in the file you're planning to add to using the shell command: "awk 'END { print NR }' ". Then, determine whether that number exceeds 700 using the MCP tool. If it's less than 700, append to the existing test file. If it's more than 700, create a new file in the same directory and append to that file.
+- After finishing implementing, create Git commit message in English. Then, remember displaying that message to user with just using the MCP tool: `get_git_diff`. When creating Git commit messages, write them in English on a single line. At the beginning of the message, add one of the following tags: "feat:", "refactor:", "fix:", "test:", or "doc:".
 - Avoid using hard coding as much as possible.
 - Don’t forget to add logging.
 
@@ -23,6 +24,11 @@ Be mindful of SOLID principles. SOLID acronym stands for five design principles 
 - Liskov Substitution Principle
 - Interface Segregation Principle
 - Dependency Inversion Principle
+
+## Extra things
+
+### Pull request
+- Before creating a pull request, confirm Git commit history with the MCP tool: `get_git_commit_history_with_details`. I need to ask the user for the first date, last date, and keywords (mainly these tags: "feat:", "refactor:", "fix:", "test:", or "doc:") of the commits necessary to create a pull request.
 
 ## Python
 - When creating functions, basically make them as instance methods of a class. When creating test functions, also create a test class and make them as instance methods.
@@ -125,7 +131,7 @@ Use lowercase for the following:
 Special cases:
 - Acronyms (URL, HTTP): all uppercase when public, all lowercase when private
 - Interfaces: single method interfaces are named with the method name + "er"
-- Test files: named as filename + "_test.go"
+- Don't forget that test file names in Go have the suffix '_test'.
 
 ### How to TDD with mock
 1. Code processes with interface for the following process: HTTP request, OS file, runtime calling and etc...
@@ -278,3 +284,4 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 | **Function Signature** | `func process() (error, string)` | Error should be the last return value by Go convention | `func process() (string, error)` |
 | **Code Formatting** | `fmt.Printf("long format string with many args", arg1, arg2, arg3, arg4)` | Long function calls with multiple arguments on single line reduce readability | Break arguments into multiple lines with proper indentation |
 | **Static Analysis Warning** | Continuing execution after nil check in tests | Checking for nil but not stopping execution can cause nil pointer dereference | Use `t.Fatal()` or `require.NotNil()` to stop execution after nil check |
+| **Error Handling** | `fmt.Errorf("invalid input")` | fmt.Errorf is unnecessary when creating simple error messages without formatting | `errors.New("invalid input")` |

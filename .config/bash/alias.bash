@@ -39,6 +39,7 @@ alias cdh='cd $HOME'
 # env variable
 alias senvy='set_env_from_yaml'
 alias senvy-u='set_env_from_yaml --unset'
+alias unset-gin='unset GIN_MODE'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
@@ -63,6 +64,29 @@ alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access 
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
 alias apt-li='apt list --installed'
 alias apt-ligrep='apt list --installed | grep'
+alias apt-u='apt update'
+alias apt-i='apt install'
+alias apt-su='sudo apt update'
+alias apt-si='sudo apt install'
+
+# chmod
+alias 644='chmod 644'
+alias 755='chmod 755'
+alias 777='chmod 777'
+alias scown='sudo chown -c -R $USER:$USER $HOME'
+
+# snippet
+alias sni-co='snippet common'
+alias sni-apt='snippet apt --commands-for-disk'
+alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands'
+alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands'
+alias sni-go='snippet go --options; snippet go --subcommands'
+alias sni-ps='snippet psql --commands'
+alias sni-tm='snippet tmux --options; snippet tmux --subcommands'
+
+#==============================================================#
+##          Git aliases                                       ##
+#==============================================================#
 
 # git
 alias git-renew='git-renew'
@@ -83,21 +107,6 @@ alias git-stash-u='git stash -u'
 alias git-stash-l='git stash list'
 alias git-stash-a='git stash apply'
 alias git-stash-d='git stash drop'
-
-# chmod
-alias 644='chmod 644'
-alias 755='chmod 755'
-alias 777='chmod 777'
-alias scown='sudo chown -c -R $USER:$USER $HOME'
-
-# snippet
-alias sni-co='snippet common'
-alias sni-apt='snippet apt --commands-for-disk'
-alias sni-do='snippet docker --aliases; snippet docker --build-options; snippet docker --options; snippet docker --run-options; snippet docker --subcommands'
-alias sni-gi='snippet git --diff-options; snippet git --options; snippet git --subcommands'
-alias sni-go='snippet go --options; snippet go --subcommands'
-alias sni-ps='snippet psql --commands'
-alias sni-tm='snippet tmux --options; snippet tmux --subcommands'
 
 #==============================================================#
 ##          Python aliases                                    ##
@@ -222,6 +231,7 @@ alias dc-prune='docker system prune -a'
 alias dc-ps='docker ps'
 alias dc-psa='docker ps -a'
 alias dc-cp='docker-cp'
+alias dc-search='docker search'
 
 #==============================================================#
 ##          Flutter aliases                                   ##
@@ -235,3 +245,14 @@ alias fl-rw='fvm flutter run -d web-server --web-port=8080'
 alias fl-d='fvm flutter doctor'
 alias fv-d='fvm doctor'
 alias fv-l='fvm list'
+
+#==============================================================#
+##          Devbox aliases                                    ##
+#==============================================================#
+
+# devbox
+alias dv-cpj='create_project_files_for_devbox'
+alias dv-sgb='script_generator_to_build_for_devbox'
+alias dv-siv='service_implementing_viewer_for_devbox'
+alias dv-b='build_tool_for_devbox'
+alias dv-bm='build_mcp_tool_for_devbox'
