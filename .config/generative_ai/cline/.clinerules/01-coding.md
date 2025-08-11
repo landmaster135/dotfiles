@@ -6,7 +6,6 @@
 - Create functions and methods in small units whenever possible.
 - Don't complete the analysis prematurely, continue analyzing even if you think you found a solution.
 - Keep each file's line count under 700 lines. Before adding test code, count the number of lines in the file you're planning to add to using the shell command: "awk 'END { print NR }' ". Then, determine whether that number exceeds 700 using the MCP tool. If it's less than 700, append to the existing test file. If it's more than 700, create a new file in the same directory and append to that file.
-- After finishing implementing, create Git commit message in English. Then, remember displaying that message to user with just using the MCP tool: `get_git_diff`. When creating Git commit messages, write them in English on a single line. At the beginning of the message, add one of the following tags: "feat:", "refactor:", "fix:", "test:", or "doc:".
 - Avoid using hard coding as much as possible.
 - Don’t forget to add logging.
 
@@ -93,10 +92,15 @@ For boolean variables, use a verb as prefix: isLoading, hasError, canSubmit
 
 ### Points to keep in mind during development
 - When creating functions, basically make them as methods of a struct. When creating test functions, it's fine to make them as standalone functions.
+- Always implement functions, structs, and objects starting from the base level. That is, the next thing you implement should be something that will be called by what you previously implemented.
+- After finishing the CLI tool implementation, update the README within the CLI package before testing the functionality.
+
+### Points to keep in mind during implementing tests and verification
 - When creating test functions, include the name of the struct after the prefix 'Test'. And, add the suffix '_Normal' for test case names that test the normal path.
-- When testing modules, execute with `go test -coverprofile=coverage.out ./...`.
 - Once the implemented test code passes normally, check the coverage and report it to the user. Then, to improve coverage, run the `go tool cover -html=coverage.out -o coverage.html` command. From the results, add test cases to cover the parts of the functionality you were implementing that aren't covered by tests yet.
-- Always make struct field names start with capital letters
+- When testing modules, execute with `go test -coverprofile=coverage.out ./...`.
+- Always run tests for the entire package when executing tests.
+- Use the `go run` command for verification when testing CLI tool functionality.
 
 ### Naming Conventions
 Use PascalCase for the following:
