@@ -31,6 +31,7 @@ alias la='ls -AF --color=auto'
 alias l1='ls -1A --color=auto'
 alias lal='ls -alF --color=auto'
 alias lh='ls $HOME'
+alias lc='ls | wc -l'
 alias lsoi='lsof -i'
 
 # cd

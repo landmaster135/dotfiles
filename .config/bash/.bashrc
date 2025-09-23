@@ -123,8 +123,8 @@ fi
 ##          Base Configuration                                ##
 #==============================================================#
 # Set prompts
-export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+export PS1='$(_append_history_line)\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+export MY_PS1='$(_append_history_line)\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
 
 HOSTNAME="$HOST"
 HISTFILE="${ZDATADIR}/zsh_history"
@@ -235,7 +235,6 @@ export PATH="$PATH:$FLUTTER_ROOT/bin"
 #==============================================================#
 
 # alias claude="$HOME/.claude/local/claude"
-alias claude="/home/nov/.claude/local/claude"
 
 #==============================================================#
 ##          Docker                                            ##
@@ -250,3 +249,7 @@ alias claude="/home/nov/.claude/local/claude"
 # echo ""
 # echo "**Notice** Copy and Paste into Shell the following command: 'newgrp docker'"
 # echo ""
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

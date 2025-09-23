@@ -1,3 +1,12 @@
+# What is important commonly
+- Reply in Japanese.
+- When the context is unclear, confirm with the user.
+- At first, before beginning work, report on the current situation and the next tasks to be performed.
+- When you are tasked with work, search for any MCP tools that you could potentially utilize.
+- Before using the MCP server, clearly state the server name and tool name before requesting permission to use it.
+- When asked a question by a user, respond with the cause of the problem and the solution before editing the file.
+- Before each task, report the situation and the content of the work you're undertaking.
+
 # What is important for coding
 
 ## Common things
@@ -289,4 +298,3 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 | **Code Formatting** | `fmt.Printf("long format string with many args", arg1, arg2, arg3, arg4)` | Long function calls with multiple arguments on single line reduce readability | Break arguments into multiple lines with proper indentation |
 | **Static Analysis Warning** | Continuing execution after nil check in tests | Checking for nil but not stopping execution can cause nil pointer dereference | Use `t.Fatal()` or `require.NotNil()` to stop execution after nil check |
 | **Error Handling** | `fmt.Errorf("invalid input")` | fmt.Errorf is unnecessary when creating simple error messages without formatting | `errors.New("invalid input")` |
-| **Testing Mock** | `mockObj.On("Method", mock.AnythingOfType("string")).Return(value, nil); mockObj.AssertExpectations(t)` | Using testify/mock framework creates complex setup, external dependency, and requires assertion calls with hard coding | Use function field-based mocks: `mockObj.MethodFunc = func(param string) (Type, error) { return value, nil }` |
