@@ -40,7 +40,7 @@ alias cdh='cd $HOME'
 # env variable
 alias senvy='set_env_from_yaml'
 alias senvy-u='set_env_from_yaml --unset'
-alias unset-gin='unset GIN_MODE'
+alias unset-gin='unset GIN_MODE && unset VITE_GIN_MODE'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
