@@ -235,6 +235,10 @@ alias dc-ps='docker ps'
 alias dc-psa='docker ps -a'
 alias dc-cp='docker-cp'
 alias dc-search='docker search'
+alias dc-co-u='docker compose up -d'
+alias dc-co-d='docker compose down'
+alias dc-co-p='docker compose ps'
+alias dc-l='docker logs'
 
 #==============================================================#
 ##          Flutter aliases                                   ##
@@ -259,3 +263,20 @@ alias dv-sgb='script_generator_to_build_for_devbox'
 alias dv-siv='service_implementing_viewer_for_devbox'
 alias dv-b='build_tool_for_devbox'
 alias dv-bm='build_mcp_tool_for_devbox'
+
+#==============================================================#
+##          Codex aliases                                     ##
+#==============================================================#
+
+# codex
+alias cx='codex'
+alias cx-rel='codex resume --last'
+
+#==============================================================#
+##          cagent aliases                                    ##
+#==============================================================#
+
+# cagent
+alias cagent="$HOME/devbox/.config/_agents/cagent"
+alias cg='cagent'
+alias cg-gcm="cagent run $HOME/devbox/.config/cagent/config_linux/git_commit_message_generator/config_prod.yml 'git-commit-message-staged-pwd' --yolo"
