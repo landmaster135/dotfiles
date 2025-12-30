@@ -254,17 +254,6 @@ alias fv-d='fvm doctor'
 alias fv-l='fvm list'
 
 #==============================================================#
-##          Devbox aliases                                    ##
-#==============================================================#
-
-# devbox
-alias dv-cpj='create_project_files_for_devbox'
-alias dv-sgb='script_generator_to_build_for_devbox'
-alias dv-siv='service_implementing_viewer_for_devbox'
-alias dv-b='build_tool_for_devbox'
-alias dv-bm='build_mcp_tool_for_devbox'
-
-#==============================================================#
 ##          Codex aliases                                     ##
 #==============================================================#
 
@@ -279,4 +268,19 @@ alias cx-rel='codex resume --last'
 # cagent
 alias cagent="$HOME/devbox/.config/_agents/cagent"
 alias cg='cagent'
-alias cg-gcm="cagent run $HOME/devbox/.config/cagent/config_linux/git_commit_message_generator/config_prod.yml 'git-commit-message-staged-pwd' --yolo"
+alias cg-git-cm="cagent run $HOME/devbox/.config/cagent/config_linux/git_commit_message_generator/config_prod.yml 'git-commit-message-staged-pwd' --yolo"
+alias cg-git-pr="cagent run $HOME/devbox/.config/cagent/config_linux/github_pull_request_creater/config_prod.yml 'new-pull-request-pwd' --yolo"
+alias cg-changelog="cagent run $HOME/devbox/.config/cagent/config_linux/change_log_updater/config_prod.yml 'update-changelog-pwd' --yolo"
+alias cg-mcp-test="cagent run $HOME/devbox/.config/cagent/config_linux/mcp_tool_tester/config_prod.yml 'test-generic-mcp'"
+
+#==============================================================#
+##          Taskfile aliases                                  ##
+#==============================================================#
+
+alias tk-l='task alias'
+alias tk-tc='task test:cov'
+alias tk-tac='task test:all:cov'
+alias tk-r='task run:dev'
+alias tk-fp='task find:pjroot'
+alias tk-fa='task find:agents'
+alias tk-fd='task find:docs'
