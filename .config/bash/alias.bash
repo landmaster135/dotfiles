@@ -272,15 +272,22 @@ alias cg-git-cm="cagent run $HOME/devbox/.config/cagent/config_linux/git_commit_
 alias cg-git-pr="cagent run $HOME/devbox/.config/cagent/config_linux/github_pull_request_creater/config_prod.yml 'new-pull-request-pwd' --yolo"
 alias cg-changelog="cagent run $HOME/devbox/.config/cagent/config_linux/change_log_updater/config_prod.yml 'update-changelog-pwd' --yolo"
 alias cg-mcp-test="cagent run $HOME/devbox/.config/cagent/config_linux/mcp_tool_tester/config_prod.yml 'test-generic-mcp'"
+alias cg-create="cagent run $HOME/devbox/.config/cagent/config_linux/cagent_creator/config_prod.yml 'create-workflow'"
+alias cg-md-fmt="cagent run $HOME/devbox/.config/cagent/config_linux/markdown_formatter/config_prod.yml 'format-text'"
 
 #==============================================================#
 ##          Taskfile aliases                                  ##
 #==============================================================#
 
 alias tk-l='task alias'
+alias tk-c='task check'
 alias tk-tc='task test:cov'
 alias tk-tac='task test:all:cov'
 alias tk-r='task run:dev'
-alias tk-fp='task find:pjroot'
+alias tk-rb='task run:backend'
+alias tk-b='task build'
+alias tk-bm='task build:mcp'
+alias tk-fr='task find:pjroot'
 alias tk-fa='task find:agents'
 alias tk-fd='task find:docs'
+alias tk-fsql='task find:sql'

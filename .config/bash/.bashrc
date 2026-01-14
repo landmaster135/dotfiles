@@ -216,6 +216,88 @@ echo "[INFO] .bashrc process terminated !!"
 echo ""
 
 #==============================================================#
+##         Terminal Background                                ##
+#==============================================================#
+
+# ディレクトリパスに基づいて背景色を取得する関数
+function get_bg_color_for_directory() {
+  local COLOR_MAPPINGS=(
+    "$HOME/dathub" "#311a0a"               # orange
+    "$HOME/db-server-brewery" "#0a280f"    # green
+    "$HOME/devbox" "#0c2c31"               # turquoise
+    "$HOME/dotfiles" "#312c0a"             # yellow
+    "$HOME/notion-synchronizer" "#200a31"  # purple
+  )
+
+  # デフォルトの背景色（マッチしないディレクトリ用）
+  local DEFAULT_BG_COLOR="#0a1528"
+
+  local current_dir="$1"
+  local max_match_length=0
+  local matched_color=""
+
+  # COLOR_MAPPINGS配列を2つずつ処理（パスと色のペア）
+  for ((i=0; i<${#COLOR_MAPPINGS[@]}; i+=2)); do
+    local path_pattern="${COLOR_MAPPINGS[i]}"
+    local color="${COLOR_MAPPINGS[i+1]}"
+
+    # 現在のディレクトリがパターンにマッチするかチェック
+    if [[ "$current_dir" == "$path_pattern"* ]]; then
+      local match_length=${#path_pattern}
+      if [ $match_length -gt $max_match_length ]; then
+        max_match_length=$match_length
+        matched_color="$color"
+      fi
+    fi
+  done
+
+  if [ -n "$matched_color" ]; then
+    echo "$matched_color"
+  else
+    echo "$DEFAULT_BG_COLOR"
+  fi
+}
+
+# 背景色を変更する関数
+function change_terminal_bg_color() {
+  local color="$1"
+
+  # 16進数カラーコードをRGBに変換
+  local hex_color="${color#\#}"
+  local r=$((16#${hex_color:0:2}))
+  local g=$((16#${hex_color:2:2}))
+  local b=$((16#${hex_color:4:2}))
+
+  # ターミナルの背景色を変更（OSC 11 エスケープシーケンス）
+  printf "\033]11;rgb:%02x/%02x/%02x\007" "$r" "$g" "$b"
+}
+
+# ディレクトリ変更時に呼ばれる関数
+function auto_change_bg_color() {
+  local new_color=$(get_bg_color_for_directory "$PWD")
+  change_terminal_bg_color "$new_color"
+}
+
+# chpwd フックを設定（zsh用）
+if [[ -n "$ZSH_VERSION" ]]; then
+  autoload -Uz add-zsh-hook
+  add-zsh-hook chpwd auto_change_bg_color
+fi
+
+# PROMPT_COMMAND を設定（bash用）
+if [[ -n "$BASH_VERSION" ]]; then
+  # 既存のPROMPT_COMMANDがある場合は追加
+  if [[ -n "$PROMPT_COMMAND" ]]; then
+    PROMPT_COMMAND="auto_change_bg_color; $PROMPT_COMMAND"
+  else
+    PROMPT_COMMAND="auto_change_bg_color"
+  fi
+fi
+
+# 初回実行（スクリプト読み込み時に現在のディレクトリの色を適用）
+auto_change_bg_color
+
+#==============================================================#
 ##          Flutter                                           ##
 #==============================================================#
 
