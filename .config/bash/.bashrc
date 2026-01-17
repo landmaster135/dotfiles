@@ -222,11 +222,12 @@ echo ""
 # ディレクトリパスに基づいて背景色を取得する関数
 function get_bg_color_for_directory() {
   local COLOR_MAPPINGS=(
-    "$HOME/dathub" "#311a0a"               # orange
+    "$HOME/dathub" "#310a14"               # red
     "$HOME/db-server-brewery" "#0a280f"    # green
     "$HOME/devbox" "#0c2c31"               # turquoise
     "$HOME/dotfiles" "#312c0a"             # yellow
     "$HOME/notion-synchronizer" "#200a31"  # purple
+    "$HOME/chrome-forge" "#31140a"         # orange
   )
 
   # デフォルトの背景色（マッチしないディレクトリ用）
