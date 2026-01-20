@@ -280,6 +280,7 @@ alias cg-md-fmt="cagent run $HOME/devbox/.config/cagent/config_linux/markdown_fo
 ##          Taskfile aliases                                  ##
 #==============================================================#
 
+alias tk='task'
 alias tk-l='task alias'
 alias tk-c='task check'
 alias tk-tc='task test:cov'
@@ -292,3 +293,10 @@ alias tk-fr='task find:pjroot'
 alias tk-fa='task find:agents'
 alias tk-fd='task find:docs'
 alias tk-fsql='task find:sql'
+
+alias tq-tce='task text:calculate:extract-working-time'
+alias tq-icpw='task image:convert:png-to-webp'
+alias tq-ircd='task image:rename:content:date'
+alias tq-irch='task image:rename:content:habit'
+alias tq-ircs='task image:rename:convert:screenshot:keeping-saturation'
+alias tq-ircsk='task image:rename:convert:screenshot:keeping-saturation'
