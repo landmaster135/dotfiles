@@ -297,6 +297,7 @@ alias tk-fa='task find:agents'
 alias tk-fd='task find:docs'
 alias tk-fsql='task find:sql'
 
+alias tq-l='arep tq-'
 alias tq-tce='task text:calculate:extract-working-time'
 alias tq-icpw='task image:convert:png-to-webp'
 alias tq-ircd='task image:rename:content:date'

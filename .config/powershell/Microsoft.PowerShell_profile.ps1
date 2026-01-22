@@ -21,18 +21,20 @@ function Show-MyFunctions {
   }
 }
 function tk-la {
-  Show-MyFunctions 'tk*'
-  Show-MyFunctions 'tq*'
+  Show-MyFunctions 'tk-*'
+  Show-MyFunctions 'tq-*'
 }
 
 function tk { task $args }
 function tk-l { task alias }
+function tq-l { Show-MyFunctions 'tq-*' }
 function tq-fme { task file:maneuver:exe }
 function tq-tce { task text:calculate:extract-working-time }
 function tq-icpw { task image:convert:png-to-webp }
+function tq-icpwk { task image:convert:png-to-webp:keeping-saturation }
 function tq-ircd { task image:rename:content:date }
 function tq-irch { task image:rename:content:habit }
-function tq-ircs { task image:rename:convert:screenshot:keeping-saturation }
+function tq-ircs { task image:rename:convert:screenshot }
 function tq-ircsk { task image:rename:convert:screenshot:keeping-saturation }
 
 #==============================================================#
