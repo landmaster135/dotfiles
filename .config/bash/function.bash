@@ -2331,3 +2331,12 @@ function list_root_taskfiles(){
   # echo $HOME/dotfiles/Taskfile.yml
   echo $HOME/notion-synchronizer/Taskfile.yml
 }
+
+function fill_fields_in_root_taskfiles(){
+  local repos=('chrome-forge' 'dathub' 'db-server-brewery' 'devbox' 'notion-synchronizer')
+
+  for repo_name in "${repos[@]}"; do
+    echo "Processing repository: $repo_name"
+    go run ./cmd/cli/taskfile --operation fill --task-type root --taskfile-path "$HOME/$repo_name/Taskfile.yml"
+  done
+}
