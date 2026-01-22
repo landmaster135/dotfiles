@@ -25,8 +25,9 @@ function tk-la {
   Show-MyFunctions 'tq*'
 }
 
-function tk-l { task list $args }
 function tk { task $args }
+function tk-l { task alias }
+function tq-fme { task file:maneuver:exe }
 function tq-tce { task text:calculate:extract-working-time }
 function tq-icpw { task image:convert:png-to-webp }
 function tq-ircd { task image:rename:content:date }

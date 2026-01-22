@@ -2318,3 +2318,16 @@ function upload_file_into_gcs() {
   local dest_dir=$2
   gsutil cp $1 $2
 }
+
+#==============================================================#
+##          Taskfile functions                                ##
+#==============================================================#
+
+function list_root_taskfiles(){
+  echo $HOME/chrome-forge/Taskfile.yml
+  echo $HOME/dathub/Taskfile.yml
+  echo $HOME/db-server-brewery/Taskfile.yml
+  echo $HOME/devbox/Taskfile.yml
+  # echo $HOME/dotfiles/Taskfile.yml
+  echo $HOME/notion-synchronizer/Taskfile.yml
+}
