@@ -36,6 +36,7 @@ function tq-ircd { task image:rename:content:date }
 function tq-irch { task image:rename:content:habit }
 function tq-ircs { task image:rename:convert:screenshot }
 function tq-ircsk { task image:rename:convert:screenshot:keeping-saturation }
+function tq-ircs4 { task image:rename:convert:screenshot:by-4-digits }
 
 #==============================================================#
 ##          Prompt                                            ##
