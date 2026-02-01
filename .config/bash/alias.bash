@@ -307,7 +307,7 @@ alias tq-ircd='task image:rename:content:date'
 alias tq-irch='task image:rename:content:habit'
 alias tq-ircs='task image:rename:convert:screenshot:keeping-saturation'
 alias tq-ircsk='task image:rename:convert:screenshot:keeping-saturation'
-alias tq-ircs4='task image:rename:convert:screenshot:by-4-digits'
+alias tq-ircs4='task image:rename:convert:by-4-digits'
 
 alias tkm-lr='list_root_taskfiles'
 alias tkm-fr='fill_fields_in_root_taskfiles'
