@@ -30,13 +30,13 @@ function tk-l { task alias }
 function tq-l { Show-MyFunctions 'tq-*' }
 function tq-fme { task file:maneuver:exe }
 function tq-tce { task text:calculate:extract-working-time }
-function tq-icpw { task image:convert:png-to-webp }
 function tq-icpwk { task image:convert:png-to-webp:keeping-saturation }
 function tq-ircd { task image:rename:content:date }
 function tq-irch { task image:rename:content:habit }
-function tq-ircs { task image:rename:convert:screenshot }
-function tq-ircsk { task image:rename:convert:screenshot:keeping-saturation }
-function tq-ircs4 { task image:rename:convert:by-4-digits }
+function tq-ivpw { task image:convert:png-to-webp }
+function tq-irvs { task image:rename:convert:screenshot }
+function tq-irvsk { task image:rename:convert:screenshot:keeping-saturation }
+function tq-irv4 { task image:rename:convert:by-4-digits }
 
 #==============================================================#
 ##          Prompt                                            ##
