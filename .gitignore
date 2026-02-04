@@ -191,6 +191,7 @@ cython_debug/
 ### Docker ###
 # .dockerignore
 # Dockerfile
+docker-compose.yml
 
 ### VSCode ###
 .vscode/*

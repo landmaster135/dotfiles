@@ -654,6 +654,36 @@ function git-erase() {
   return 0
 }
 
+function git-post-erase() {
+  local func_name="${FUNCNAME[0]}"
+  local exit_code=0
+
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name}"
+    echo "[INFO] ${func_name}: Creates 'backup/origin-main' from origin/main and force-pushes local main with lease."
+    return 0
+  fi
+
+  echo "[INFO] ${func_name}: Creating backup branch 'backup/origin-main' from origin/main..."
+  git branch backup/origin-main origin/main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to create backup branch. Aborting."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Force-pushing local main with lease..."
+  git push --force-with-lease origin main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Force push failed."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Completed backup creation and force push."
+  return 0
+}
+
 function git-repat() {
   local func_name="${FUNCNAME[0]}"
   local pat=""
