@@ -27,12 +27,14 @@ function tk-la {
 
 function tk { task $args }
 function tk-l { task alias }
+function tk-vd { task -v --dry $args }
 function tq-l { Show-MyFunctions 'tq-*' }
 function tq-fme { task file:maneuver:exe }
 function tq-tce { task text:calculate:extract-working-time }
 function tq-icpwk { task image:convert:png-to-webp:keeping-saturation }
 function tq-ircd { task image:rename:content:date }
 function tq-irch { task image:rename:content:habit }
+function tq-ivjw { task image:convert:jpg-to-webp }
 function tq-ivpw { task image:convert:png-to-webp }
 function tq-irvs { task image:rename:convert:screenshot }
 function tq-irvsk { task image:rename:convert:screenshot:keeping-saturation }
