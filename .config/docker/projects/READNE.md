@@ -1,0 +1,13 @@
+# Docker Projects
+
+## Port management
+| Service | Port | TSD Proxy |
+| --- | --- | --- |
+| AdGuard Home | 46073 | 80 |
+| Grafana | 3000 | 36411 |
+| Jellyfin | 8096 | 8899 |
+| Kavita | 5000 | 38977 |
+| Komga | 25600 | 25600 |
+| n8n | 5678 | 5678 |
+| Obsidian | 8090 | 8090 |
+| Qdrant | 6334 | 6334 |
