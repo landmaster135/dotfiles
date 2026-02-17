@@ -341,3 +341,7 @@ __pycache__
 !.linkignore
 !.gitignore
 !.gitkeep
+
+### agents ###
+.agents/tmp/*
+!.agents/tmp/.gitkeep
