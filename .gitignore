@@ -188,12 +188,6 @@ cython_debug/
 # Thumbnails
 ._*
 
-### Docker ###
-# .dockerignore
-# Dockerfile
-docker-compose.yml
-**/docker-compose.yml
-
 ### VSCode ###
 .vscode/*
 
@@ -346,3 +340,9 @@ __pycache__
 ### agents ###
 .agents/tmp/*
 !.agents/tmp/.gitkeep
+
+### Docker ###
+# .dockerignore
+# Dockerfile
+docker-compose.yml
+**/docker-compose.yml
