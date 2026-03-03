@@ -1,0 +1,30 @@
+services:
+  obsidian:
+    image: ghcr.io/sytone/obsidian-remote:latest
+    container_name: obsidian
+    restart: unless-stopped
+    ports:
+      - 8090:8090
+      - 8443:8443
+    volumes:
+      - type: bind
+        source: /home/user/999_app_for_nas/obsidian/vaults
+        target: /vaults
+      - type: bind
+        source: /home/user/999_app_for_nas/obsidian/config
+        target: /config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Tokyo
+      - DOCKER_MODS=linuxserver/mods:universal-git linuxserver/mods:universal-package-install
+      - INSTALL_PACKAGES=fonts-noto-cjk fonts-noto-extra
+      - CUSTOM_PORT=8090
+      - CUSTOM_HTTPS_PORT=8443
+      - CUSTOM_USER=
+      - PASSWORD=
+      - SUBFOLDER=
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "obsidian"
+      tsdproxy.container_port: 8090

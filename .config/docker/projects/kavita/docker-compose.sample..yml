@@ -1,0 +1,21 @@
+# NOT deployable...
+services:
+  kavita:
+    image: jvmilazz0/kavita:latest
+    restart: unless-stopped
+    volumes:
+      - /home/user/999_app_for_nas/kavita/data/art_books:/art_books
+      - /home/user/999_app_for_nas/kavita/data/books:/books
+      - /home/user/999_app_for_nas/kavita/data/comics:/comics
+      - /home/user/999_app_for_nas/kavita/data/health_exam_results:/health_exam_results
+      - /home/user/999_app_for_nas/kavita/data/manuals:/manuals
+      - /home/user/999_app_for_nas/kavita/data/saved/config:/kavita/config # /kavita/config must not be changed
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Tokyo
+    ports:
+      - "38977:5000"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "kavita"
+      tsdproxy.container_port: 38977

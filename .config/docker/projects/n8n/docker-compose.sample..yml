@@ -1,0 +1,23 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_ENCRYPTION_KEY=your_keys_goes_here
+      - GENERIC_TIMEZONE=Asia/Tokyo
+      - TZ=Asia/Tokyo
+      # その他の設定が必要な場合はここに追加
+      # 例: - N8N_EMAIL_MODE=smtp
+      #     - N8N_SMTP_HOST=your_smtp_host
+      #     ...
+    volumes:
+      - n8n_data:/home/user/999_app_for_nas/n8n
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "n8n"
+      tsdproxy.container_port: 5678
+
+volumes:
+  n8n_data:

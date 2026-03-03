@@ -1,0 +1,22 @@
+# NOT deployable...
+services:
+  jellyfin:
+    image: ugreen/jellyfin:v1
+    tty: true
+    restart: always
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - /home/user/999_app_for_nas/jellyfin/resource:/data
+      - /home/user/999_app_for_nas/jellyfin/extension:/config/plugins
+    network_mode: bridge
+    ports:
+      - "8899:8096"
+    environment:
+      - TZ=Asia/Tokyo
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "jellyfin"
+      tsdproxy.container_port: 8899

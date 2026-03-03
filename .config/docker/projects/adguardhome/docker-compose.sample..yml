@@ -1,0 +1,17 @@
+services:
+  adguardhome:
+    image: adguard/adguardhome
+    volumes:
+      - /home/user/999_app_for_nas/adguardhome/config:/opt/adguardhome/conf
+      - /home/user/999_app_for_nas/adguardhome/work:/opt/adguardhome/work
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "46073:80/tcp" # Web interface (initial setup)
+      - "43525:5443/tcp"
+      - "43525:5443/udp"
+      - "42935:68/udp"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "adguardhome"
+      tsdproxy.container_port: 80

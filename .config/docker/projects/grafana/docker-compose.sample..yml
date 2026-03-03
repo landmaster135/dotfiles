@@ -1,0 +1,12 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "36411:3000"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "grafana"
+      tsdproxy.container_port: 36411
+    volumes:
+      - "/home/user/999_app_for_nas/grafana:/var/lib/grafana"

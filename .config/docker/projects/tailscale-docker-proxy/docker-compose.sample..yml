@@ -1,0 +1,14 @@
+services:
+  tailscale-docker-proxy:
+    image: almeidapaulopt/tsdproxy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - datadir:/data
+    restart: unless-stopped
+    environment:
+      - TSDPROXY_AUTHKEY=your_keys_goes_here
+      - TSDPROXY_HOSTNAME=192.168.1.5
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+volumes:
+  datadir:

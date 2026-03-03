@@ -1,0 +1,20 @@
+services:
+  komga:
+    image: gotson/komga
+    container_name: komga
+    volumes:
+      - type: bind
+        source: /home/user/999_app_for_nas/komga/config
+        target: /config
+      - type: bind
+        source: /home/user/999_app_for_nas/komga/data
+        target: /data
+    environment:
+      - TZ=Asia/Tokyo
+    restart: unless-stopped
+    ports:
+      - 25600:25600
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "komga"
+      tsdproxy.container_port: 25600
