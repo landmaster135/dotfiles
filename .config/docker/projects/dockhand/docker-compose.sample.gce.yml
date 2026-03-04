@@ -1,0 +1,21 @@
+name: dockhand
+
+services:
+  dockhand:
+    image: fnsys/dockhand:latest
+    container_name: dockhand
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PORT=3100
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: volume
+        source: dockhand_data
+        target: /app/data
+
+volumes:
+  dockhand_data:
