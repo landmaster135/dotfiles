@@ -1,0 +1,52 @@
+services:
+  memos:
+    image: neosmemo/memos:stable
+    container_name: memos
+    hostname: memos
+    user: "${MEMOSUID:-1000}:${MEMOSGID:-1000}"
+    volumes:
+      - type: bind
+        source: /home/user/999_app_for_nas/memos/data
+        target: /var/opt/memos
+        read_only: false
+    ports:
+      - 5240:5230
+    environment:
+      MEMOS_DRIVER: postgres
+      MEMOS_DSN: 'postgresql://memosuser:memospass@memos-db:5432/memos?sslmode=disable'
+    restart: on-failure:5
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5230/
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "memos"
+      tsdproxy.container_port: 5240
+
+  db:
+    image: postgres:18
+    container_name: memos-db
+    hostname: memos-db
+    mem_limit: 512m
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "memos", "-U", "memosuser"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - type: bind
+        source: /home/user/999_app_for_nas/memos/db
+        target: /var/lib/postgresql
+        read_only: false
+    environment:
+      POSTGRES_DB: memos
+      POSTGRES_USER: memosuser
+      POSTGRES_PASSWORD: memospass
+    restart: on-failure:5
