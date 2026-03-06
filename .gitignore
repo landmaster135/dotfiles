@@ -346,3 +346,4 @@ __pycache__
 # Dockerfile
 docker-compose.yml
 **/docker-compose.yml
+**/.env
