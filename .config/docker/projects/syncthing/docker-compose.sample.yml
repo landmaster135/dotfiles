@@ -1,0 +1,26 @@
+name: syncthing
+
+services:
+  syncthing:
+    image: syncthing/syncthing:latest
+    container_name: syncthing
+    hostname: syncthing-server
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/syncthing/config
+        target: /var/syncthing/config
+        read_only: false
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/syncthing/data
+        target: /var/syncthing/data
+        read_only: false
+    ports:
+      - 8384:8384   # Web UI
+      - 22000:22000/tcp  # ファイル転送
+      - 22000:22000/udp  # ファイル転送
+      - 21027:21027/udp  # ローカル検出
+    restart: unless-stopped
