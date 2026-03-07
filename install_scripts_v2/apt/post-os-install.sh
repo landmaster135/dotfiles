@@ -57,8 +57,20 @@ function install_docker() {
   echo "[INFO] Docker installation completed successfully."
 }
 
+function install_exfat() {
+  if command -v exfat >/dev/null 2>&1; then
+    echo "[INFO] exfat is already installed. Skip installation."
+    return 0
+  fi
+
+  echo "[INFO] Installing exfat..."
+  apt install exfat-fuse exfatprogs -y
+  echo "[INFO] exfat installation completed successfully."
+}
+
 function install_packages() {
   install_docker
+  install_exfat
 }
 
 install_packages

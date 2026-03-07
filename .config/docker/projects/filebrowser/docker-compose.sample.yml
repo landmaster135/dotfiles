@@ -21,10 +21,14 @@ services:
         source: ${VOLUME_DATA_DIR}/filebrowser/config
         target: /config
         read_only: false
-      # ↓ /mnt/hdd01を/srv/hdd01にマウント
+      # /mnt/hdd01を/srv/hdd01にマウント
       - type: bind
         source: /mnt/hdd01
         target: /srv/hdd01
         read_only: false
     environment:
       - TZ=${TZ}
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "filebrowser"
+      tsdproxy.container_port: 8180
