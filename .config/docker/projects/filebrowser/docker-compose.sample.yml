@@ -1,0 +1,25 @@
+name: 'filebrowser'
+
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    user: "${PUID}:${PGID}"
+    ports:
+      - "8180:80"
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/filebrowser/srv
+        target: /srv
+        read_only: false
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/filebrowser/database.db
+        target: /database.db
+        read_only: false
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/filebrowser/filebrowser.json
+        target: /.filebrowser.json
+        read_only: false
+    environment:
+      - TZ=${TZ}

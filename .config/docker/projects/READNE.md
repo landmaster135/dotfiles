@@ -5,6 +5,7 @@
 | --- | --- | --- |
 | AdGuard Home | 46073 | 80 |
 | Dockhand | 3100 | 3100 |
+| File Browser | 8180 | 8180 |
 | Grafana | 3000 | 36411 |
 | Immich | 2283 | 2283 |
 | Jellyfin | 8096 | 8096 |
