@@ -26,6 +26,18 @@ services:
         source: /mnt/hdd01
         target: /srv/hdd01
         read_only: false
+      - type: bind
+        source: /mnt/hdd02
+        target: /srv/hdd02
+        read_only: false
+      - type: bind
+        source: /mnt/hdd03
+        target: /srv/hdd03
+        read_only: false
+      - type: bind
+        source: /mnt/hdd04
+        target: /srv/hdd04
+        read_only: false
     environment:
       - TZ=${TZ}
     labels:
