@@ -4,11 +4,17 @@ services:
     image: tailscale/tailscale:latest
     restart: always
     volumes:
-      - ./tun:/dev/net/tun
-      - ./lib:/var/lib
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/tailscale/tun
+        target: /dev/net/tun
+        read_only: false
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/tailscale/lib
+        target: /var/lib
+        read_only: false
     environment:
-      - TS_AUTH_KEY=your_keys_goes_here
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ROUTES=192.168.1.0/24
+      - TS_AUTH_KEY=${TS_AUTH_KEY}
+      - TS_STATE_DIR=${TS_STATE_DIR}
+      - TS_ROUTES=${TS_ROUTES}
     network_mode: host
     privileged: true
