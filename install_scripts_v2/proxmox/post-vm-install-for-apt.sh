@@ -7,5 +7,4 @@ function install_qemu_guest_agent() {
   sudo systemctl start qemu-guest-agent
 }
 
-# NOT needed ?
-# install_qemu_guest_agent
+install_qemu_guest_agent
