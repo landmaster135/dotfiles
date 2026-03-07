@@ -1,14 +1,19 @@
+name: 'tailscale-docker-proxy'
+
 services:
   tailscale-docker-proxy:
     image: almeidapaulopt/tsdproxy:latest
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - datadir:/data
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: false
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/tailscale_docker_proxy/data
+        target: /data
+        read_only: false
     restart: unless-stopped
     environment:
-      - TSDPROXY_AUTHKEY=your_keys_goes_here
-      - TSDPROXY_HOSTNAME=192.168.1.5
+      - TSDPROXY_AUTHKEY=${TSDPROXY_AUTHKEY}
+      - TSDPROXY_HOSTNAME=${TSDPROXY_HOSTNAME}
       - DOCKER_HOST=unix:///var/run/docker.sock
-
-volumes:
-  datadir:

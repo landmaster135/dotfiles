@@ -17,3 +17,5 @@
 | Obsidian | 8090 | 8090 | - | - |
 | Qdrant | 6334 | 6334 | - | - |
 | Syncthing | 8384 | 8384 | 17 | 60 |
+| Tailscale | - | - | 18 | 157 |
+| Tailscale Docker Proxy | - | - | 17 | 82 |
