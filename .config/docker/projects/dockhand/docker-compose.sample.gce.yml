@@ -5,8 +5,9 @@ services:
     image: fnsys/dockhand:v1.0.20
     container_name: dockhand
     restart: unless-stopped
-    ports:
-      - 3100:3000
+    network_mode: host
+    environment:
+      - PORT=3100
     volumes:
       - type: bind
         source: /var/run/docker.sock
