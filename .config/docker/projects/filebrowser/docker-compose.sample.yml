@@ -14,12 +14,17 @@ services:
         target: /srv
         read_only: false
       - type: bind
-        source: ${VOLUME_DATA_DIR}/filebrowser/database.db
-        target: /database.db
+        source: ${VOLUME_DATA_DIR}/filebrowser/database
+        target: /database
         read_only: false
       - type: bind
-        source: ${VOLUME_DATA_DIR}/filebrowser/filebrowser.json
-        target: /.filebrowser.json
+        source: ${VOLUME_DATA_DIR}/filebrowser/config
+        target: /config
+        read_only: false
+      # ↓ /mnt/hdd01を/srv/hdd01にマウント
+      - type: bind
+        source: /mnt/hdd01
+        target: /srv/hdd01
         read_only: false
     environment:
       - TZ=${TZ}
