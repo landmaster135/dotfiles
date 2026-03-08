@@ -19,6 +19,8 @@ sudo nano /etc/fstab
 cat <<EOF >> /etc/fstab
 UUID=1234-5678  /mnt/hdd01  ext4  defaults  0  2
 EOF
+# ディスクをフォーマットし直した場合は、保存前にデーモンを再起動
+sudo systemctl daemon-reload
 # 保存
 sudo mount -a
 # 設定を確認
@@ -26,5 +28,16 @@ df -h | grep hdd01
 
 # 権限設定
 sudo chown -R 1000:1000 /mnt/hdd01 /mnt/hdd02 /mnt/hdd03 /mnt/hdd04
+sudo mkdir -p /mnt/hdd01/nas_volume
+sudo chmod 755 /mnt/hdd01/nas_volume
+sudo mkdir -p /mnt/hdd02/nas_volume
+sudo chmod 755 /mnt/hdd02/nas_volume
+sudo mkdir -p /mnt/hdd03/nas_volume
+sudo chmod 755 /mnt/hdd03/nas_volume
+sudo mkdir -p /mnt/hdd04/nas_volume
+sudo chmod 755 /mnt/hdd04/nas_volume
+
+sudo mkdir -p /mnt/hdd01/nas_volume/999_app_for_nas
+sudo chmod 755 /mnt/hdd01/nas_volume/999_app_for_nas
 
 echo "Setup complete."

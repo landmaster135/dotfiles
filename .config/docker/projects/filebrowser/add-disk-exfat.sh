@@ -11,7 +11,8 @@ sudo mkfs.exfat /dev/sdb2
 
 # HDDをマウント
 mkdir /mnt/hdd01
-# sudo mount -t exfat -o uid=1000,gid=1000,umask=000 /dev/sdb2 /mnt/hdd01
+# sudo mount -t exfat -o uid=1000,gid=1000,umask=000 /dev/sdf2 /mnt/hdd11
+# sudo mount /dev/sdf2 /mnt/hdd11
 
 # 自動マウント対象に追加
 sudo nano /etc/fstab
