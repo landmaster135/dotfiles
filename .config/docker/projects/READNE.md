@@ -3,6 +3,8 @@
 ## Port management and resource usage
 | Service | Port | TSD Proxy | ram_container_uses_mib | disk_image_uses_mib |
 | --- | --- | --- | --- | --- |
+| DatHub | 5173 | 5173 | 20 | 650 |
+| Devbox | - | - | - | - |
 | AdGuard Home | 46073 | 80 | - | - |
 | Dockhand | 3100 | 3100 | 70 | 635 |
 | File Browser | 8180 | 8180 | 12 | 52 |
