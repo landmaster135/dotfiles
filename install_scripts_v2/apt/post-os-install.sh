@@ -68,9 +68,21 @@ function install_exfat() {
   echo "[INFO] exfat installation completed successfully."
 }
 
+function install_rclone() {
+  if command -v rclone >/dev/null 2>&1; then
+    echo "[INFO] rclone is already installed. Skip installation."
+    return 0
+  fi
+
+  echo "[INFO] Installing rclone..."
+  apt install rclone -y
+  echo "[INFO] rclone installation completed successfully."
+}
+
 function install_packages() {
   install_docker
   install_exfat
+  install_rclone
 }
 
 install_packages
