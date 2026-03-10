@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
-# Usage: sync_nas.sh <operation> [options]
-#   operation:  init | dryrun | run | check | grep | tail
-#   target-dir: ディレクトリ名 (例: 841_VIDEO) ※init/dryrun/run/check は必須
-#   grep の場合: sync_nas.sh grep <date-prefix>
-#     date-prefix 例: "2026/03/10 07:"  "2026/03/10"
+# Usage: rclone_ops.sh [options] <operation> [target-dir | date-prefix]
+#   operation:  init | dryrun | run | check | grep | tail | ls
+#   -t <n>  --transfers の値 (デフォルト: 4)
+#   -m <n>  --multi-thread-streams の値 (デフォルト: 4)
+#   -c <n>  --checkers の値 (デフォルト: 8)
 set -euo pipefail
 
+# ── デフォルト値 ─────────────────────────────────────────
+TRANSFERS=4
+MULTI_THREAD_STREAMS=4
+CHECKERS=8
+
+# ── オプション解析 ────────────────────────────────────────
+while getopts ":t:m:c:" opt; do
+  case "${opt}" in
+    t) TRANSFERS="${OPTARG}" ;;
+    m) MULTI_THREAD_STREAMS="${OPTARG}" ;;
+    c) CHECKERS="${OPTARG}" ;;
+    :) echo "Error: -${OPTARG} には値が必要です" >&2; exit 1 ;;
+    \?) echo "Error: 不明なオプション: -${OPTARG}" >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
 # ── 設定 ────────────────────────────────────────────────
+OPERATION="${1:-}"
 TARGET_DIR="${2:-}"
 SRC_BASE="/mnt/hdd11/nas_volume"
 DST_BASE="/mnt/hdd01/nas_volume"
@@ -18,14 +36,19 @@ RCLONE_COMMON_OPTS=(
   --checksum
   --log-file="${LOG_FILE}"
   -v
-  --transfers=4
-  --multi-thread-streams=4
+  --transfers="${TRANSFERS}"
+  --multi-thread-streams="${MULTI_THREAD_STREAMS}"
 )
 # ────────────────────────────────────────────────────────
 
 usage() {
   cat <<EOF
-Usage: $0 <operation> [target-dir]
+Usage: $0 [options] <operation> [target-dir | date-prefix]
+
+Options:
+  -t <n>  --transfers の値 (デフォルト: 4)
+  -m <n>  --multi-thread-streams の値 (デフォルト: 4)
+  -c <n>  --checkers の値 (デフォルト: 8)
 
 Operations:
   init    コピー先ディレクトリの作成・権限設定
@@ -36,8 +59,8 @@ Operations:
   tail    ログ末尾 10 行を表示
   ls      SRC_BASE と DST_BASE の内容を表示
 
-target-dir: 対象ディレクトリ名 (デフォルト: 841_VIDEO)
-           ※ grep/tail には不要
+target-dir: 対象ディレクトリ名 ※ init/dryrun/run/check は必須
+           ※ grep/tail/ls には不要
 
 grep の date-prefix:
   ログ行の先頭タイムスタンプに対する絞り込み文字列
@@ -46,10 +69,12 @@ grep の date-prefix:
   省略すると日時フィルタなしで全件抽出
 
 Example:
-  $0 init
+  $0 init 841_VIDEO
   $0 dryrun 841_VIDEO
-  $0 run    841_VIDEO
-  $0 check  841_VIDEO
+  $0 -t 8 -m 8 dryrun 841_VIDEO
+  $0 -t 8 -c 16 run 841_VIDEO
+  $0 -t 8 -m 8 -c 16 check 841_VIDEO
+  $0 check 841_VIDEO
   $0 grep "2026/03/10 07:"
   $0 grep "2026/03/10"
   $0 grep
@@ -69,6 +94,7 @@ op_init() {
 
 op_dryrun() {
   echo "==> [dryrun] ドライラン: ${SRC} → ${DST}"
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
   rclone copy "${SRC}" "${DST}" \
     "${RCLONE_COMMON_OPTS[@]}" \
     --dry-run
@@ -77,6 +103,7 @@ op_dryrun() {
 
 op_run() {
   echo "==> [run] 本番コピー: ${SRC} → ${DST}"
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
   rclone copy "${SRC}" "${DST}" \
     "${RCLONE_COMMON_OPTS[@]}"
   echo ""
@@ -90,11 +117,12 @@ op_run() {
 
 op_check() {
   echo "==> [check] 整合性確認: ${SRC} → ${DST}"
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
   rclone check "${SRC}" "${DST}" \
     --one-way \
-    --transfers 4 \
-    --checkers 8 \
-    --multi-thread-streams 4 \
+    --transfers "${TRANSFERS}" \
+    --checkers "${CHECKERS}" \
+    --multi-thread-streams "${MULTI_THREAD_STREAMS}" \
     --progress
   echo "Done: check"
 }
@@ -129,7 +157,6 @@ op_ls() {
 }
 
 # ── エントリポイント ──────────────────────────────────────
-OPERATION="${1:-}"
 if [[ -z "${OPERATION}" ]]; then
   usage
 fi
@@ -145,13 +172,13 @@ case "${OPERATION}" in
 esac
 
 case "${OPERATION}" in
-  init)   op_init   ;;
-  dryrun) op_dryrun ;;
-  run)    op_run    ;;
-  check)  op_check  ;;
-  grep)   op_grep "${2:-}" ;;
-  tail)   op_tail   ;;
-  ls)     op_ls     ;;
+  init)   op_init              ;;
+  dryrun) op_dryrun            ;;
+  run)    op_run               ;;
+  check)  op_check             ;;
+  grep)   op_grep "${2:-}"     ;;
+  tail)   op_tail              ;;
+  ls)     op_ls                ;;
   *)
     echo "Error: 不明な operation: '${OPERATION}'" >&2
     usage
