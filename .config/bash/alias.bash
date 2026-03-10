@@ -110,6 +110,17 @@ alias git-stash-a='git stash apply'
 alias git-stash-d='git stash drop'
 
 #==============================================================#
+##          Tmux aliases                                      ##
+#==============================================================#
+
+# tmux
+alias tm='tmux'
+alias tma='tmux attach'
+alias tmk='tmux kill-session'
+alias tmls='tmux ls'
+alias tm-color='for i in {0..255}; do printf "\x1b[38;5;${i}mcolour${i} \x1b[0m"; if [ $((($i + 1) % 8)) -eq 0 ]; then printf "\n"; fi; done'
+
+#==============================================================#
 ##          Python aliases                                    ##
 #==============================================================#
 
