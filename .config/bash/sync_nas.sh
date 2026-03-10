@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: rclone_ops.sh [options] <operation> [target-dir | date-prefix]
+# Usage: sync_nas.sh [options] <operation> [target-dir | date-prefix]
 #   operation:  init | dryrun | run | check | grep | tail | ls
 #   -t <n>  --transfers の値 (デフォルト: 4)
 #   -m <n>  --multi-thread-streams の値 (デフォルト: 4)
@@ -37,6 +37,7 @@ RCLONE_COMMON_OPTS=(
   --log-file="${LOG_FILE}"
   -v
   --transfers="${TRANSFERS}"
+  --checkers="${CHECKERS}"
   --multi-thread-streams="${MULTI_THREAD_STREAMS}"
 )
 # ────────────────────────────────────────────────────────
@@ -150,10 +151,10 @@ op_tail() {
 
 op_ls() {
   echo "==> [ls] SRC_BASE: ${SRC_BASE}"
-  ls -a "${SRC_BASE}" --color=auto
+  ls -a --color=auto "${SRC_BASE}"
   echo ""
   echo "==> [ls] DST_BASE: ${DST_BASE}"
-  ls -a "${DST_BASE}" --color=auto
+  ls -a --color=auto "${DST_BASE}"
 }
 
 # ── エントリポイント ──────────────────────────────────────
