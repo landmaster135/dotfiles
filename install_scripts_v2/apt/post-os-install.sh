@@ -79,6 +79,11 @@ function install_rclone() {
   echo "[INFO] rclone installation completed successfully."
 }
 
+function install_common() {
+  apt install sysstat -y
+  echo "[INFO] sysstat installation completed successfully."
+}
+
 function install_packages() {
   install_docker
   install_exfat
