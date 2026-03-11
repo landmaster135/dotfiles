@@ -82,12 +82,16 @@ function install_rclone() {
 function install_common() {
   apt install sysstat -y
   echo "[INFO] sysstat installation completed successfully."
+
+  apt install fail2ban -y
+  echo "[INFO] fail2ban installation completed successfully."
 }
 
 function install_packages() {
   install_docker
   install_exfat
   install_rclone
+  install_common
 }
 
 install_packages
