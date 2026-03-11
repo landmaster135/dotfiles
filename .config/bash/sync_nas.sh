@@ -36,6 +36,7 @@ RCLONE_COMMON_OPTS=(
   --checksum
   --log-file="${LOG_FILE}"
   -v
+  --bwlimit="20M"
   --transfers="${TRANSFERS}"
   --checkers="${CHECKERS}"
   --multi-thread-streams="${MULTI_THREAD_STREAMS}"
