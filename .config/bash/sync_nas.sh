@@ -7,16 +7,16 @@
 set -euo pipefail
 
 # ── デフォルト値 ─────────────────────────────────────────
-TRANSFERS=4
-MULTI_THREAD_STREAMS=4
-CHECKERS=8
+TRANSFERS=2
+MULTI_THREAD_STREAMS=2
+CHECKERS=1
 
 # ── オプション解析 ────────────────────────────────────────
 while getopts ":t:m:c:" opt; do
   case "${opt}" in
     t) TRANSFERS="${OPTARG}" ;;
     m) MULTI_THREAD_STREAMS="${OPTARG}" ;;
-    c) CHECKERS="${OPTARG}" ;;
+    # c) CHECKERS="${OPTARG}" ;;   # CPU使用率が上がるので1に固定
     :) echo "Error: -${OPTARG} には値が必要です" >&2; exit 1 ;;
     \?) echo "Error: 不明なオプション: -${OPTARG}" >&2; exit 1 ;;
   esac
