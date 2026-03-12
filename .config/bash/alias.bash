@@ -60,6 +60,9 @@ alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log fil
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
 
+# cpu
+alias iosx='iostat -x'
+
 # apt
 alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
 alias rm-auto='apt-get autoremove' # Remove unnecessary packages that have no dependencies.
