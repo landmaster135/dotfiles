@@ -4,19 +4,22 @@
 #   -t <n>  --transfers の値 (デフォルト: 4)
 #   -m <n>  --multi-thread-streams の値 (デフォルト: 4)
 #   -c <n>  --checkers の値 (デフォルト: 8)
+#   -n <n>  nice -n の値 (デフォルト: 指定なし、省略時は nice なし)
 set -euo pipefail
 
 # ── デフォルト値 ─────────────────────────────────────────
 TRANSFERS=2
 MULTI_THREAD_STREAMS=2
 CHECKERS=1
+NICE_VAL=""
 
 # ── オプション解析 ────────────────────────────────────────
-while getopts ":t:m:c:" opt; do
+while getopts ":t:m:n:" opt; do
   case "${opt}" in
     t) TRANSFERS="${OPTARG}" ;;
     m) MULTI_THREAD_STREAMS="${OPTARG}" ;;
     # c) CHECKERS="${OPTARG}" ;;   # CPU使用率が上がるので1に固定
+    n) NICE_VAL="${OPTARG}" ;;
     :) echo "Error: -${OPTARG} には値が必要です" >&2; exit 1 ;;
     \?) echo "Error: 不明なオプション: -${OPTARG}" >&2; exit 1 ;;
   esac
@@ -31,12 +34,19 @@ DST_BASE="/mnt/hdd01/nas_volume"
 SRC="${SRC_BASE}/${TARGET_DIR}"
 DST="${DST_BASE}/${TARGET_DIR}"
 LOG_FILE="rclone.log"
+# nice コマンドプレフィックス (NICE_VAL が空なら素の rclone)
+if [[ -n "${NICE_VAL}" ]]; then
+  RCLONE_CMD=(nice -n "${NICE_VAL}" rclone)
+else
+  RCLONE_CMD=(rclone)
+fi
+
 RCLONE_COMMON_OPTS=(
   --progress
   --checksum
   --log-file="${LOG_FILE}"
   -v
-  --bwlimit="20M"
+  --bwlimit="30M"
   --transfers="${TRANSFERS}"
   --checkers="${CHECKERS}"
   --multi-thread-streams="${MULTI_THREAD_STREAMS}"
@@ -51,6 +61,7 @@ Options:
   -t <n>  --transfers の値 (デフォルト: 4)
   -m <n>  --multi-thread-streams の値 (デフォルト: 4)
   -c <n>  --checkers の値 (デフォルト: 8)
+  -n <n>  nice -n の値 (デフォルト: 指定なし、省略時は nice なし)
 
 Operations:
   init    コピー先ディレクトリの作成・権限設定
@@ -75,6 +86,8 @@ Example:
   $0 dryrun 841_VIDEO
   $0 -t 8 -m 8 dryrun 841_VIDEO
   $0 -t 8 -c 16 run 841_VIDEO
+  $0 -n 10 run 841_VIDEO
+  $0 -n 19 -t 2 run 841_VIDEO
   $0 -t 8 -m 8 -c 16 check 841_VIDEO
   $0 check 841_VIDEO
   $0 grep "2026/03/10 07:"
@@ -96,8 +109,8 @@ op_init() {
 
 op_dryrun() {
   echo "==> [dryrun] ドライラン: ${SRC} → ${DST}"
-  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
-  rclone copy "${SRC}" "${DST}" \
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}, nice=${NICE_VAL:-none}"
+  "${RCLONE_CMD[@]}" copy "${SRC}" "${DST}" \
     "${RCLONE_COMMON_OPTS[@]}" \
     --dry-run
   echo "Done: dryrun"
@@ -105,9 +118,11 @@ op_dryrun() {
 
 op_run() {
   echo "==> [run] 本番コピー: ${SRC} → ${DST}"
-  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
-  rclone copy "${SRC}" "${DST}" \
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}, nice=${NICE_VAL:-none}"
+
+  "${RCLONE_CMD[@]}" copy "${SRC}" "${DST}" \
     "${RCLONE_COMMON_OPTS[@]}"
+
   echo ""
   echo "==> [run] chown -R 1000:1000 ${DST}"
   sudo chown -R 1000:1000 "${DST}"
@@ -119,8 +134,8 @@ op_run() {
 
 op_check() {
   echo "==> [check] 整合性確認: ${SRC} → ${DST}"
-  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}"
-  rclone check "${SRC}" "${DST}" \
+  echo "    transfers=${TRANSFERS}, checkers=${CHECKERS}, multi-thread-streams=${MULTI_THREAD_STREAMS}, nice=${NICE_VAL:-none}"
+  "${RCLONE_CMD[@]}" check "${SRC}" "${DST}" \
     --one-way \
     --transfers "${TRANSFERS}" \
     --checkers "${CHECKERS}" \
