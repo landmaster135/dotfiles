@@ -1,0 +1,68 @@
+name: "netdata"
+
+services:
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata
+    hostname: ${HOSTNAME}  # ホスト名を環境変数で上書き可能
+    ports:
+      - 19999:19999
+
+    # systemd-journal.plugin など特権が必要なプラグインのために host PID を使用
+    pid: host
+
+    # proc.plugin / go.d.plugin / local-listeners / network-viewer.plugin に必要
+    network_mode: host
+
+    restart: unless-stopped
+
+    cap_add:
+      - SYS_PTRACE  # local-listeners: ポートとプロセスのマッピングに必要
+      - SYS_ADMIN   # cgroups.plugin / network-viewer.plugin に必要
+
+    security_opt:
+      - apparmor:unconfined
+
+    environment:
+      # ヘルスチェックのエンドポイント (デフォルト: /api/v1/info)
+      - NETDATA_HEALTHCHECK_TARGET=cli
+      # 追加パッケージが必要な場合はコメントを外して指定
+      # - NETDATA_EXTRA_DEB_PACKAGES=lm-sensors
+
+    volumes:
+      # --- Netdata 永続データ ---
+      - ${VOLUME_DATA_DIR}/netdata/config:/etc/netdata       # 設定ファイル
+      - ${VOLUME_DATA_DIR}/netdata/lib:/var/lib/netdata      # 長期保存データ
+      - ${VOLUME_DATA_DIR}/netdata/cache:/var/cache/netdata  # キャッシュ
+
+      # --- ホスト情報 ---
+      - /etc/os-release:/host/etc/os-release:ro   # OS情報検出 (netdata)
+      - /etc/passwd:/host/etc/passwd:ro            # ユーザー別リソース監視 (apps.plugin)
+      - /etc/group:/host/etc/group:ro              # グループ別リソース監視 (apps.plugin)
+      - /etc/localtime:/etc/localtime:ro           # タイムゾーン同期
+      - /etc/hostname:/host/etc/hostname:ro        # ホスト名取得
+
+      # --- カーネル・システム情報 ---
+      - /proc:/host/proc:ro             # CPU / メモリ / ネットワーク / ディスク監視 (proc.plugin)
+      - /sys:/host/sys:ro               # cgroups / コンテナ監視 (cgroups.plugin)
+      - /:/host/root:ro,rslave          # マウントポイント監視 (diskspace.plugin)
+
+      # --- systemd ログ監視 ★ メイン目的 ---
+      # systemd-journal.plugin: journald バイナリログの閲覧・探索・分析
+      - /var/log/journal:/host/var/log/journal:ro
+      # /run/log/journal は一時的なジャーナル (永続ジャーナルが無い環境向け)
+      - /run/log/journal:/host/run/log/journal:ro
+      # /var/log 全体: web サーバーログ等も含めて収集 (weblog collector)
+      - /var/log:/host/var/log:ro
+
+      # --- systemd ユニット監視 ---
+      # systemd-units.plugin / go.d/systemdunits: ユニットの状態・有効化情報
+      - /run/dbus:/run/dbus:ro
+
+      # --- Docker 監視 ---
+      # cgroups.plugin / go.d.plugin: コンテナ名前解決・Docker Engine 監視
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "netdata"
+      tsdproxy.container_port: 19999
