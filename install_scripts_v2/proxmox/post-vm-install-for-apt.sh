@@ -8,3 +8,11 @@ function install_qemu_guest_agent() {
 }
 
 install_qemu_guest_agent
+
+function install_common() {
+  sudo apt update
+  sudo apt install -y \
+    htop
+}
+
+install_common
