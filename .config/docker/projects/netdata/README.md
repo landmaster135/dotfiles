@@ -123,3 +123,10 @@ Web UI では **Alerts → Alert Configurations** で確認できる。
 | プラグインが起動しない | `custom-plugins.d` がスキャンされていない | `netdata.conf` の `[global] plugins directory` に追記 |
 | `[plugins] custom-plugins.d = yes` が効かない | Netdata v2 では未実装 | `[global] plugins directory` を使う |
 | アラートが読み込まれない | 参照先チャートが存在しない | プラグインを先に動かす |
+
+## 参考
+
+- [External plugins | Learn Netdata](https://learn.netdata.cloud/docs/developer-and-contributor-corner/external-plugins)
+- [Creating custom plugin in non-orchestrated language - Media Center - Netdata Community Forums](https://community.netdata.cloud/t/creating-custom-plugin-in-non-orchestrated-language/1577)
+- [Configure Health Alerts | Learn Netdata](https://learn.netdata.cloud/docs/alerts-&-notifications/alert-configuration-reference)
+- [Install Netdata with Docker | Learn Netdata](https://learn.netdata.cloud/docs/netdata-agent/installation/docker)
