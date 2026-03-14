@@ -11,4 +11,9 @@ sudo mkdir -p ${VOLUME_DATA_DIR}/memos_staging/db
 sudo chown -R 999:999 ${VOLUME_DATA_DIR}/memos_staging/db
 sudo chmod -R 700 ${VOLUME_DATA_DIR}/memos_staging/db
 
+# For backup
+sudo mkdir -p ${VOLUME_DATA_DIR}/memos_staging/backup
+# For docker-compose stack
+sudo mkdir -p ${VOLUME_DATA_DIR}/memos_staging/stack
+
 echo "Setup complete."
