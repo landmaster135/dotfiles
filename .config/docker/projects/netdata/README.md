@@ -130,3 +130,56 @@ Web UI では **Alerts → Alert Configurations** で確認できる。
 - [Creating custom plugin in non-orchestrated language - Media Center - Netdata Community Forums](https://community.netdata.cloud/t/creating-custom-plugin-in-non-orchestrated-language/1577)
 - [Configure Health Alerts | Learn Netdata](https://learn.netdata.cloud/docs/alerts-&-notifications/alert-configuration-reference)
 - [Install Netdata with Docker | Learn Netdata](https://learn.netdata.cloud/docs/netdata-agent/installation/docker)
+
+# Netdata Discord通知設定手順
+
+## 前提
+
+- Netdata v2.9.0 (Docker)
+- アラートの `to: sysadmin` でDiscordに通知する
+
+## 1. Discord Webhook URLの取得
+Discordで通知を受け取りたいチャンネルで、ウェブフックURLをコピーする
+
+## 2. health_alarm_notify.conf を編集
+
+```bash
+nano ${VOLUME_DATA_DIR}/netdata/config/health_alarm_notify.conf
+```
+
+以下を追記または編集する。補足として、 `to: sysadmin` で設定したアラートはすべて `role_recipients_discord[sysadmin]` に指定したチャンネルに通知される。
+```bash
+# Discord通知を有効化
+SEND_DISCORD="YES"
+# DiscordのWebhook URL
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/XXXXXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+# デフォルトの通知先チャンネル名（ロールが未設定の場合のフォールバック）
+DEFAULT_RECIPIENT_DISCORD="alerts"
+
+# sysadmin ロール宛の通知先チャンネルを明示指定
+role_recipients_discord[sysadmin]="${DEFAULT_RECIPIENT_DISCORD}"
+```
+
+## 3. コンテナを再起動
+
+```bash
+sudo docker compose restart netdata
+```
+
+## 4. 動作テスト
+下記を実行して、Discordの指定チャンネルにテスト通知が届けばOK。
+```bash
+sudo docker exec -it netdata bash -c "
+  export NETDATA_ALARM_NOTIFY_DEBUG=1
+  /usr/libexec/netdata/plugins.d/alarm-notify.sh test
+"
+```
+
+## 複数チャンネルに通知したい場合
+`role_recipients_discord` にスペース区切りで複数チャンネルを指定できる:
+```bash
+role_recipients_discord[sysadmin]="alerts general"
+```
+
+## 参考
+- [Discord | Learn Netdata](https://learn.netdata.cloud/docs/alerts-&-notifications/notifications/agent-dispatched-notifications/discord)
