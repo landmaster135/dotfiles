@@ -1,0 +1,22 @@
+name: "vaultwarden"
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${VAULTWARDEN_DOMAIN:-https://vw.domain.tld}
+      TZ: ${TZ}
+      SIGNUPS_ALLOWED: ${VAULTWARDEN_SIGNUPS_ALLOWED:-false}
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/vaultwarden/data
+        target: /data
+        read_only: false
+    ports:
+      - 127.0.0.1:${VAULTWARDEN_HTTP_PORT}:80
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "vaultwarden"
+      tsdproxy.container_port: ${VAULTWARDEN_HTTP_PORT}

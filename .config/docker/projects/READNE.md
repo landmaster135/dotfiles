@@ -23,6 +23,7 @@
 | Syncthing | 8384 | 8384 | 17 | 60 |
 | Tailscale | - | - | 18 | 157 |
 | Tailscale Docker Proxy | - | - | 17 | 82 |
+| Vaultwarden | 8000 | 8000 | 8 | 316 |
 
 ## Recommendable Build Flow
 
