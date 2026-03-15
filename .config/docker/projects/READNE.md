@@ -18,6 +18,7 @@
 | Memos Postgres Staging | 5241 | 5241 | 43 | 700 |
 | Memos Postgres Staging (DB) | 5441 | - | - | - |
 | Netdata | 19999 | 19999 | 17 | 1490 |
+| NocoDB | 8600 | 8600 | - | - |
 | n8n | 5678 | 5678 | - | - |
 | Obsidian | 8090 | 8090 | - | - |
 | Qdrant | 6334 | 6334 | - | - |
