@@ -47,6 +47,8 @@ services:
         source: ${VOLUME_DATA_DIR}/memos_staging/db
         target: /var/lib/postgresql
         read_only: false
+    ports:
+      - 5441:5432
     environment:
       POSTGRES_DB: memos
       POSTGRES_USER: ${POSTGRES_USER}
