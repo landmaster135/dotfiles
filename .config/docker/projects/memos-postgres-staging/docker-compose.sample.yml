@@ -8,7 +8,7 @@ services:
     user: "${PUID}:${PGID}"
     volumes:
       - type: bind
-        source: ${VOLUME_DATA_DIR}/memos_staging/data
+        source: ${VOLUME_DATA_DIR}/memos-postgres-staging/data
         target: /var/opt/memos
         read_only: false
     ports:
@@ -44,7 +44,7 @@ services:
       retries: 10
     volumes:
       - type: bind
-        source: ${VOLUME_DATA_DIR}/memos_staging/db
+        source: ${VOLUME_DATA_DIR}/memos-postgres-staging/db
         target: /var/lib/postgresql
         read_only: false
     ports:

@@ -5,21 +5,21 @@
 ## 1. この構成でバックアップすべきデータ
 
 - Memosアプリデータ（添付ファイル等）
-  - `${VOLUME_DATA_DIR}/memos_staging/data`
+  - `${VOLUME_DATA_DIR}/memos-postgres-staging/data`
 - PostgreSQLデータディレクトリ
-  - `${VOLUME_DATA_DIR}/memos_staging/db`
+  - `${VOLUME_DATA_DIR}/memos-postgres-staging/db`
 - スタック定義
-  - `${VOLUME_DATA_DIR}/memos_staging/stack/`
+  - `${VOLUME_DATA_DIR}/memos-postgres-staging/stack/`
 
 - 定期バックアップ格納ディレクトリ
-  - `${VOLUME_DATA_DIR}/memos_staging/backup`
+  - `${VOLUME_DATA_DIR}/memos-postgres-staging/backup`
 
 ## 2. 旧PC: バックアップ取得手順
 
 ### 2-1. 論理バックアップ（保険）
 
 ```bash
-ROOT_DIR="${VOLUME_DATA_DIR}/memos_staging"
+ROOT_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging"
 BACKUP_DIR="$ROOT_DIR/backup"
 DUMP_FILE="$BACKUP_DIR/memos_$(date +%F_%H%M%S).dump"
 docker exec -i memos-db \
@@ -31,16 +31,16 @@ sha256sum "$DUMP_FILE" > "${DUMP_FILE}.sha256"
 ### 2-2. サービス停止（整合性確保）
 
 ```bash
-STACK_DIR="${VOLUME_DATA_DIR}/memos_staging/stack"
+STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" down
 ```
 
 ### 2-3. 実データ + 設定をアーカイブ
 
 ```bash
-ROOT_DIR="${VOLUME_DATA_DIR}/memos_staging"
+ROOT_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging"
 BACKUP_TS=$(date +%F_%H%M%S)
-BACKUP_FILE="$ROOT_DIR/memos_staging_migration_${BACKUP_TS}.tar.gz"
+BACKUP_FILE="$ROOT_DIR/memos-postgres-staging-migration-${BACKUP_TS}.tar.gz"
 
 sudo tar czf "$BACKUP_FILE" \
   -C "$ROOT_DIR" \
@@ -55,7 +55,7 @@ sha256sum "$BACKUP_FILE" > "${BACKUP_FILE}.sha256"
 ### 2-4. 旧PCを一旦復帰（必要なら）
 
 ```bash
-STACK_DIR="${VOLUME_DATA_DIR}/memos_staging/stack"
+STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d
 ```
 
@@ -66,28 +66,28 @@ docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up 
 例:
 
 ```bash
-rsync --archive --verbose --human-readable --partial --progress /path/to/memos_staging_migration_*.tar.gz* <new-pc>:/tmp/
+rsync --archive --verbose --human-readable --partial --progress /path/to/memos-postgres-staging-migration-*.tar.gz* <new-pc>:/tmp/
 rsync --archive --verbose --human-readable --partial --progress /path/to/memos_*.dump* <new-pc>:/tmp/   # 取得した場合
 ```
 
 ### 3-2. チェックサム検証
 
 ```bash
-sha256sum --check /tmp/memos_staging_migration_*.tar.gz.sha256
+sha256sum --check /tmp/memos-postgres-staging-migration-*.tar.gz.sha256
 sha256sum --check /tmp/memos_*.dump.sha256   # 取得した場合
 ```
 
 ### 3-3. 展開
 
 ```bash
-TARGET_ROOT="${VOLUME_DATA_DIR}/memos_staging"
-sudo tar xzf /tmp/memos_staging_migration_*.tar.gz -C "$TARGET_ROOT"
+TARGET_ROOT="${VOLUME_DATA_DIR}/memos-postgres-staging"
+sudo tar xzf /tmp/memos-postgres-staging-migration-*.tar.gz -C "$TARGET_ROOT"
 ```
 
 ### 3-4. 起動
 
 ```bash
-STACK_DIR="${VOLUME_DATA_DIR}/memos_staging/stack"
+STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" pull
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d
 ```
@@ -97,7 +97,7 @@ docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up 
 `4-3` の展開結果が使えない場合のみ実施。
 
 ```bash
-STACK_DIR="${VOLUME_DATA_DIR}/memos_staging/stack"
+STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 set -a; source "$STACK_DIR/.env"; set +a
 
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d db
@@ -109,7 +109,7 @@ docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up 
 ## 4. 動作確認チェックリスト
 
 ```bash
-cd "${VOLUME_DATA_DIR}/memos_staging/stack"
+cd "${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --env-file .env ps
 docker compose --env-file .env logs --tail=100 db
 docker compose --env-file .env logs --tail=100 memos-staging
