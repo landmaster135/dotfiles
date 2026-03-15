@@ -25,6 +25,8 @@ function ensure_stack_dirs() {
     if [[ ! -d "$stack_dir" ]]; then
       echo "作成: ${stack_dir}"
       sudo mkdir -p "$stack_dir"
+      sudo chown -R 1000:1000 "$stack_dir"
+      sudo chmod -R 755 "$stack_dir"
       created=$(( created + 1 ))
     else
       echo "スキップ（既存）: ${stack_dir}"

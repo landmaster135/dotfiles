@@ -26,5 +26,7 @@ VOLUME_DATA_DIR="$2"
 PROJECT_DIR="$3"
 SRC_DIR="$HOME/dotfiles/.config/docker/projects/$PROJECT_DIR"
 
+echo "[Rsync: 1/2]"
 rsync_to_stack_dir "$SRC_DIR/docker-compose.yml" "$NAS_HOST" "$VOLUME_DATA_DIR" "$PROJECT_DIR/stack"
+echo "[Rsync: 2/2]"
 rsync_to_stack_dir "$SRC_DIR/.env"               "$NAS_HOST" "$VOLUME_DATA_DIR" "$PROJECT_DIR/stack"
