@@ -15,6 +15,7 @@
 | Komga | 25600 | 25600 | - | - |
 | Memos (SQLite) | 5230 | 5230 | - | - |
 | Memos Postgres | 5240 | 5240 | 43 | 700 |
+| Memos Postgres (DB) | 5440 | - | - | - |
 | Memos Postgres Staging | 5241 | 5241 | 43 | 700 |
 | Memos Postgres Staging (DB) | 5441 | - | - | - |
 | Netdata | 19999 | 19999 | 17 | 1490 |

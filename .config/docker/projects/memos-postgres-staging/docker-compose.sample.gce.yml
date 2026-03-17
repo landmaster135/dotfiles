@@ -13,32 +13,32 @@ services:
         read_only: false
     network_mode: host
     environment:
-      - PORT=5241
+      - PORT=${PORT_MEMOS}
       - MEMOS_DRIVER=postgres
-      - MEMOS_DSN='postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_DB_HOST}:5432/memos?sslmode=disable'
+      - MEMOS_DSN='postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_DB_HOST}:${PORT_DB}/${POSTGRES_DB}?sslmode=disable'
     restart: on-failure:5
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5241/
+      test: wget --no-verbose --tries=1 --spider http://localhost:${PORT_MEMOS}/
     depends_on:
       db:
         condition: service_healthy
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "memos-staging"
-      tsdproxy.container_port: 5241
+      tsdproxy.container_port: ${PORT_MEMOS}
 
   db:
     image: postgres:18
-    container_name: memos-db
+    container_name: ${POSTGRES_DB_CONTAINER}
     hostname: ${POSTGRES_DB_HOST}
     mem_limit: 512m
     cpu_shares: 768
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "pg_isready", "-q", "-d", "memos", "-U", "${POSTGRES_USER}"]
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
       timeout: 45s
       interval: 10s
       retries: 10
@@ -48,7 +48,7 @@ services:
         target: /var/lib/postgresql
         read_only: false
     environment:
-      POSTGRES_DB: memos
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
     restart: on-failure:5
