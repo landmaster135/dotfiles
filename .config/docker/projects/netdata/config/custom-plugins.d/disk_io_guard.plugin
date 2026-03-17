@@ -1,0 +1,366 @@
+#!/bin/bash
+
+UPDATE_EVERY="${1:-10}"
+
+STATE_FILE="/tmp/netdata_disk_io_guard.state"
+TMP_STATE_FILE="${STATE_FILE}.tmp"
+STATE_TTL_SECONDS="${STATE_TTL_SECONDS:-3600}"
+
+SSD_LATENCY_WARN_MS="${SSD_LATENCY_WARN_MS:-20}"
+HDD_LATENCY_WARN_MS="${HDD_LATENCY_WARN_MS:-100}"
+OPS_SPIKE_MULTIPLIER="${OPS_SPIKE_MULTIPLIER:-3}"
+OPS_ABSOLUTE_WARN="${OPS_ABSOLUTE_WARN:-1000}"
+UTIL_WARN_PCT="${UTIL_WARN_PCT:-85}"
+UTIL_CRIT_60S_PCT="${UTIL_CRIT_60S_PCT:-98}"
+BACKLOG_WARN_MS="${BACKLOG_WARN_MS:-1000}"
+BACKLOG_CRIT_MS="${BACKLOG_CRIT_MS:-5000}"
+SPACE_WARN_PCT="${SPACE_WARN_PCT:-85}"
+SPACE_CRIT_PCT="${SPACE_CRIT_PCT:-90}"
+EWMA_ALPHA="${EWMA_ALPHA:-0.012}"
+
+float_gt() {
+  awk -v a="$1" -v b="$2" 'BEGIN { exit !(a > b) }'
+}
+
+max_float() {
+  awk -v a="$1" -v b="$2" 'BEGIN { if (a > b) printf "%.3f", a; else printf "%.3f", b }'
+}
+
+collect_snapshot() {
+  while read -r major minor dev read_ios read_merges read_sectors read_ms \
+    write_ios write_merges write_sectors write_ms in_flight io_ms weighted_ms rest; do
+    [ -d "/sys/block/${dev}" ] || continue
+    case "${dev}" in
+      loop*|ram*|fd*|sr*|zram*)
+        continue
+        ;;
+    esac
+
+    rot="$(cat "/sys/block/${dev}/queue/rotational" 2>/dev/null || echo 1)"
+    printf '%s %s %s %s %s %s %s %s\n' \
+      "${dev}" "${rot}" "${read_ios}" "${write_ios}" "${read_ms}" "${write_ms}" "${io_ms}" "${weighted_ms}"
+  done < /proc/diskstats
+}
+
+init_state() {
+  : > "${STATE_FILE}"
+  while read -r dev rot read_ios write_ios read_ms write_ms io_ms weighted_ms; do
+    printf '%s %s %s %s %s %s %s %s %s %s\n' \
+      "${dev}" "${rot}" "${read_ios}" "${write_ios}" "${read_ms}" "${write_ms}" "${io_ms}" "${weighted_ms}" "0" "-" >> "${STATE_FILE}"
+  done < <(collect_snapshot)
+}
+
+is_state_stale() {
+  [ -f "${STATE_FILE}" ] || return 0
+
+  now_ts="$(date +%s)"
+  file_ts="$(stat -c %Y "${STATE_FILE}" 2>/dev/null || echo 0)"
+  [ "${file_ts}" -gt 0 ] || return 0
+
+  age=$(( now_ts - file_ts ))
+  [ "${age}" -gt "${STATE_TTL_SECONDS}" ]
+}
+
+append_util_history() {
+  local prev="$1"
+  local cur="$2"
+  awk -v prev="${prev}" -v cur="${cur}" '
+    BEGIN {
+      n = 0
+      if (prev != "" && prev != "-") {
+        m = split(prev, vals, ",")
+        for (i = 1; i <= m; i++) {
+          if (vals[i] != "") {
+            n++
+            hist[n] = vals[i]
+          }
+        }
+      }
+      n++
+      hist[n] = cur
+      start = (n > 6 ? n - 5 : 1)
+      out = ""
+      for (i = start; i <= n; i++) {
+        out = out (out == "" ? "" : ",") hist[i]
+      }
+      print out
+    }
+  '
+}
+
+history_avg() {
+  local list="$1"
+  awk -v list="${list}" '
+    BEGIN {
+      if (list == "" || list == "-") {
+        printf "0.000"
+        exit
+      }
+      n = split(list, vals, ",")
+      sum = 0
+      count = 0
+      for (i = 1; i <= n; i++) {
+        if (vals[i] != "") {
+          sum += vals[i]
+          count++
+        }
+      }
+      if (count == 0) {
+        printf "0.000"
+      } else {
+        printf "%.3f", sum / count
+      }
+    }
+  '
+}
+
+history_len() {
+  local list="$1"
+  awk -v list="${list}" '
+    BEGIN {
+      if (list == "" || list == "-") {
+        print 0
+        exit
+      }
+      n = split(list, vals, ",")
+      count = 0
+      for (i = 1; i <= n; i++) {
+        if (vals[i] != "") count++
+      }
+      print count
+    }
+  '
+}
+
+if [ ! -s "${STATE_FILE}" ] || is_state_stale; then
+  init_state
+fi
+
+cat <<EOF
+CHART custom.disk_io_guard_latency_ms '' 'Disk I/O Latency (max)' 'ms' 'disk' 'latency' line 980 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION ssd_max_latency_ms 'SSD max latency' absolute 1 1
+DIMENSION hdd_max_latency_ms 'HDD max latency' absolute 1 1
+
+CHART custom.disk_io_guard_ops '' 'Disk I/O Operations' 'ops/s' 'disk' 'ops' line 981 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION max_ops_s 'Max ops/s' absolute 1 1
+DIMENSION spike_device_count 'Ops spike devices' absolute 1 1
+DIMENSION absolute_ops_device_count 'Ops >1000 devices' absolute 1 1
+
+CHART custom.disk_io_guard_util '' 'Disk Utilization' '%' 'disk' 'utilization' line 982 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION max_util_10s_pct 'Max util 10s' absolute 1 1
+DIMENSION max_util_60s_pct 'Max util 60s' absolute 1 1
+
+CHART custom.disk_io_guard_backlog '' 'Disk I/O Backlog' 'ms' 'disk' 'backlog' line 983 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION max_backlog_10s_ms 'Max backlog 10s' absolute 1 1
+
+CHART custom.disk_io_guard_space '' 'Disk Space Usage (max)' '%' 'disk' 'space' line 984 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION max_space_used_pct 'Max space used' absolute 1 1
+DIMENSION space_attention_count 'Space >=85% mounts' absolute 1 1
+DIMENSION space_critical_count 'Space >=90% mounts' absolute 1 1
+
+CHART custom.disk_io_guard_status '' 'Disk I/O Guard Status Counters' 'count' 'disk' 'status' line 985 ${UPDATE_EVERY} '' '' 'disk_io_guard'
+DIMENSION latency_attention_count 'Latency attention devices' absolute 1 1
+DIMENSION ops_spike_attention_count 'Ops spike attention devices' absolute 1 1
+DIMENSION ops_absolute_attention_count 'Ops absolute attention devices' absolute 1 1
+DIMENSION util_attention_count 'Util attention devices' absolute 1 1
+DIMENSION util_critical_count 'Util critical devices' absolute 1 1
+DIMENSION backlog_attention_count 'Backlog attention devices' absolute 1 1
+DIMENSION backlog_critical_count 'Backlog critical devices' absolute 1 1
+DIMENSION space_attention_status_count 'Space attention mounts' absolute 1 1
+DIMENSION space_critical_status_count 'Space critical mounts' absolute 1 1
+EOF
+
+while true; do
+  declare -A PREV_ROT PREV_READ PREV_WRITE PREV_READ_MS PREV_WRITE_MS PREV_IO_MS PREV_WEIGHTED_MS PREV_EWMA PREV_UTIL_HIST
+  declare -A CUR_ROT CUR_READ CUR_WRITE CUR_READ_MS CUR_WRITE_MS CUR_IO_MS CUR_WEIGHTED_MS
+
+  while read -r dev rot read_ios write_ios read_ms write_ms io_ms weighted_ms ewma_ops util_hist; do
+    [ -n "${dev}" ] || continue
+    PREV_ROT["${dev}"]="${rot}"
+    PREV_READ["${dev}"]="${read_ios}"
+    PREV_WRITE["${dev}"]="${write_ios}"
+    PREV_READ_MS["${dev}"]="${read_ms}"
+    PREV_WRITE_MS["${dev}"]="${write_ms}"
+    PREV_IO_MS["${dev}"]="${io_ms}"
+    PREV_WEIGHTED_MS["${dev}"]="${weighted_ms}"
+    PREV_EWMA["${dev}"]="${ewma_ops:-0}"
+    PREV_UTIL_HIST["${dev}"]="${util_hist:--}"
+  done < "${STATE_FILE}"
+
+  while read -r dev rot read_ios write_ios read_ms write_ms io_ms weighted_ms; do
+    CUR_ROT["${dev}"]="${rot}"
+    CUR_READ["${dev}"]="${read_ios}"
+    CUR_WRITE["${dev}"]="${write_ios}"
+    CUR_READ_MS["${dev}"]="${read_ms}"
+    CUR_WRITE_MS["${dev}"]="${write_ms}"
+    CUR_IO_MS["${dev}"]="${io_ms}"
+    CUR_WEIGHTED_MS["${dev}"]="${weighted_ms}"
+  done < <(collect_snapshot)
+
+  max_ssd_latency="0.000"
+  max_hdd_latency="0.000"
+  max_ops_s="0.000"
+  max_util_10s="0.000"
+  max_util_60s="0.000"
+  max_backlog_10s="0.000"
+
+  latency_attention_count=0
+  ops_spike_attention_count=0
+  ops_absolute_attention_count=0
+  util_attention_count=0
+  util_critical_count=0
+  backlog_attention_count=0
+  backlog_critical_count=0
+
+  : > "${TMP_STATE_FILE}"
+
+  for dev in "${!CUR_READ[@]}"; do
+    cur_rot="${CUR_ROT[${dev}]}"
+    cur_read="${CUR_READ[${dev}]}"
+    cur_write="${CUR_WRITE[${dev}]}"
+    cur_read_ms="${CUR_READ_MS[${dev}]}"
+    cur_write_ms="${CUR_WRITE_MS[${dev}]}"
+    cur_io_ms="${CUR_IO_MS[${dev}]}"
+    cur_weighted_ms="${CUR_WEIGHTED_MS[${dev}]}"
+
+    if [ -z "${PREV_READ[${dev}]+x}" ]; then
+      printf '%s %s %s %s %s %s %s %s %s %s\n' \
+        "${dev}" "${cur_rot}" "${cur_read}" "${cur_write}" "${cur_read_ms}" "${cur_write_ms}" "${cur_io_ms}" "${cur_weighted_ms}" "0" "-" >> "${TMP_STATE_FILE}"
+      continue
+    fi
+
+    delta_read=$(( cur_read - PREV_READ["${dev}"] ))
+    delta_write=$(( cur_write - PREV_WRITE["${dev}"] ))
+    delta_read_ms=$(( cur_read_ms - PREV_READ_MS["${dev}"] ))
+    delta_write_ms=$(( cur_write_ms - PREV_WRITE_MS["${dev}"] ))
+    delta_io_ms=$(( cur_io_ms - PREV_IO_MS["${dev}"] ))
+    delta_weighted_ms=$(( cur_weighted_ms - PREV_WEIGHTED_MS["${dev}"] ))
+
+    [ "${delta_read}" -ge 0 ] || delta_read=0
+    [ "${delta_write}" -ge 0 ] || delta_write=0
+    [ "${delta_read_ms}" -ge 0 ] || delta_read_ms=0
+    [ "${delta_write_ms}" -ge 0 ] || delta_write_ms=0
+    [ "${delta_io_ms}" -ge 0 ] || delta_io_ms=0
+    [ "${delta_weighted_ms}" -ge 0 ] || delta_weighted_ms=0
+
+    total_ops=$(( delta_read + delta_write ))
+    latency_total_ms=$(( delta_read_ms + delta_write_ms ))
+
+    ops_s="$(awk -v total="${total_ops}" -v dt="${UPDATE_EVERY}" 'BEGIN { if (dt > 0) printf "%.3f", total / dt; else printf "0.000" }')"
+    if [ "${total_ops}" -gt 0 ]; then
+      latency_ms="$(awk -v total_ms="${latency_total_ms}" -v ops="${total_ops}" 'BEGIN { printf "%.3f", total_ms / ops }')"
+    else
+      latency_ms="0.000"
+    fi
+    util_10s_pct="$(awk -v io_ms="${delta_io_ms}" -v dt="${UPDATE_EVERY}" 'BEGIN { if (dt > 0) printf "%.3f", io_ms / (dt * 10); else printf "0.000" }')"
+    backlog_10s_ms="$(awk -v weighted_ms="${delta_weighted_ms}" -v dt="${UPDATE_EVERY}" 'BEGIN { if (dt > 0) printf "%.3f", weighted_ms / dt; else printf "0.000" }')"
+
+    prev_ewma="${PREV_EWMA[${dev}]:-0}"
+    ewma_ops="$(awk -v prev="${prev_ewma}" -v ops="${ops_s}" -v alpha="${EWMA_ALPHA}" 'BEGIN { if (prev <= 0) printf "%.3f", ops; else printf "%.3f", prev + alpha * (ops - prev) }')"
+
+    util_hist_prev="${PREV_UTIL_HIST[${dev}]:--}"
+    util_hist_new="$(append_util_history "${util_hist_prev}" "${util_10s_pct}")"
+    util_60s_pct="$(history_avg "${util_hist_new}")"
+    util_hist_size="$(history_len "${util_hist_new}")"
+
+    max_ops_s="$(max_float "${max_ops_s}" "${ops_s}")"
+    max_util_10s="$(max_float "${max_util_10s}" "${util_10s_pct}")"
+    max_util_60s="$(max_float "${max_util_60s}" "${util_60s_pct}")"
+    max_backlog_10s="$(max_float "${max_backlog_10s}" "${backlog_10s_ms}")"
+
+    if [ "${cur_rot}" = "0" ]; then
+      max_ssd_latency="$(max_float "${max_ssd_latency}" "${latency_ms}")"
+      if awk -v x="${latency_ms}" -v t="${SSD_LATENCY_WARN_MS}" 'BEGIN { exit !(x > t) }'; then
+        latency_attention_count=$(( latency_attention_count + 1 ))
+      fi
+    else
+      max_hdd_latency="$(max_float "${max_hdd_latency}" "${latency_ms}")"
+      if awk -v x="${latency_ms}" -v t="${HDD_LATENCY_WARN_MS}" 'BEGIN { exit !(x > t) }'; then
+        latency_attention_count=$(( latency_attention_count + 1 ))
+      fi
+    fi
+
+    if awk -v ops="${ops_s}" -v base="${prev_ewma}" -v m="${OPS_SPIKE_MULTIPLIER}" 'BEGIN { exit !(base > 0 && ops > base * m) }'; then
+      ops_spike_attention_count=$(( ops_spike_attention_count + 1 ))
+    fi
+    if awk -v ops="${ops_s}" -v t="${OPS_ABSOLUTE_WARN}" 'BEGIN { exit !(ops > t) }'; then
+      ops_absolute_attention_count=$(( ops_absolute_attention_count + 1 ))
+    fi
+
+    if awk -v x="${util_10s_pct}" -v t="${UTIL_WARN_PCT}" 'BEGIN { exit !(x > t) }'; then
+      util_attention_count=$(( util_attention_count + 1 ))
+    fi
+    if [ "${util_hist_size}" -ge 6 ] && awk -v x="${util_60s_pct}" -v t="${UTIL_CRIT_60S_PCT}" 'BEGIN { exit !(x > t) }'; then
+      util_critical_count=$(( util_critical_count + 1 ))
+    fi
+
+    if awk -v x="${backlog_10s_ms}" -v t="${BACKLOG_WARN_MS}" 'BEGIN { exit !(x > t) }'; then
+      backlog_attention_count=$(( backlog_attention_count + 1 ))
+    fi
+    if awk -v x="${backlog_10s_ms}" -v t="${BACKLOG_CRIT_MS}" 'BEGIN { exit !(x > t) }'; then
+      backlog_critical_count=$(( backlog_critical_count + 1 ))
+    fi
+
+    printf '%s %s %s %s %s %s %s %s %s %s\n' \
+      "${dev}" "${cur_rot}" "${cur_read}" "${cur_write}" "${cur_read_ms}" "${cur_write_ms}" "${cur_io_ms}" "${cur_weighted_ms}" "${ewma_ops}" "${util_hist_new}" >> "${TMP_STATE_FILE}"
+  done
+
+  mv "${TMP_STATE_FILE}" "${STATE_FILE}"
+
+  max_space_used="0.000"
+  space_attention_count=0
+  space_critical_count=0
+  while read -r used_pct; do
+    [ -n "${used_pct}" ] || continue
+    max_space_used="$(max_float "${max_space_used}" "${used_pct}")"
+    if awk -v x="${used_pct}" -v t="${SPACE_WARN_PCT}" 'BEGIN { exit !(x >= t) }'; then
+      space_attention_count=$(( space_attention_count + 1 ))
+    fi
+    if awk -v x="${used_pct}" -v t="${SPACE_CRIT_PCT}" 'BEGIN { exit !(x >= t) }'; then
+      space_critical_count=$(( space_critical_count + 1 ))
+    fi
+  done < <(
+    df -P -x tmpfs -x devtmpfs -x squashfs -x overlay 2>/dev/null \
+      | awk 'NR > 1 { gsub("%", "", $5); if ($6 ~ /^\/(proc|sys|dev|run)($|\/)/) next; print $5 }'
+  )
+
+  echo "BEGIN custom.disk_io_guard_latency_ms"
+  echo "SET ssd_max_latency_ms = ${max_ssd_latency}"
+  echo "SET hdd_max_latency_ms = ${max_hdd_latency}"
+  echo "END"
+
+  echo "BEGIN custom.disk_io_guard_ops"
+  echo "SET max_ops_s = ${max_ops_s}"
+  echo "SET spike_device_count = ${ops_spike_attention_count}"
+  echo "SET absolute_ops_device_count = ${ops_absolute_attention_count}"
+  echo "END"
+
+  echo "BEGIN custom.disk_io_guard_util"
+  echo "SET max_util_10s_pct = ${max_util_10s}"
+  echo "SET max_util_60s_pct = ${max_util_60s}"
+  echo "END"
+
+  echo "BEGIN custom.disk_io_guard_backlog"
+  echo "SET max_backlog_10s_ms = ${max_backlog_10s}"
+  echo "END"
+
+  echo "BEGIN custom.disk_io_guard_space"
+  echo "SET max_space_used_pct = ${max_space_used}"
+  echo "SET space_attention_count = ${space_attention_count}"
+  echo "SET space_critical_count = ${space_critical_count}"
+  echo "END"
+
+  echo "BEGIN custom.disk_io_guard_status"
+  echo "SET latency_attention_count = ${latency_attention_count}"
+  echo "SET ops_spike_attention_count = ${ops_spike_attention_count}"
+  echo "SET ops_absolute_attention_count = ${ops_absolute_attention_count}"
+  echo "SET util_attention_count = ${util_attention_count}"
+  echo "SET util_critical_count = ${util_critical_count}"
+  echo "SET backlog_attention_count = ${backlog_attention_count}"
+  echo "SET backlog_critical_count = ${backlog_critical_count}"
+  echo "SET space_attention_status_count = ${space_attention_count}"
+  echo "SET space_critical_status_count = ${space_critical_count}"
+  echo "END"
+
+  sleep "${UPDATE_EVERY}"
+done
