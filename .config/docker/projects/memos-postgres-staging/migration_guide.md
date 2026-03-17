@@ -11,12 +11,11 @@
 - スタック定義
   - `${VOLUME_DATA_DIR}/memos-postgres-staging/stack/`
 
-- 定期バックアップ格納ディレクトリ
-  - `${VOLUME_DATA_DIR}/memos-postgres-staging/backup`
+移行先のDBユーザー名、パスワードもしくはDB名を変える場合、論理バックアップを取る必要があります。いずれも変えない場合、tarボールのみで移行可能です。
 
 ## 2. 旧PC: バックアップ取得手順
 
-### 2-1. 論理バックアップ（保険）
+### 2-1. 論理バックアップ（保険経路。移行先のユーザー名を変える場合も。）
 
 ```bash
 ROOT_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging"
@@ -25,7 +24,7 @@ DUMP_FILE="$BACKUP_DIR/memos_$(date +%F_%H%M%S).dump"
 docker exec -i memos-db \
   sh -lc 'pg_dump -U "$POSTGRES_USER" -d memos -Fc' \
   > "$DUMP_FILE"
-sha256sum "$DUMP_FILE" > "${DUMP_FILE}.sha256"
+sudo sha256sum "$DUMP_FILE" | sudo tee "${DUMP_FILE}.sha256" > /dev/null
 ```
 
 ### 2-2. サービス停止（整合性確保）
@@ -35,7 +34,7 @@ STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" down
 ```
 
-### 2-3. 実データ + 設定をアーカイブ
+### 2-3. 実データ + 設定をアーカイブ（移行先のユーザー名を変えない場合）
 
 ```bash
 ROOT_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging"
@@ -46,10 +45,10 @@ sudo tar czf "$BACKUP_FILE" \
   -C "$ROOT_DIR" \
   data \
   db \
-  backup \
   stack
+ls "$ROOT_DIR"
 
-sha256sum "$BACKUP_FILE" > "${BACKUP_FILE}.sha256"
+sudo sha256sum "$BACKUP_FILE" | sudo tee "${BACKUP_FILE}.sha256" > /dev/null
 ```
 
 ### 2-4. 旧PCを一旦復帰（必要なら）
@@ -59,15 +58,15 @@ STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d
 ```
 
-## 3. 新PC: 復元・起動手順
+## 3. 新PC: 復元・起動手順（移行先のユーザー名を変えない場合）
 
 ### 3-1. バックアップ転送
 
 例:
 
 ```bash
-rsync --archive --verbose --human-readable --partial --progress /path/to/memos-postgres-staging-migration-*.tar.gz* <new-pc>:/tmp/
-rsync --archive --verbose --human-readable --partial --progress /path/to/memos_*.dump* <new-pc>:/tmp/   # 取得した場合
+rsync --archive --verbose --human-readable --partial --progress $ROOT_DIR/memos-postgres-staging-migration-*.tar.gz* <new-pc>:/tmp/
+rsync --archive --verbose --human-readable --partial --progress $ROOT_DIR/memos_*.dump* <new-pc>:/tmp/   # 取得した場合
 ```
 
 ### 3-2. チェックサム検証
@@ -92,21 +91,26 @@ docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" pul
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d
 ```
 
-### 3-5. 論理バックアップ(.dump)からのリストア（保険経路）
+## 4. 新PC: 復元・起動手順（保険経路。移行先のユーザー名を変える場合も。）
 
-`4-3` の展開結果が使えない場合のみ実施。
+### 4-1. 論理バックアップ(.dump)からのリストア
 
 ```bash
 STACK_DIR="${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
 set -a; source "$STACK_DIR/.env"; set +a
 
+# DBコンテナのみ起動
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d db
-cat /tmp/memos_*.dump | docker exec -i memos-db pg_restore --clean --if-exists --no-owner --no-privileges \
-  -U "$POSTGRES_USER" -d memos
+
+# DBをリストア
+cat "/tmp/${DUMP_FILE}" | sudo docker exec -i "$POSTGRES_DB_CONTAINER" pg_restore --clean --if-exists --no-owner --no-privileges \
+  -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+
+# Appコンテナを起動
 docker compose --project-directory "$STACK_DIR" --env-file "$STACK_DIR/.env" up -d memos-staging
 ```
 
-## 4. 動作確認チェックリスト
+## 5. 動作確認チェックリスト
 
 ```bash
 cd "${VOLUME_DATA_DIR}/memos-postgres-staging/stack"
