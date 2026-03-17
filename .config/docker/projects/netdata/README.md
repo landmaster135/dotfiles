@@ -136,12 +136,13 @@ Web UI では **Alerts → Alert Configurations** で確認できる。
 ## 前提
 
 - Netdata v2.9.0 (Docker)
-- アラートの `to: sysadmin` でDiscordに通知する
 
-## 1. Discord Webhook URLの取得
+## Discord通知設定手順
+
+### 1. Discord Webhook URLの取得
 Discordで通知を受け取りたいチャンネルで、ウェブフックURLをコピーする
 
-## 2. health_alarm_notify.conf を編集
+### 2. health_alarm_notify.conf を編集
 
 ```bash
 nano ${VOLUME_DATA_DIR}/netdata/config/health_alarm_notify.conf
@@ -160,13 +161,13 @@ DEFAULT_RECIPIENT_DISCORD="alerts"
 role_recipients_discord[sysadmin]="${DEFAULT_RECIPIENT_DISCORD}"
 ```
 
-## 3. コンテナを再起動
+### 3. コンテナを再起動
 
 ```bash
 sudo docker compose restart netdata
 ```
 
-## 4. 動作テスト
+### 4. 動作テスト
 下記を実行して、Discordの指定チャンネルにテスト通知が届けばOK。
 ```bash
 sudo docker exec -it netdata bash -c "
@@ -175,11 +176,18 @@ sudo docker exec -it netdata bash -c "
 "
 ```
 
-## 複数チャンネルに通知したい場合
-`role_recipients_discord` にスペース区切りで複数チャンネルを指定できる:
-```bash
-role_recipients_discord[sysadmin]="alerts general"
-```
+## Discord通知を仕分ける実装
+`config/health_alarm_notify.conf` で `SEND_CUSTOM="YES"` を使い、
+`to:` ロールに応じて別Webhookへ送る実装を採用している。
+
+下記の流れで、Discordへの通知をチャンネルごとに仕分けている。
+- `to: sysadmin` -> `role_recipients_custom[sysadmin]` -> `discord_alerts` -> `DISCORD_WEBHOOK_ALERTS`
+- `to: daily_report` -> `role_recipients_custom[daily_report]` -> `discord_daily` -> `DISCORD_WEBHOOK_DAILY`
+
+## 監視ポイント
+
+- `daily_alarm_summary_report`: 日次レポートの通知トリガー（`to: daily_report`）
+- `daily_alarm_summary_failed`: 指定時刻+猶予を過ぎてもレポート生成できない場合の通知（`to: sysadmin`）
 
 ## 参考
 - [Discord | Learn Netdata](https://learn.netdata.cloud/docs/alerts-&-notifications/notifications/agent-dispatched-notifications/discord)

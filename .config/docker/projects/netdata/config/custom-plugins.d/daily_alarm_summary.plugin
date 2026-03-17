@@ -1,0 +1,172 @@
+#!/bin/bash
+
+UPDATE_EVERY="${1:-30}"
+NETDATA_API_URL="${NETDATA_API_URL:-http://127.0.0.1:19999}"
+REPORT_HOUR="${REPORT_HOUR:-9}"
+REPORT_MINUTE="${REPORT_MINUTE:-0}"
+REPORT_GRACE_SECONDS="${REPORT_GRACE_SECONDS:-1800}"
+STATE_FILE="${STATE_FILE:-/tmp/netdata_daily_alarm_summary.state}"
+
+warning_count=0
+critical_count=0
+clear_count=0
+fetch_error_streak=0
+last_alarm_log_id=0
+last_report_date=""
+last_report_epoch=0
+
+load_state() {
+  [ -f "${STATE_FILE}" ] || return 0
+  # shellcheck disable=SC1090
+  . "${STATE_FILE}"
+}
+
+save_state() {
+  local tmp_file
+  tmp_file="${STATE_FILE}.tmp"
+  cat > "${tmp_file}" <<EOF
+warning_count=${warning_count}
+critical_count=${critical_count}
+clear_count=${clear_count}
+fetch_error_streak=${fetch_error_streak}
+last_alarm_log_id=${last_alarm_log_id}
+last_report_date=${last_report_date}
+last_report_epoch=${last_report_epoch}
+EOF
+  mv "${tmp_file}" "${STATE_FILE}"
+}
+
+fetch_alarm_log() {
+  local after_id="$1"
+  local url="${NETDATA_API_URL}/api/v1/alarm_log?after=${after_id}"
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsS --max-time 10 "${url}"
+    return $?
+  fi
+
+  if command -v wget >/dev/null 2>&1; then
+    wget -q -T 10 -O - "${url}"
+    return $?
+  fi
+
+  return 127
+}
+
+parse_json_count() {
+  local json="$1"
+  local status="$2"
+  printf '%s' "${json}" | grep -o "\"status\":\"${status}\"" | wc -l | tr -d ' '
+}
+
+sanitize_number() {
+  local value="$1"
+  case "${value}" in
+    ''|*[!0-9]*)
+      echo 0
+      ;;
+    *)
+      echo "${value}"
+      ;;
+  esac
+}
+
+load_state
+
+warning_count="$(sanitize_number "${warning_count}")"
+critical_count="$(sanitize_number "${critical_count}")"
+clear_count="$(sanitize_number "${clear_count}")"
+fetch_error_streak="$(sanitize_number "${fetch_error_streak}")"
+last_alarm_log_id="$(sanitize_number "${last_alarm_log_id}")"
+last_report_epoch="$(sanitize_number "${last_report_epoch}")"
+
+cat <<EOF
+CHART custom.daily_alarm_summary_counts '' 'Daily Alarm Summary Counters' 'events' 'alerts' 'daily_summary' line 986 ${UPDATE_EVERY} '' '' 'daily_alarm_summary'
+DIMENSION warning_count 'Warnings' absolute 1 1
+DIMENSION critical_count 'Criticals' absolute 1 1
+DIMENSION clear_count 'Clears' absolute 1 1
+
+CHART custom.daily_alarm_summary_report '' 'Daily Alarm Summary Report' 'count' 'alerts' 'daily_summary' line 987 ${UPDATE_EVERY} '' '' 'daily_alarm_summary'
+DIMENSION report_trigger 'Report trigger' absolute 1 1
+DIMENSION report_total 'Total events in report' absolute 1 1
+
+CHART custom.daily_alarm_summary_status '' 'Daily Alarm Summary Status' 'count' 'alerts' 'daily_summary' line 988 ${UPDATE_EVERY} '' '' 'daily_alarm_summary'
+DIMENSION summary_failed 'Summary generation failed' absolute 1 1
+DIMENSION fetch_error_streak 'Consecutive API fetch errors' absolute 1 1
+EOF
+
+while true; do
+  now_epoch="$(date +%s)"
+  today="$(date +%F)"
+  report_due_epoch="$(date -d "${today} ${REPORT_HOUR}:${REPORT_MINUTE}:00" +%s 2>/dev/null || echo 0)"
+  report_due_epoch="$(sanitize_number "${report_due_epoch}")"
+
+  fetch_ok=0
+  response="$(fetch_alarm_log "${last_alarm_log_id}" 2>/dev/null || true)"
+  if [ -n "${response}" ]; then
+    fetch_ok=1
+  fi
+
+  if [ "${fetch_ok}" -eq 1 ]; then
+    json_one_line="$(printf '%s' "${response}" | tr -d '\n')"
+    latest_id="$(printf '%s' "${json_one_line}" | sed -n 's/.*"latest_alarm_log_unique_id":[[:space:]]*\([0-9]\+\).*/\1/p' | head -n 1)"
+    latest_id="$(sanitize_number "${latest_id}")"
+
+    warning_inc="$(parse_json_count "${json_one_line}" "WARNING")"
+    critical_inc="$(parse_json_count "${json_one_line}" "CRITICAL")"
+    clear_inc="$(parse_json_count "${json_one_line}" "CLEAR")"
+
+    warning_count=$((warning_count + warning_inc))
+    critical_count=$((critical_count + critical_inc))
+    clear_count=$((clear_count + clear_inc))
+    fetch_error_streak=0
+
+    if [ "${latest_id}" -gt "${last_alarm_log_id}" ]; then
+      last_alarm_log_id="${latest_id}"
+    fi
+  else
+    fetch_error_streak=$((fetch_error_streak + 1))
+  fi
+
+  report_trigger=0
+  report_total=0
+
+  if [ "${report_due_epoch}" -gt 0 ] && \
+     [ "${today}" != "${last_report_date}" ] && \
+     [ "${now_epoch}" -ge "${report_due_epoch}" ] && \
+     [ "${fetch_ok}" -eq 1 ]; then
+    report_trigger=1
+    report_total=$((warning_count + critical_count + clear_count))
+    last_report_date="${today}"
+    last_report_epoch="${now_epoch}"
+    warning_count=0
+    critical_count=0
+    clear_count=0
+  fi
+
+  summary_failed=0
+  if [ "${report_due_epoch}" -gt 0 ] && \
+     [ "${today}" != "${last_report_date}" ] && \
+     [ "${now_epoch}" -gt $((report_due_epoch + REPORT_GRACE_SECONDS)) ]; then
+    summary_failed=1
+  fi
+
+  echo "BEGIN custom.daily_alarm_summary_counts"
+  echo "SET warning_count = ${warning_count}"
+  echo "SET critical_count = ${critical_count}"
+  echo "SET clear_count = ${clear_count}"
+  echo "END"
+
+  echo "BEGIN custom.daily_alarm_summary_report"
+  echo "SET report_trigger = ${report_trigger}"
+  echo "SET report_total = ${report_total}"
+  echo "END"
+
+  echo "BEGIN custom.daily_alarm_summary_status"
+  echo "SET summary_failed = ${summary_failed}"
+  echo "SET fetch_error_streak = ${fetch_error_streak}"
+  echo "END"
+
+  save_state
+  sleep "${UPDATE_EVERY}"
+done

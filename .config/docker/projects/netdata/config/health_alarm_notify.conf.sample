@@ -1,5 +1,93 @@
-SEND_DISCORD="YES"
-DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/XXXXX/XXXXX"
-DEFAULT_RECIPIENT_DISCORD="alerts"
+# -----------------------------------------------------------------------------
+# Netdata alarm-notify custom Discord routing
+# -----------------------------------------------------------------------------
 
-role_recipients_discord[sysadmin]="${DEFAULT_RECIPIENT_DISCORD}"
+# Disable the built-in Discord sender because one webhook URL cannot fan out
+# to multiple Discord channels.
+SEND_DISCORD="NO"
+SEND_CUSTOM="YES"
+
+# Custom recipient groups used by alarm "to:" roles.
+DEFAULT_RECIPIENT_CUSTOM="discord_alerts"
+role_recipients_custom[sysadmin]="discord_alerts"
+role_recipients_custom[daily_report]="discord_daily"
+
+# Set real webhook URLs before using.
+DISCORD_WEBHOOK_ALERTS="${DISCORD_WEBHOOK_ALERTS:-https://discord.com/api/webhooks/XXXXX/ALERTS}"
+DISCORD_WEBHOOK_DAILY="${DISCORD_WEBHOOK_DAILY:-https://discord.com/api/webhooks/XXXXX/DAILY}"
+
+# Optional message prefix to identify environment.
+DISCORD_MESSAGE_PREFIX="${DISCORD_MESSAGE_PREFIX:-[netdata]}"
+
+custom_sender() {
+  local recipients="${1}"
+  local raw_target target webhook payload httpcode sent=0
+  local color ts_iso text_raw title_raw desc_raw field_host field_chart field_status field_value
+
+  escape_json() {
+    sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\r//g;s/\n/\\n/g'
+  }
+
+  for raw_target in ${recipients}; do
+    # Severity modifiers can be appended like "target|critical".
+    target="${raw_target%%|*}"
+    webhook=""
+
+    case "${target}" in
+      discord_alerts)
+        webhook="${DISCORD_WEBHOOK_ALERTS}"
+        ;;
+      discord_daily)
+        webhook="${DISCORD_WEBHOOK_DAILY}"
+        ;;
+      *)
+        warning "custom_sender: unknown target '${target}'"
+        continue
+        ;;
+    esac
+
+    if [ -z "${webhook}" ] || [[ "${webhook}" == *"XXXXX"* ]]; then
+      warning "custom_sender: webhook for '${target}' is not configured"
+      continue
+    fi
+
+    case "${status}" in
+      CRITICAL) color=13631488 ;;
+      WARNING) color=16753920 ;;
+      CLEAR) color=3066993 ;;
+      *) color=3447003 ;;
+    esac
+
+    ts_iso="$(date -u -d "@${when}" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u '+%Y-%m-%dT%H:%M:%SZ')"
+    text_raw="${DISCORD_MESSAGE_PREFIX} [${status}] ${host}"
+    title_raw="${summary:-${name}}"
+    desc_raw="${info}"
+    [ -z "${desc_raw}" ] && desc_raw="${summary:-${name}}"
+    field_host="${host}"
+    field_chart="${chart}"
+    field_status="${old_status} -> ${status}"
+    field_value="${value_string:-${value}}"
+
+    payload="$(cat <<EOF
+{"content":"$(printf '%s' "${text_raw}" | escape_json)","embeds":[{"title":"$(printf '%s' "${title_raw}" | escape_json)","description":"$(printf '%s' "${desc_raw}" | escape_json)","color":${color},"timestamp":"${ts_iso}","fields":[{"name":"Host","value":"$(printf '%s' "${field_host}" | escape_json)","inline":true},{"name":"Chart","value":"$(printf '%s' "${field_chart}" | escape_json)","inline":true},{"name":"Status","value":"$(printf '%s' "${field_status}" | escape_json)","inline":true},{"name":"Value","value":"$(printf '%s' "${field_value}" | escape_json)","inline":true}]}]}
+EOF
+)"
+
+    httpcode="$(docurl -X POST -H "Content-Type: application/json" -d "${payload}" "${webhook}")"
+
+    case "${httpcode}" in
+      200|204)
+        sent=$((sent + 1))
+        ;;
+      *)
+        error "custom_sender: discord send failed target='${target}' http='${httpcode}'"
+        ;;
+    esac
+  done
+
+  if [ "${sent}" -gt 0 ]; then
+    return 0
+  fi
+
+  return 1
+}
