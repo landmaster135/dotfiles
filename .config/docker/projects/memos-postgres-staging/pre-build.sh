@@ -11,8 +11,6 @@ sudo mkdir -p ${VOLUME_DATA_DIR}/memos-postgres-staging/db
 sudo chown -R 999:999 ${VOLUME_DATA_DIR}/memos-postgres-staging/db
 sudo chmod -R 700 ${VOLUME_DATA_DIR}/memos-postgres-staging/db
 
-# For backup
-sudo mkdir -p ${VOLUME_DATA_DIR}/memos-postgres-staging/backup
 # For docker-compose stack
 sudo mkdir -p ${VOLUME_DATA_DIR}/memos-postgres-staging/stack
 sudo chown -R 1000:1000 ${VOLUME_DATA_DIR}/memos-postgres-staging/stack

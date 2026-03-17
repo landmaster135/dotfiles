@@ -343,3 +343,14 @@ export NVM_DIR="$HOME/.nvm"
 export CUDA_HOME="/usr/local/cuda"
 export PATH="/usr/local/cuda/bin:$PATH"
 export LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
+
+#==============================================================#
+##          Rclone                                            ##
+#==============================================================#
+export RCLONE_CHECKERS=1
+export RCLONE_TRANSFERS=1
+export RCLONE_MULTI_THREAD_STREAMS=1
+export RCLONE_BUFFER_SIZE=16M
+export RCLONE_RETRIES=3
+export RCLONE_CHECKSUM=true
+export RCLONE_LOG_LEVEL=INFO

@@ -255,7 +255,16 @@ alias dc-search='docker search'
 alias dc-co-u='docker compose up -d'
 alias dc-co-d='docker compose down'
 alias dc-co-p='docker compose ps'
-alias dc-l='docker logs'
+alias dc-lg='docker logs'
+alias dc-li='docker load -i'
+
+#==============================================================#
+##          Rsync aliases                                     ##
+#==============================================================#
+
+alias rsync-devbox='rsync --archive --verbose --human-readable --partial --progress "${HOME}/devbox/devbox-cron-image.tar" "nas01:${VOLUME_DATA_DIR}/devbox"'
+alias rsync-daf='rsync --archive --verbose --human-readable --partial --progress "${HOME}/dathub/dathub-frontend-image.tar" "nas01:${VOLUME_DATA_DIR}/dathub"'
+alias rsync-dab='rsync --archive --verbose --human-readable --partial --progress "${HOME}/dathub/dathub-backend-image.tar" "nas01:${VOLUME_DATA_DIR}/dathub"'
 
 #==============================================================#
 ##          Flutter aliases                                   ##
