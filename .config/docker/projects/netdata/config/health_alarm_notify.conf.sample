@@ -22,7 +22,7 @@ DISCORD_MESSAGE_PREFIX="${DISCORD_MESSAGE_PREFIX:-[netdata]}"
 custom_sender() {
   local recipients="${1}"
   local raw_target target webhook payload httpcode sent=0
-  local color ts_iso text_raw title_raw desc_raw field_host field_chart field_status field_value
+  local color ts_iso text_raw title_raw desc_raw field_host field_chart field_status field_value this_value
 
   escape_json() {
     sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\r//g;s/\n/\\n/g'
@@ -67,6 +67,10 @@ custom_sender() {
     field_chart="${chart}"
     field_status="${old_status} -> ${status}"
     field_value="${value_string:-${value}}"
+    this_value="${field_value}"
+    desc_raw="${desc_raw//\$\{this\}/${this_value}}"
+    desc_raw="${desc_raw//\$this/${this_value}}"
+    desc_raw="${desc_raw//_\{this\}/${this_value}}"
 
     payload="$(cat <<EOF
 {"content":"$(printf '%s' "${text_raw}" | escape_json)","embeds":[{"title":"$(printf '%s' "${title_raw}" | escape_json)","description":"$(printf '%s' "${desc_raw}" | escape_json)","color":${color},"timestamp":"${ts_iso}","fields":[{"name":"Host","value":"$(printf '%s' "${field_host}" | escape_json)","inline":true},{"name":"Chart","value":"$(printf '%s' "${field_chart}" | escape_json)","inline":true},{"name":"Status","value":"$(printf '%s' "${field_status}" | escape_json)","inline":true},{"name":"Value","value":"$(printf '%s' "${field_value}" | escape_json)","inline":true}]}]}
