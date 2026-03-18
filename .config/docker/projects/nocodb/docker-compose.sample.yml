@@ -5,9 +5,14 @@ services:
     depends_on:
       root_db:
         condition: service_healthy
+    image: "nocodb/nocodb:latest"
     environment:
       NC_DB: "pg://root_db:5432?u=${POSTGRES_USER}&p=${POSTGRES_PASS}&d=${POSTGRES_DB}"
-    image: "nocodb/nocodb:latest"
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --output-document=/dev/null http://localhost:8080 || exit 1"]
+      timeout: 3s
     ports:
       - "${PUBLIC_PORT}:8080"
     restart: always
