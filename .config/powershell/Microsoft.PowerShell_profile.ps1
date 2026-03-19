@@ -36,8 +36,10 @@ function tq-ircd { task image:rename:content:date }
 function tq-irch { task image:rename:content:habit }
 function tq-ivjw { task image:convert:jpg-to-webp }
 function tq-ivpw { task image:convert:png-to-webp }
+function tq-iv2j { task image:convert:to-jpg }
 function tq-irvs { task image:rename:convert:screenshot }
 function tq-irvsk { task image:rename:convert:screenshot:keeping-saturation }
+function tq-irv2 { task image:rename:convert:by-2-digits }
 function tq-irv4 { task image:rename:convert:by-4-digits }
 
 #==============================================================#
