@@ -15,4 +15,9 @@ sudo mkdir -p ${VOLUME_DATA_DIR}/netdata/cache
 sudo chown -R 1000:1000 ${VOLUME_DATA_DIR}/netdata/cache
 sudo chmod -R 755 ${VOLUME_DATA_DIR}/netdata/cache
 
+# For docker-compose stack
+sudo mkdir -p ${VOLUME_DATA_DIR}/netdata/stack
+sudo chown -R 1000:1000 ${VOLUME_DATA_DIR}/netdata/stack
+sudo chmod -R 755 ${VOLUME_DATA_DIR}/netdata/stack
+
 echo "Setup complete."
