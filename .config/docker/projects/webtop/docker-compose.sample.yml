@@ -1,0 +1,55 @@
+name: "webtop"
+
+services:
+  webtop:
+    build:
+      context: .
+      shm_size: "1gb"
+    container_name: webtop
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SUBFOLDER=/ #optional
+      - TITLE=Webtop #optional
+      - LC_ALL=ja_JP.UTF-8
+    volumes:
+      - ./data:/config
+      - /var/run/docker.sock:/var/run/docker.sock #optional
+    ports:
+      - 3000:3000
+      - 3001:3001
+    # devices:
+      # - /dev/dri:/dev/dri #optional
+    restart: unless-stopped
+
+  webtop-gpu:
+    build:
+      context: .
+      shm_size: "1gb"
+    container_name: webtop-gpu
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SUBFOLDER=/ #optional
+      - TITLE=Webtop #optional
+      - LC_ALL=ja_JP.UTF-8
+    volumes:
+      - ./data:/config
+      - /var/run/docker.sock:/var/run/docker.sock #optional
+    ports:
+      - 3000:3000
+      - 3001:3001
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
