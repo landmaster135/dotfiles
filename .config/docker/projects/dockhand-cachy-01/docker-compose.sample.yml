@@ -1,0 +1,17 @@
+name: "dockhand-cachy-01"
+
+services:
+  dockhand:
+    image: fnsys/dockhand:v1.0.20
+    container_name: dockhand
+    restart: unless-stopped
+    ports:
+      - ${PUBLIC_PORT}:3000
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/dockhand/data
+        target: /app/data
