@@ -50,7 +50,6 @@ fcitx5-configtool
 # Common packages
 sudo pacman -S --noconfirm --needed steam
 sudo pacman -S --noconfirm --needed obs-studio
-sudo pacman -S --noconfirm --needed discord
 sudo pacman -S --noconfirm --needed tmux
 sudo pacman -S --noconfirm --needed go
 sudo pacman -S --noconfirm --needed gimp
@@ -60,18 +59,18 @@ sudo pacman -S --noconfirm --needed vlc
 sudo pacman -S --noconfirm --needed git
 sudo pacman -S --noconfirm --needed base-devel
 
-# Docker
+# Install Docker
 sudo pacman -S --noconfirm --needed docker
 sudo pacman -S --noconfirm --needed docker-compose
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Tailscale
+# Install Tailscale
 sudo pacman -S --noconfirm --needed tailscale
 sudo systemctl enable --now tailscaled
 sudo tailscale up --accept-dns=true
 
-# For games
+# Install for games
 sudo pacman -S --noconfirm --needed mangohud
 
 # pended packages...
@@ -83,7 +82,7 @@ sudo pacman -S --noconfirm --needed mangohud
 ##       Install packages via AUR       ##
 ##########################################
 
-# Packages via yay
+# packages via yay
 git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
@@ -91,8 +90,9 @@ makepkg -si
 # Common packages
 yay -S --noconfirm --needed brave-bin
 yay -S --noconfirm --needed google-cloud-cli
+yay -S --noconfirm --needed discord_arch_electron
 
-# For games
+# For game
 yay -S --noconfirm --needed envycontrol
 
 # pended packages...
