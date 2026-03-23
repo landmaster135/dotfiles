@@ -60,16 +60,19 @@ sudo pacman -S --noconfirm --needed vlc
 sudo pacman -S --noconfirm --needed git
 sudo pacman -S --noconfirm --needed base-devel
 
-# Install Docker
+# Docker
 sudo pacman -S --noconfirm --needed docker
 sudo pacman -S --noconfirm --needed docker-compose
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Install Tailscale
+# Tailscale
 sudo pacman -S --noconfirm --needed tailscale
 sudo systemctl enable --now tailscaled
 sudo tailscale up --accept-dns=true
+
+# For games
+sudo pacman -S --noconfirm --needed mangohud
 
 # pended packages...
 # sudo pacman -S --noconfirm --needed openbsd-netcat
@@ -80,13 +83,17 @@ sudo tailscale up --accept-dns=true
 ##       Install packages via AUR       ##
 ##########################################
 
-# packages via yay
+# Packages via yay
 git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
 
+# Common packages
 yay -S --noconfirm --needed brave-bin
 yay -S --noconfirm --needed google-cloud-cli
+
+# For games
+yay -S --noconfirm --needed envycontrol
 
 # pended packages...
 # yay -S google-chrome
