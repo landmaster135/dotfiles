@@ -26,7 +26,7 @@ cat /proc/driver/nvidia/params | grep IntrLocking
 ## Steam 設定
 起動オプションをこちらに更新してください:
 ```
-PROTON_NVIDIA_LIBS=1 PROTON_NVIDIA_LIBS_NO_32BIT=1 PROTON_USE_NTSYNC=1 PROTON_ENABLE_WAYLAND=1 MANGOHUD=1 %command%
+PROTON_NVIDIA_LIBS=1 PROTON_NVIDIA_LIBS_NO_32BIT=1 PROTON_USE_NTSYNC=1 PROTON_ENABLE_WAYLAND=1 MANGOHUD=1 prime-run %command%
 ```
 
 ただし `PROTON_ENABLE_WAYLAND=1` には注意点があります:
