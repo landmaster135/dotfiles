@@ -2,7 +2,7 @@ name: "memos-staging"
 
 services:
   memos-staging:
-    image: neosmemo/memos:stable
+    image: neosmemo/memos@sha256:3eefcc231141369accbd2f42bdc1a4c1e3b291fb6e288ff0deb60afa1b5d4727
     container_name: memos-staging
     hostname: memos
     user: "${PUID}:${PGID}"
@@ -30,7 +30,7 @@ services:
       tsdproxy.container_port: ${PORT_MEMOS}
 
   db:
-    image: postgres:18
+    image: postgres:18@sha256:69e8582b781cb44fa4557b98ed586fe68361e320d9b12f9707494335634f4f3d
     container_name: ${POSTGRES_DB_CONTAINER}
     hostname: ${POSTGRES_DB_HOST}
     mem_limit: 512m
