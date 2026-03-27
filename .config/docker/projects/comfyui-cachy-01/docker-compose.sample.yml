@@ -5,7 +5,6 @@ services:
     image: yanwk/comfyui-boot:cu128-slim@sha256:a643cdedcb00ffc175db8e6780c10b68967432554bb11baf41bdd7fbc54fe37e
     container_name: comfyui
     restart: unless-stopped
-
     deploy:
       resources:
         reservations:
