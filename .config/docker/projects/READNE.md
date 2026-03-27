@@ -3,6 +3,7 @@
 ## Port management and resource usage
 | Service | Port | TSD Proxy | ram_container_uses_mib | disk_image_uses_mib |
 | --- | --- | --- | --- | --- |
+| ComfyUI | 8188 | 8188 | 2000 | 17730 |
 | DatHub | 5173 | 5173 | 20 | 650 |
 | Devbox | 8880 | 8880 | - | - |
 | AdGuard Home | 46073 | 80 | - | - |

@@ -1,0 +1,31 @@
+name: "comfyui-cachy-01"
+
+services:
+  comfyui:
+    image: yanwk/comfyui-boot:cu128-slim@sha256:a643cdedcb00ffc175db8e6780c10b68967432554bb11baf41bdd7fbc54fe37e
+    container_name: comfyui
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - ${PUBLIC_PORT}:8188
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8188/system_stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - ${VOLUME_DATA_DIR}/comfyui/ComfyUI:/root/ComfyUI
+      - ${VOLUME_DATA_DIR}/comfyui/cache:/root/.cache
+      - ${EXTERNAL_VOLUME_DATA_DIR}/settings_for_cachyos/ComfyUI/output:/root/ComfyUI/output
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CLI_ARGS=--disable-xformers
