@@ -73,6 +73,9 @@ sudo tailscale up --accept-dns=true
 # Install for games
 sudo pacman -S --noconfirm --needed mangohud
 
+# Install for coding
+sudo pacman -S --noconfirm --needed lazygit
+
 # pended packages...
 # sudo pacman -S --noconfirm --needed openbsd-netcat
 # sudo pacman -S --noconfirm --needed zed
