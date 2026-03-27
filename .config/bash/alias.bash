@@ -307,8 +307,8 @@ alias cg-md-fmt="cagent run $HOME/devbox/.config/cagent/config_linux/markdown_fo
 #==============================================================#
 
 alias tk='task'
-alias tk-l='task alias'
-alias tk-vd='task -v --dry'
+alias tk-l='task --list'
+alias tk-vd='task --verbose --dry'
 
 alias tk-c='task check'
 alias tk-tc='task test:cov'
@@ -326,14 +326,18 @@ alias tk-fa='task find:agents'
 alias tk-fd='task find:docs'
 alias tk-fsql='task find:sql'
 
+alias task='go-task'
 alias tq-l='arep tq-'
 alias tq-tce='task text:calculate:extract-working-time'
+alias tq-icpwk='task image:convert:png-to-webp:keeping-saturation'
 alias tq-ircd='task image:rename:content:date'
 alias tq-irch='task image:rename:content:habit'
 alias tq-ivjw='task image:convert:jpg-to-webp'
 alias tq-ivpw='task image:convert:png-to-webp'
-alias tq-irvs='task image:rename:convert:screenshot:keeping-saturation'
+alias tq-iv2j='task image:convert:to-jpg'
+alias tq-irvs='task image:rename:convert:screenshot'
 alias tq-irvsk='task image:rename:convert:screenshot:keeping-saturation'
+alias tq-irv2='task image:rename:convert:by-2-digits'
 alias tq-irv4='task image:rename:convert:by-4-digits'
 
 alias tkm-lr='list_root_taskfiles'
