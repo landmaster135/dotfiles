@@ -54,6 +54,7 @@ sudo pacman -S --noconfirm --needed tmux
 sudo pacman -S --noconfirm --needed go
 sudo pacman -S --noconfirm --needed gimp
 sudo pacman -S --noconfirm --needed vlc
+sudo pacman -S --noconfirm --needed go-task
 
 # For AUR
 sudo pacman -S --noconfirm --needed git
@@ -75,6 +76,11 @@ sudo pacman -S --noconfirm --needed mangohud
 
 # Install for coding
 sudo pacman -S --noconfirm --needed lazygit
+
+# Install for ComfyUI
+sudo pacman -S --noconfirm --needed nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
 
 # pended packages...
 # sudo pacman -S --noconfirm --needed openbsd-netcat
