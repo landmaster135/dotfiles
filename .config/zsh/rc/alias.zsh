@@ -33,7 +33,7 @@ alias l1="ls -1A --color=auto"
 alias lh="ls $HOME"
 alias lc="ls | wc -l"
 alias lsoi="lsof -i"
-alias lb="lsblk"
+alias lb="lsblk -f"
 
 # cd
 alias cdh="cd $HOME"
@@ -60,6 +60,7 @@ alias du-ah="du-ah ~ 20"
 alias rm-log="sudo journalctl --vacuum-time=2weeks" # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
+alias mnta="sudo mount -a"
 alias jctl="journalctl -p 3 -xb"
 
 # cpu

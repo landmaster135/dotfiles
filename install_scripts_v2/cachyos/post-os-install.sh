@@ -82,6 +82,13 @@ sudo pacman -S --noconfirm --needed nvidia-container-toolkit
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
+# For zsh
+sudo pacman -S --noconfirm --needed zsh-autocomplete
+sudo pacman -S --noconfirm --needed zsh-autosuggestions
+sudo pacman -S --noconfirm --needed zsh-syntax-highlighting
+sudo pacman -S --noconfirm --needed zsh-history-substring-search
+sudo pacman -S --noconfirm --needed zsh-theme-powerlevel10k
+
 # pended packages...
 # sudo pacman -S --noconfirm --needed openbsd-netcat
 # sudo pacman -S --noconfirm --needed zed
