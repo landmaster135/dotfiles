@@ -2,7 +2,7 @@
 **Check** whether the configuration file uses LF break codes.
 Execute the following processes if you haven't set up.
 
-### 1. Backup.
+### 1. Backup
 ```bash
 mkdir $HOME/backup
 mv $HOME/.bashrc $HOME/.bashrc.bak
@@ -13,6 +13,6 @@ mv $HOME/.bashrc $HOME/.bashrc.bak
 ln -s $HOME/dotfiles/.config/bash/.bashrc $HOME
 ```
 
-### 3. Restart bash.
+### 3. Restart bash
 
 ### 4. Enjoy!
