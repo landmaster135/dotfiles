@@ -49,6 +49,21 @@ source "$ZSH_HOMEDIR/alias.zsh"
 source "$ZSH_HOMEDIR/function.zsh"
 
 #==============================================================#
+##          Options                                           ##
+#==============================================================#
+setopt EXTENDED_GLOB
+setopt GLOB_DOTS
+setopt CORRECT
+unsetopt CORRECT_ALL
+
+
+#==============================================================#
+##          Library                                           ##
+#==============================================================#
+# Node.js
+source /usr/share/nvm/init-nvm.sh
+
+#==============================================================#
 ##        command not found ハンドラ                           ##
 #==============================================================#
 [[ -f /usr/share/doc/pkgfile/command-not-found.zsh ]] && \
