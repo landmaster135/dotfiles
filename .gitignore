@@ -336,3 +336,6 @@ __pycache__
 docker-compose.yml
 **/docker-compose.yml
 **/.env
+
+### agent ###
+.codex
