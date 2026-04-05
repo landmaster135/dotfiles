@@ -11,7 +11,7 @@ mv $HOME/.zshrc $HOME/.zshrc.bak
 
 ### 2. Set symbolic link
 ```zsh
-ln -s $HOME/dotfiles/.config/zsh/.p10k.zsh $HOME
+ln -s $HOME/dotfiles/.config/zsh/rc/.p10k.zsh $HOME
 ln -s $HOME/dotfiles/.config/zsh/.zshrc $HOME
 ```
 

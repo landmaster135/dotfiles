@@ -44,9 +44,10 @@ export LESS_TERMCAP_me="$(tput sgr0 2>/dev/null)"
 #==============================================================#
 ##          Utilities                                         ##
 #==============================================================#
-export ZSH_HOMEDIR=$HOME/dotfiles-local/.config/zsh
-source "$ZSH_HOMEDIR/alias.zsh"
-source "$ZSH_HOMEDIR/function.zsh"
+export ZSH_HOMEDIR=$HOME/dotfiles/.config/zsh
+export ZSH_RCDIR=$ZSH_HOMEDIR/rc
+source "$ZSH_RCDIR/alias.zsh"
+source "$ZSH_RCDIR/function.zsh"
 
 #==============================================================#
 ##          Options                                           ##
@@ -61,6 +62,9 @@ unsetopt CORRECT_ALL
 ##          Library                                           ##
 #==============================================================#
 # Node.js
+# Must set PATH for Ubuntu setting (On Arch Linux PATH defaults to this value.)
+NVM_DIR=$HOME/.nvm
+# For WSL only
 source /usr/share/nvm/init-nvm.sh
 
 #==============================================================#

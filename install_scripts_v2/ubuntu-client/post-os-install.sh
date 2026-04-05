@@ -1,0 +1,142 @@
+#!/bin/bash
+
+function initialize() {
+  apt update
+  apt upgrade -y
+  apt autoremove -y
+}
+
+initialize
+
+function setup_japanese_timezone() {
+  echo "[INFO] Setting up Japanese timezone..."
+  timedatectl set-timezone Asia/Tokyo
+  echo "[INFO] Timezone setup completed."
+  timedatectl status | grep "Time zone"
+}
+
+setup_japanese_timezone
+
+function install_docker() {
+  if command -v docker >/dev/null 2>&1; then
+    echo "[INFO] Docker is already installed. Skip installation."
+    docker --version
+    return 0
+  fi
+
+  echo "[INFO] Installing Docker..."
+
+  # Ubuntu Serverでは基本的にubuntuリポジトリを使用
+  local docker_repo_os="ubuntu"
+
+  DEBIAN_FRONTEND=noninteractive apt-get update
+  DEBIAN_FRONTEND=noninteractive \
+    apt-get install --assume-yes ca-certificates curl gnupg lsb-release
+
+  install -m 0755 -d /etc/apt/keyrings
+  rm -f /etc/apt/keyrings/docker.gpg
+  curl -fsSL "https://download.docker.com/linux/${docker_repo_os}/gpg" \
+    | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  chmod a+r /etc/apt/keyrings/docker.gpg
+
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${docker_repo_os} \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+    | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  DEBIAN_FRONTEND=noninteractive apt-get update
+  DEBIAN_FRONTEND=noninteractive \
+    apt-get install --assume-yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+  # Docker service start
+  systemctl enable docker
+  systemctl start docker
+
+  # 動作確認
+  docker --version
+  docker compose version
+  echo "[INFO] Docker installation completed successfully."
+}
+
+function install_exfat() {
+  if command -v exfat >/dev/null 2>&1; then
+    echo "[INFO] exfat is already installed. Skip installation."
+    return 0
+  fi
+
+  echo "[INFO] Installing exfat..."
+  apt install exfat-fuse exfatprogs -y
+  echo "[INFO] exfat installation completed successfully."
+}
+
+function install_rclone() {
+  if command -v rclone >/dev/null 2>&1; then
+    echo "[INFO] rclone is already installed. Skip installation."
+    return 0
+  fi
+
+  echo "[INFO] Installing rclone..."
+  apt install rclone -y
+  echo "[INFO] rclone installation completed successfully."
+}
+
+function install_common() {
+  apt install sysstat -y
+  echo "[INFO] sysstat installation completed successfully."
+
+  apt install fail2ban -y
+  echo "[INFO] fail2ban installation completed successfully."
+}
+
+function install_zsh() {
+  # Zsh
+  apt install zsh -y
+  echo "[INFO] zsh installation completed successfully."
+  chsh -s $(which zsh)
+
+  # Oh My Zsh
+  git clone https://github.com/ohmyzsh/ohmyzsh.git /usr/share/oh-my-zsh
+  apt install fzf
+
+  # zsh-autocomplete
+  git clone https://github.com/marlonrichert/zsh-autocomplete /usr/share/zsh/plugins/zsh-autocomplete
+
+  # zsh-autosuggestions
+  git clone https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh/plugins/zsh-autosuggestions
+
+  # zsh-syntax-highlighting
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting /usr/share/zsh/plugins/zsh-syntax-highlighting
+
+  # zsh-history-substring-search
+  git clone https://github.com/zsh-users/zsh-history-substring-search /usr/share/zsh/plugins/zsh-history-substring-search
+
+  # Powerlevel10k
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/share/zsh-theme-powerlevel10k
+}
+
+function install_for_dev() {
+  # NVM
+  mkdir -p /usr/share/nvm
+  sudo chown -R $USER:$USER /usr/share/nvm
+  ln -s ~/.nvm/nvm.sh /usr/share/nvm/init-nvm.sh
+  nvm use v24.14.1
+  nvm alias default v24.14.1
+
+  # Lazygit
+  # For Debian 12 "Bookworm", Ubuntu 25.04 "Plucky Puffin" and earlier:
+  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
+  LAZYGIT_ARCH=$(uname -m | sed -e 's/aarch64/arm64/')
+  curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_${LAZYGIT_ARCH}.tar.gz"
+  tar xf lazygit.tar.gz lazygit
+  sudo install lazygit -D -t /usr/local/bin/
+}
+
+function install_packages() {
+  install_docker
+  install_exfat
+  install_rclone
+  install_common
+  install_zsh
+  install_for_dev
+}
+
+install_packages
