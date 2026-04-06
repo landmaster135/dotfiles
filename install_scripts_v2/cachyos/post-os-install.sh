@@ -51,7 +51,11 @@ fcitx5-configtool
 sudo pacman -S --noconfirm --needed steam
 sudo pacman -S --noconfirm --needed obs-studio
 sudo pacman -S --noconfirm --needed tmux
+
 sudo pacman -S --noconfirm --needed go
+go version
+go install golang.org/x/tools/gopls@latest
+
 sudo pacman -S --noconfirm --needed gimp
 sudo pacman -S --noconfirm --needed vlc
 sudo pacman -S --noconfirm --needed go-task

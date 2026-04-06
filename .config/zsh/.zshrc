@@ -59,7 +59,7 @@ unsetopt CORRECT_ALL
 
 
 #==============================================================#
-##          Library                                           ##
+##          For Development                                   ##
 #==============================================================#
 # Node.js
 # Must set PATH for Ubuntu setting (On Arch Linux PATH defaults to this value.)
@@ -67,8 +67,11 @@ NVM_DIR=$HOME/.nvm
 # For WSL only
 source /usr/share/nvm/init-nvm.sh
 
+# Go
+export PATH=$PATH:$(go env GOPATH)/bin
+
 #==============================================================#
-##        command not found ハンドラ                           ##
+##        command not found handler                           ##
 #==============================================================#
 [[ -f /usr/share/doc/pkgfile/command-not-found.zsh ]] && \
   source /usr/share/doc/pkgfile/command-not-found.zsh
