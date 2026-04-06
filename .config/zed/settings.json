@@ -12,11 +12,6 @@
 		{
 			"distro_name": "Ubuntu-24.04",
 			"user": null,
-			"projects": [
-				{
-					"paths": ["/home/nov/article-generator"]
-				}
-			]
 		}
 	],
 	"theme": {
