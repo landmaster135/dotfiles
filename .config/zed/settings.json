@@ -213,9 +213,15 @@
 	"auto_install_extensions": {
 		"astro": true,
 		"html": true,
+		"material-icon-theme": true,
 		"nvim-nightfox": true,
 		"powershell": true,
 		"svelte": true,
 		"toml": true
+	},
+	"icon_theme": {
+		"mode": "dark",
+		"dark": "Material Icon Theme",
+		"light": "Material Icon Theme"
 	}
 }
