@@ -209,5 +209,13 @@
 	"agent": {
 		"enabled": false
 	},
-	"context_servers": {}
+	"context_servers": {},
+	"auto_install_extensions": {
+		"astro": true,
+		"html": true,
+		"nvim-nightfox": true,
+		"powershell": true,
+		"svelte": true,
+		"toml": true
+	}
 }
