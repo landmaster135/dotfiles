@@ -1,0 +1,197 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+	"base_keymap": "VSCode",
+	"wsl_connections": [
+		{
+			"distro_name": "Ubuntu-24.04",
+			"user": null,
+			"projects": []
+		}
+	],
+	"theme": {
+		"mode": "system",
+		"light": "Ayu Light",
+		"dark": "Nightfox - opaque"
+	},
+	"ui_font_size": 15,
+	"buffer_font_size": 13,
+	"buffer_font_family": "Cascadia Code",
+	"buffer_font_weight": 400,
+	"tab_size": 2,
+	"hard_tabs": true,
+	"soft_wrap": "editor_width",
+	"cursor_shape": "bar",
+	"cursor_blink": true,
+	"current_line_highlight": "line",
+	"relative_line_numbers": "disabled",
+	"gutter": {
+		"line_numbers": true,
+		"folds": true
+	},
+	"minimap": {
+		"show": "always",
+		"thumb": "always",
+		"max_width_columns": 60
+	},
+	"sticky_scroll": {
+		"enabled": false
+	},
+	"scrollbar": {
+		"axes": {
+			"horizontal": true,
+			"vertical": true
+		}
+	},
+	"scroll_sensitivity": 1, // あいうえお
+	"fast_scroll_sensitivity": 5,
+	"vertical_scroll_margin": 1.0,
+	"hover_popover_enabled": true,
+	"hover_popover_delay": 1700,
+	"auto_signature_help": true,
+	"multi_cursor_modifier": "cmd_or_ctrl",
+	"selection_highlight": true,
+	"rounded_selection": true,
+	"seed_search_query_from_cursor": "always",
+	"wrap_guides": [],
+	"show_whitespaces": "selection",
+	"indent_guides": {
+		"enabled": true
+	},
+	"linked_edits": false,
+	"use_auto_surround": true,
+	// "format_on_save": true,
+	"auto_indent_on_paste": true,
+	"use_on_type_format": false,
+	"remove_trailing_whitespace_on_save": true,
+	"show_completions_on_input": true,
+	"completions": {
+		"words": "disabled"
+	},
+	"show_edit_predictions": true,
+	// File
+	"autosave": {
+		"after_delay": {
+			"milliseconds": 1000
+		}
+	},
+	"ensure_final_newline_on_save": true,
+	"file_types": {
+		"*.test.js": ["javascript"],
+		"**/dotfiles/**/settings.json": ["jsonc"],
+		"**/dotfiles/**/keybindings.json": ["jsonc"],
+		"**/dotfiles/**/dart.json": ["jsonc"],
+		"**/dotfiles/**/go.json": ["jsonc"],
+		"**/dotfiles/**/javascript.json": ["jsonc"],
+		"**/dotfiles/**/javascriptreact.json": ["jsonc"],
+		"**/dotfiles/**/typescript.json": ["jsonc"],
+		"**/dotfiles/**/typescriptreact.json": ["jsonc"],
+		"**/dotfiles/**/python.json": ["jsonc"],
+		"**/dotfiles/**/shellscript.json": ["jsonc"]
+	},
+	"file_scan_exclusions": [
+		"**/.git/objects/**",
+		"**/.git/subtree-cache/**",
+		"**/node_modules/*/**",
+		"**/.hg/store/**",
+		"**/fvm",
+		"**.vscode-server/**",
+		"**/flutter/**",
+		"**/go/pkg/**",
+		"**/.dotnet/**",
+		"**/.pub-cache/**",
+		"**/.dartServer/**",
+		"**/.cache/**"
+	],
+	"file_scan_inclusions": [],
+	"use_system_path_prompts": false,
+	"use_smartcase_search": false,
+	"search": {
+		"include_ignored": true
+	},
+	// Terminal
+	"terminal": {
+		"shell": {
+			"program": "/bin/zsh"
+		},
+		"env": {},
+		"font_family": "Cascadia Code",
+		"font_size": 14,
+		"line_height": "standard",
+		"cursor_shape": "block",
+		"blinking": "terminal_controlled",
+		"copy_on_select": true,
+		"max_scroll_history_lines": 1000,
+		"option_as_meta": false
+	},
+	// Tabs & Panels
+	"tab_bar": {
+		"show": true,
+		"show_tab_bar_buttons": true
+	},
+	"tabs": {
+		"file_icons": true,
+		"close_position": "left",
+		"show_close_button": "hover",
+		"activate_on_close": "left_neighbour"
+	},
+	"preview_tabs": {
+		"enabled": true,
+		"enable_preview_from_file_finder": true
+		// "enable_preview_from_code_navigation": true
+	},
+	"max_tabs": 20,
+	"restore_on_file_reopen": true,
+	"status_bar": {
+		// "show": true
+	},
+	// Project Panel
+	"project_panel": {
+		"auto_fold_dirs": true,
+		"auto_reveal_entries": true,
+		"hide_gitignore": false,
+		"show_diagnostics": "all",
+		"git_status": true
+	},
+	// Git
+	"git_panel": {
+		"starts_open": true,
+		"button": true
+	},
+	"git": {
+		"inline_blame": {
+			"enabled": true
+		}
+	},
+	// Window & Behavior
+	"confirm_quit": true,
+	"use_system_window_tabs": false,
+	"when_closing_with_no_tabs": "keep_window_open",
+	"active_pane_modifiers": {
+		"inactive_opacity": 0.9
+	},
+	// Other
+	"vim_mode": false,
+	"proxy": "",
+	"node": {
+		"npm_path": "auto"
+	},
+	"telemetry": {
+		"diagnostics": true,
+		"metrics": false
+	},
+	"outline_panel": {
+		"file_icons": true,
+		"folder_icons": true
+	},
+	"agent": {
+		"enabled": false
+	},
+	"context_servers": {}
+}
