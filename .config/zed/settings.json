@@ -12,7 +12,11 @@
 		{
 			"distro_name": "Ubuntu-24.04",
 			"user": null,
-			"projects": []
+			"projects": [
+				{
+					"paths": ["/home/nov/article-generator"]
+				}
+			]
 		}
 	],
 	"theme": {
@@ -30,6 +34,14 @@
 	"cursor_shape": "bar",
 	"cursor_blink": true,
 	"current_line_highlight": "line",
+	"experimental.theme_overrides": {
+		"players": [
+			{
+				"cursor": "#ff00ea"
+			}
+		],
+		"editor.active_line_number": "#ff99ea"
+	},
 	"relative_line_numbers": "disabled",
 	"gutter": {
 		"line_numbers": true,
@@ -38,6 +50,9 @@
 	"minimap": {
 		"show": "always",
 		"thumb": "always",
+		"thumb_border": "left_open",
+		"display_in": "active_editor",
+		"current_line_highlight": "line",
 		"max_width_columns": 60
 	},
 	"sticky_scroll": {
@@ -49,7 +64,7 @@
 			"vertical": true
 		}
 	},
-	"scroll_sensitivity": 1, // あいうえお
+	"scroll_sensitivity": 1,
 	"fast_scroll_sensitivity": 5,
 	"vertical_scroll_margin": 1.0,
 	"hover_popover_enabled": true,
@@ -137,6 +152,7 @@
 	},
 	"tabs": {
 		"file_icons": true,
+		"git_status": false,
 		"close_position": "left",
 		"show_close_button": "hover",
 		"activate_on_close": "left_neighbour"

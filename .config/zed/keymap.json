@@ -13,9 +13,17 @@
 		}
 	},
 	{
-		"context": "Editor && vim_mode == insert",
+		"context": "Pane",
 		"bindings": {
-			// "j k": "vim::NormalBefore"
+			"ctrl-tab": "pane::ActivateNextItem",
+			"ctrl-shift-tab": "pane::ActivatePreviousItem"
+		}
+	},
+	{
+		"context": "Editor",
+		"bindings": {
+			"f12": "editor::GoToDefinition",
+			"ctrl-shift-w": null
 		}
 	}
 ]
