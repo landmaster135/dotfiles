@@ -11,7 +11,7 @@
 	"wsl_connections": [
 		{
 			"distro_name": "Ubuntu-24.04",
-			"user": null,
+			"user": null
 		}
 	],
 	"theme": {
@@ -40,7 +40,10 @@
 	"relative_line_numbers": "disabled",
 	"gutter": {
 		"line_numbers": true,
-		"folds": true
+		"folds": true,
+		"runnables": false,
+		"breakpoints": false,
+		"min_line_number_digits": 4
 	},
 	"minimap": {
 		"show": "always",
