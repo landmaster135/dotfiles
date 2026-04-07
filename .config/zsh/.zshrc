@@ -22,6 +22,7 @@ HISTSIZE=1000             # Number of histories in memory
 SAVEHIST=1000             # Number of histories to be saved
 HISTFILE=~/.zsh_history
 # KEYTIMEOUT=1 # conflict with zsh-autocomplete
+ulimit -n 8192
 
 # ignoreboth 相当
 setopt HIST_IGNORE_SPACE  # スペース始まりのコマンドを残さない

@@ -252,6 +252,7 @@ alias dc-rmic='docker rmi $(docker images | grep none | cut -b 50-64)'
 alias dc-syspr="docker system prune -a"
 alias dc-sysprv="docker system prune --volumes"
 alias dc-vpr="docker volume prune -a"
+alias dc-vc="docker volume ls -q | wc -l"
 alias dc-ipr="docker image prune -a"
 alias dc-ps="docker ps"
 alias dc-psa="docker ps -a"

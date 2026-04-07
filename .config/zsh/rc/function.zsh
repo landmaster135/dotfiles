@@ -334,6 +334,19 @@ function edit-ps1-env() {
 ##          Git Functions                                     ##
 #==============================================================#
 
+# `precmd` runs on every execution.
+function precmd() {
+	# Counts File Descriptor
+  local fd_count=$(ls /proc/$$/fd | wc -l)
+  if (( fd_count > 8000 )); then
+    echo "警告: fd使用数が${fd_count}に達しています"
+  fi
+}
+
+#==============================================================#
+##          Git Functions                                     ##
+#==============================================================#
+
 function git-erase() {
   local func_name="${FUNCNAME[0]}"
   local file_pattern=""
