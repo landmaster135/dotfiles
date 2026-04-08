@@ -96,8 +96,11 @@ fi
 ##          Plugin                                            ##
 #==============================================================#
 # zsh-autocomplete の挙動を調整する設定を先に書く
-zstyle ':autocomplete:*' min-input 1        # 1文字入力で候補表示
-zstyle ':autocomplete:*' async false         # 非同期を無効化（固まる問題の対策）
+zstyle ':autocomplete:*' min-input 1  # 1文字入力で候補表示
+zstyle ':autocomplete:*' async false  # 非同期を無効化（固まる問題の対策）
+# 履歴メニューの表示行数を増やす（PgUp/PgDn でさらに遡れる）
+zstyle ':autocomplete:history-search-backward:*' list-lines 1000
+zstyle ':autocomplete:history-incremental-search-backward:*' list-lines 200
 
 source /usr/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
