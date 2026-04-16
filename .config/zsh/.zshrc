@@ -45,10 +45,12 @@ export LESS_TERMCAP_me="$(tput sgr0 2>/dev/null)"
 #==============================================================#
 ##          Utilities                                         ##
 #==============================================================#
-export ZSH_HOMEDIR=$HOME/dotfiles/.config/zsh
+export DOTFILE_HOMEDIR=$HOME/dotfiles
+export ZSH_HOMEDIR=$DOTFILE_HOMEDIR/.config/zsh
 export ZSH_RCDIR=$ZSH_HOMEDIR/rc
 source "$ZSH_RCDIR/alias.zsh"
 source "$ZSH_RCDIR/function.zsh"
+source "$ZSH_RCDIR/set_env.zsh" "$DOTFILE_HOMEDIR/env.yml"
 
 #==============================================================#
 ##          Options                                           ##
