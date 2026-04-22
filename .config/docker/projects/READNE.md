@@ -6,7 +6,9 @@
 | Bytebase | 18080 | 18080 | 310 | 1130 |
 | Bytebase (DB) | 18280 | 18280 | 41 | - |
 | ComfyUI | 8188 | 8188 | 2000 | 17730 |
-| DatHub | 5173 | 5173 | 20 | 650 |
+| DatHub Staging | 5173 | 5173 | 300 | 650 |
+| DatHub Production | 5183 | 5183 | 300 | 650 |
+| DatHub Production (Backend) | 8887 | 8887 | 300 | 650 |
 | Devbox | 8880 | 8880 | - | - |
 | AdGuard Home | 46073 | 80 | - | - |
 | Dockhand | 3100 | 3100 | 70 | 635 |
