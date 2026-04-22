@@ -10,8 +10,7 @@
 	"base_keymap": "VSCode",
 	"wsl_connections": [
 		{
-			"distro_name": "Ubuntu-24.04",
-			"user": null
+			"distro_name": "Ubuntu-24.04"
 		}
 	],
 	"theme": {
@@ -215,11 +214,22 @@
 		"nvim-nightfox": true,
 		"powershell": true,
 		"svelte": true,
-		"toml": true
+		"toml": true,
+		"docker-compose": false
 	},
 	"icon_theme": {
 		"mode": "dark",
 		"dark": "Material Icon Theme",
 		"light": "Material Icon Theme"
+	},
+	"languages": {
+		"YAML": {
+			"tab_size": 2,
+			"hard_tabs": false
+		},
+		"Python": {
+			"tab_size": 4,
+			"hard_tabs": false
+		}
 	}
 }
