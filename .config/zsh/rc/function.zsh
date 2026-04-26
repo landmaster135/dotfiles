@@ -294,6 +294,18 @@ function du-ah() {
   return 0
 }
 
+function count_files() {
+	# Parameter validation
+  if [[ -z "$1" ]]; then
+    echo "[ERROR] ${func_name}: Directory path is required."
+    return 1
+  fi
+
+	find "$1" -maxdepth 1 -type f | wc -l
+
+	return 0
+}
+
 #==============================================================#
 ##          Configuration Functions                           ##
 #==============================================================#
