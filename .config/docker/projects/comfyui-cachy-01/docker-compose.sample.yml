@@ -2,9 +2,13 @@ name: "comfyui-cachy-01"
 
 services:
   comfyui:
-    image: yanwk/comfyui-boot:cu128-slim@sha256:a643cdedcb00ffc175db8e6780c10b68967432554bb11baf41bdd7fbc54fe37e
+    image: yanwk/comfyui-boot:cu130-slim@sha256:064155b374686ac4862a063fa3ac6dd6742dad80d638def3cdc28a2fecb6b21b
     container_name: comfyui
     restart: unless-stopped
+    devices:
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
     deploy:
       resources:
         reservations:
