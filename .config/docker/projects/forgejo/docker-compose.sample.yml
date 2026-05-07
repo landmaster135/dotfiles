@@ -1,0 +1,23 @@
+name: "forgejo"
+
+networks:
+  forgejo:
+    external: false
+
+services:
+  server:
+    image: codeberg.org/forgejo/forgejo:15-rootless
+    container_name: forgejo
+    user: ${USER_UID}:${USER_GID}
+    environment:
+      - USER_UID=${USER_UID}
+      - USER_GID=${USER_GID}
+    restart: always
+    networks:
+      - forgejo
+    volumes:
+      - ${VOLUME_DATA_DIR}/forgejo/data:/var/lib/gitea
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${PUBLIC_PORT}:3000"
+      - "${PUBLIC_SSH_PORT}:2222"
