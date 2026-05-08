@@ -21,3 +21,7 @@ services:
     ports:
       - "${PUBLIC_PORT}:3000"
       - "${PUBLIC_SSH_PORT}:2222"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "forgejo"
+      tsdproxy.container_port: 3000
