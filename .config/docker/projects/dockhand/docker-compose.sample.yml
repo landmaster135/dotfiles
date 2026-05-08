@@ -1,4 +1,4 @@
-name: dockhand
+name: "dockhand"
 
 services:
   dockhand:
@@ -6,12 +6,16 @@ services:
     container_name: dockhand
     restart: unless-stopped
     ports:
-      - 3100:3000
+      - "${PUBLIC_PORT}:3000"
     volumes:
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         read_only: true
       - type: bind
-        source: ${VOLUME_DATA_DIR}/data
+        source: ${VOLUME_DATA_DIR}/dockhand/data
         target: /app/data
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "dockhand"
+      tsdproxy.container_port: 3000
