@@ -23,4 +23,9 @@ sudo mkdir -p ${VOLUME_DATA_DIR}/jellyfin/fonts
 sudo chown -R 1000:1000 ${VOLUME_DATA_DIR}/jellyfin/fonts
 sudo chmod -R 755 ${VOLUME_DATA_DIR}/jellyfin/fonts
 
+# For docker-compose stack
+sudo mkdir -p ${VOLUME_DATA_DIR}/jellyfin/stack
+sudo chown -R 1000:1000 ${VOLUME_DATA_DIR}/jellyfin/stack
+sudo chmod -R 755 ${VOLUME_DATA_DIR}/jellyfin/stack
+
 echo "Setup complete."
