@@ -62,6 +62,11 @@ services:
       # --- Docker 監視 ---
       # cgroups.plugin / go.d.plugin: コンテナ名前解決・Docker Engine 監視
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "netdata"
