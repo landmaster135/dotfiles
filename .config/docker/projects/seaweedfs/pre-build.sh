@@ -3,7 +3,10 @@
 # VOLUME_DATA_DIRの値を確認
 echo ${VOLUME_DATA_DIR}
 
-sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/data
+sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/data/master
+sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/data/filer
+sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/data/volume
+sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/data/mount
 
 # For docker-compose stack
 sudo mkdir -p ${VOLUME_DATA_DIR}/seaweedfs/stack

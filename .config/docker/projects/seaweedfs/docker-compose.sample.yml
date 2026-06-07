@@ -6,13 +6,13 @@ services:
     container_name: seaweedfs-master
     user: "${PUID}:${PGID}"
     ports:
-      - ${PUBLIC_PORT_MASTER}:9333 # REST for external
-      # - 19333:19333 # gRPC for internal
-    command: "master -ip=master -ip.bind=0.0.0.0"
+      - ${PUBLIC_PORT_MASTER}:9333
+    command: "master -ip=master -ip.bind=0.0.0.0 -mdir=/data"
     volumes:
       - type: bind
         source: ${VOLUME_DATA_DIR}/seaweedfs/data/master
         target: /data
+    restart: unless-stopped
 
   volume01:
     image: chrislusf/seaweedfs
@@ -21,34 +21,11 @@ services:
     command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8080 -dir=/data -disk=hdd'
     volumes:
       - type: bind
-        source: ${MNT_HDD_DIR_01}
+        source: ${MNT_HDD_DIR_01}/seaweedfs/data/volume
         target: /data
     depends_on:
       - master
-
-  volume02:
-    image: chrislusf/seaweedfs
-    container_name: seaweedfs-hdd02
-    user: "${PUID}:${PGID}"
-    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8081 -dir=/data -disk=hdd'
-    volumes:
-      - type: bind
-        source: ${MNT_HDD_DIR_02}
-        target: /data
-    depends_on:
-      - master
-
-  volume03:
-    image: chrislusf/seaweedfs
-    container_name: seaweedfs-hdd03
-    user: "${PUID}:${PGID}"
-    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8082 -dir=/data -disk=hdd'
-    volumes:
-      - type: bind
-        source: ${MNT_HDD_DIR_03}
-        target: /data
-    depends_on:
-      - master
+    restart: unless-stopped
 
   filer:
     image: chrislusf/seaweedfs
@@ -57,20 +34,42 @@ services:
     ports:
       - ${PUBLIC_PORT_FILER}:8888
     command: 'filer -master="master:9333" -ip.bind=0.0.0.0'
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/seaweedfs/data/filer
+        target: /data
     depends_on:
       - master
       - volume01
-      - volume02
-      - volume03
+    restart: unless-stopped
 
   s3:
     image: chrislusf/seaweedfs
+    container_name: seaweedfs-s3
     ports:
-      - ${PUBLIC_PORT_S3_API}:8333 # S3 API
+      - ${PUBLIC_PORT_S3_API}:8333
     command: 's3 -filer="filer:8888" -ip.bind=0.0.0.0'
     depends_on:
       - master
       - volume01
-      - volume02
-      - volume03
       - filer
+    restart: unless-stopped
+
+  mount:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-mount
+    privileged: true
+    devices:
+      - "/dev/fuse:/dev/fuse"
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/seaweedfs/data/mount
+        target: /mnt/seaweed
+        bind:
+          propagation: shared
+    entrypoint: weed
+    command: 'mount -filer="filer:8888" -dir=/mnt/seaweed -filer.path=/ -volumeServerAccess=filerProxy -allowOthers'
+    depends_on:
+      - master
+      - filer
+    restart: unless-stopped
