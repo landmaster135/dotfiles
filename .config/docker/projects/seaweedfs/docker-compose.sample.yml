@@ -1,0 +1,76 @@
+name: seaweedfs
+
+services:
+  master:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-master
+    user: "${PUID}:${PGID}"
+    ports:
+      - ${PUBLIC_PORT_MASTER}:9333 # REST for external
+      # - 19333:19333 # gRPC for internal
+    command: "master -ip=master -ip.bind=0.0.0.0"
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/seaweedfs/data/master
+        target: /data
+
+  volume01:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-hdd01
+    user: "${PUID}:${PGID}"
+    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8080 -dir=/data -disk=hdd'
+    volumes:
+      - type: bind
+        source: ${MNT_HDD_DIR_01}
+        target: /data
+    depends_on:
+      - master
+
+  volume02:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-hdd02
+    user: "${PUID}:${PGID}"
+    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8081 -dir=/data -disk=hdd'
+    volumes:
+      - type: bind
+        source: ${MNT_HDD_DIR_02}
+        target: /data
+    depends_on:
+      - master
+
+  volume03:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-hdd03
+    user: "${PUID}:${PGID}"
+    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8082 -dir=/data -disk=hdd'
+    volumes:
+      - type: bind
+        source: ${MNT_HDD_DIR_03}
+        target: /data
+    depends_on:
+      - master
+
+  filer:
+    image: chrislusf/seaweedfs
+    container_name: seaweedfs-filer
+    user: "${PUID}:${PGID}"
+    ports:
+      - ${PUBLIC_PORT_FILER}:8888
+    command: 'filer -master="master:9333" -ip.bind=0.0.0.0'
+    depends_on:
+      - master
+      - volume01
+      - volume02
+      - volume03
+
+  s3:
+    image: chrislusf/seaweedfs
+    ports:
+      - ${PUBLIC_PORT_S3_API}:8333 # S3 API
+    command: 's3 -filer="filer:8888" -ip.bind=0.0.0.0'
+    depends_on:
+      - master
+      - volume01
+      - volume02
+      - volume03
+      - filer

@@ -29,6 +29,7 @@
 | n8n | 5678 | 5678 | - | - |
 | Obsidian | 8090 | 8090 | - | - |
 | Qdrant | 6333 | 6333 | - | - |
+| SeaweedFS | 9333, 8888, 8333 | 9333, 8888, 8333 | - | - |
 | Syncthing | 8384 | 8384 | 17 | 60 |
 | Tailscale | - | - | 18 | 157 |
 | Tailscale Docker Proxy | - | - | 17 | 82 |
