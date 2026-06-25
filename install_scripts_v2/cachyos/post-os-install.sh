@@ -60,6 +60,8 @@ sudo pacman -S --noconfirm --needed gimp
 sudo pacman -S --noconfirm --needed vlc
 sudo pacman -S --noconfirm --needed go-task
 
+sudo pacman -S --noconfirm --needed ddrescue
+
 # For AUR
 sudo pacman -S --noconfirm --needed git
 sudo pacman -S --noconfirm --needed base-devel

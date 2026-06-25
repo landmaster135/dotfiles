@@ -1,0 +1,29 @@
+name: "postgres"
+
+services:
+  db:
+    image: postgres:18
+    container_name: postgres-main-db
+    hostname: ${POSTGRES_DB_HOST}
+    mem_limit: 512m
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: on-failure:5
+    ports:
+      - "${PUBLIC_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/18/docker
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/postgres/db
+        target: /var/lib/postgresql
+        read_only: false
