@@ -60,7 +60,10 @@ sudo pacman -S --noconfirm --needed gimp
 sudo pacman -S --noconfirm --needed vlc
 sudo pacman -S --noconfirm --needed go-task
 
+# For file processing
 sudo pacman -S --noconfirm --needed ddrescue
+sudo pacman -S --noconfirm --needed ffmpeg
+sudo pacman -S --noconfirm --needed libwebp
 
 # For AUR
 sudo pacman -S --noconfirm --needed git
