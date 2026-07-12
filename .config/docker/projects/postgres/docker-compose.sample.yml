@@ -5,7 +5,13 @@ services:
     image: postgres:18
     container_name: postgres-main-db
     hostname: ${POSTGRES_DB_HOST}
-    mem_limit: 512m
+    mem_limit: 2g
+    command: >
+      postgres
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c maintenance_work_mem=128MB
+      -c work_mem=8MB
     cpu_shares: 768
     security_opt:
       - no-new-privileges:true
