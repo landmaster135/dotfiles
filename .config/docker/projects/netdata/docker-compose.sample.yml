@@ -6,7 +6,7 @@ services:
     container_name: netdata
     hostname: ${HOSTNAME}  # ホスト名を環境変数で上書き可能
     ports:
-      - 19999:19999
+      - ${PUBLIC_PORT}:19999
 
     # systemd-journal.plugin など特権が必要なプラグインのために host PID を使用
     pid: host
@@ -15,11 +15,12 @@ services:
     network_mode: host
 
     restart: unless-stopped
-
     cap_add:
       - SYS_PTRACE  # local-listeners: ポートとプロセスのマッピングに必要
       - SYS_ADMIN   # cgroups.plugin / network-viewer.plugin に必要
 
+    mem_limit: 1g
+    cpu_shares: 1024
     security_opt:
       - apparmor:unconfined
 
@@ -70,4 +71,4 @@ services:
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "netdata"
-      tsdproxy.container_port: 19999
+      tsdproxy.container_port: ${PUBLIC_PORT}
