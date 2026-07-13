@@ -17,6 +17,8 @@ services:
       MEMOS_DRIVER: postgres
       MEMOS_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_DB_HOST}:5432/${POSTGRES_DB}?sslmode=disable"
     restart: on-failure:5
+    mem_limit: 256m
+    cpu_shares: 1024
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -44,7 +46,7 @@ services:
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "pg_isready", "-q", "-d", "memos", "-U", "${POSTGRES_USER}"]
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
       timeout: 45s
       interval: 10s
       retries: 10
