@@ -12,11 +12,11 @@
 		"dock": "left"
 	},
 	"base_keymap": "VSCode",
-		"wsl_connections": [
-	{
-	  "distro_name": "Ubuntu-24.04",
-	  "user": null
-	}
+	"wsl_connections": [
+		{
+		  "distro_name": "Ubuntu-24.04",
+		  "user": null
+		}
 	],
 	"theme": {
 		"mode": "system",
@@ -214,9 +214,9 @@
 		"metrics": false
 	},
 	"outline_panel": {
-		"dock": "left",
-		"file_icons": true,
-		"folder_icons": true
+		"folder_indicator": "icon",
+	  "dock": "left",
+	  "file_icons": true
 	},
 	"agent": {
 		"dock": "right",
