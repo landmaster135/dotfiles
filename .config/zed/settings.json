@@ -243,6 +243,18 @@
 			"tab_size": 2,
 			"hard_tabs": false
 		},
+		"JSON": {
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "WGSL/WESL": {
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "tab_size": 2,
+      "hard_tabs": false
+    },
     "Rust": {
       "tab_size": 2,
       "hard_tabs": false
