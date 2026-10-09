@@ -362,3 +362,4 @@ export RCLONE_BUFFER_SIZE=16M
 export RCLONE_RETRIES=3
 export RCLONE_CHECKSUM=true
 export RCLONE_LOG_LEVEL=INFO
+. "$HOME/.cargo/env"
