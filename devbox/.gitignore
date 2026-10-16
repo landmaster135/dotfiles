@@ -100,3 +100,17 @@ agent-work/*
 ### agent tools ###
 **/mcps/*
 !**/mcps/.gitkeep
+
+# Kept resources for the devbox repository
+!/internal/cron_workflow/infrastructure/env/
+!/internal/cron_workflow/infrastructure/env/**
+!/internal/db_server_sync/usecases/test_data/tmp/
+!/internal/db_server_sync/usecases/test_data/tmp/.gitkeep
+!/internal/exif_mirror/test_data/tmp/
+!/internal/exif_mirror/test_data/tmp/.gitkeep
+!/internal/exif_modifier/test_data/tmp/
+!/internal/exif_modifier/test_data/tmp/**
+!/internal/image_archiver/test_data/tmp/
+!/internal/image_archiver/test_data/tmp/.gitkeep
+!/internal/notion_blog_content_extractor/usecases/test_data/tmp/
+!/internal/notion_blog_content_extractor/usecases/test_data/tmp/.gitkeep
