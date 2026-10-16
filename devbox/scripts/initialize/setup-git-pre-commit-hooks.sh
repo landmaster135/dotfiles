@@ -1,47 +1,58 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Git pre-commit hook用のGo製シークレット検知ツールセットアップスクリプト
 # ビルド済みバイナリを使用してGitフックを設定
 
-set -e
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+
+function check_requirements() {
+  local tool_dir="$1"
+  command -v git >/dev/null 2>&1 || {
+    echo "❌ Git is required" >&2
+    return 1
+  }
+  if [[ ! -d "$tool_dir" ]] ||
+     [[ "$(git -C "$tool_dir" rev-parse --is-inside-work-tree 2>/dev/null)" != true ]]; then
+    echo "❌ Not a Git working tree: $tool_dir" >&2
+    return 1
+  fi
+}
 
 function process_for_pre_commit_hook() {
   # local tool_dir="."
   local tool_dir="$1"
-  local dir_for_common_hooks="$tool_dir/.git/hooks"
+  local dir_for_common_hooks
+  dir_for_common_hooks=$(git -C "$tool_dir" rev-parse --path-format=absolute --git-path hooks)
   local dir_for_common_pre_commit_hooks="$dir_for_common_hooks/pre-commit"
   local dir_for_git_pre_commit_hooks="$dir_for_common_hooks/git-pre-commit-hooks"
   local file_for_git_pre_commit_hooks="$dir_for_git_pre_commit_hooks/git-pre-commit-hooks"
 
   # 色付きの出力用
-  RED='\033[0;31m'
-  GREEN='\033[0;32m'
-  YELLOW='\033[1;33m'
-  BLUE='\033[0;34m'
-  NC='\033[0m'
+  local RED='\033[0;31m'
+  local GREEN='\033[0;32m'
+  local YELLOW='\033[1;33m'
+  local BLUE='\033[0;34m'
+  local NC='\033[0m'
 
   echo -e "${BLUE}🔧 Setting up Go-based secret detector for Git hooks...${NC}"
 
-  # 現在のディレクトリを確認
-  if [ ! -d ".git" ]; then
-    echo -e "${RED}❌ This directory is not a Git repository${NC}"
-    exit 1
-  fi
-
   # ビルド済みバイナリのパス
-  BINARY_PATH="./pkg/bin/cli/linux_amd64/git-pre-commit-hooks"
+  local BINARY_PATH="$ROOT_DIR/pkg/bin/cli/linux_amd64/git-pre-commit-hooks"
 
   # バイナリが存在するかチェック
-  if [ ! -f "$BINARY_PATH" ]; then
-    echo -e "${RED}❌ Binary not found at $BINARY_PATH${NC}"
-    echo -e "${YELLOW}Please run './scripts/build_secret_detector.sh' first${NC}"
+  if [[ ! -f "$BINARY_PATH" ]]; then
+    echo -e "${RED}❌ Binary not found at $BINARY_PATH${NC}" >&2
+    echo -e "${YELLOW}Please run '$ROOT_DIR/scripts/build/build_git_pre_commit_hooks.sh' from '$ROOT_DIR' first${NC}" >&2
     exit 1
   fi
 
   echo -e "${GREEN}✅ Binary found: $BINARY_PATH${NC}"
 
   # バイナリが実行可能かチェック
-  if [ ! -x "$BINARY_PATH" ]; then
+  if [[ ! -x "$BINARY_PATH" ]]; then
     echo -e "${YELLOW}⚠️  Making binary executable...${NC}"
     chmod +x "$BINARY_PATH"
   fi
@@ -55,6 +66,12 @@ function process_for_pre_commit_hook() {
   chmod +x "$file_for_git_pre_commit_hooks"
 
   # Pre-commitフックを作成
+  if [[ -e "$dir_for_common_pre_commit_hooks" || -L "$dir_for_common_pre_commit_hooks" ]]; then
+    local backup_path
+    backup_path=$(mktemp "$dir_for_common_pre_commit_hooks.backup.XXXXXXXX")
+    cp -p -- "$dir_for_common_pre_commit_hooks" "$backup_path"
+    echo "Existing hook backed up to: $backup_path"
+  fi
   echo -e "${YELLOW}🔗 Creating pre-commit hook...${NC}"
 
   cat > "$dir_for_common_pre_commit_hooks" << 'EOF'
@@ -99,8 +116,8 @@ EOF
   echo "  • Hook: $dir_for_common_pre_commit_hooks"
   echo ""
   echo -e "${BLUE}🔧 To update the tool:${NC}"
-  echo "  1. Run: ./scripts/build_secret_detector.sh"
-  echo "  2. Run: ./scripts/setup-git-pre-commit-hooks-hook.sh"
+  echo "  1. Run from $ROOT_DIR: ./scripts/build/build_git_pre_commit_hooks.sh"
+  echo "  2. Run: $SCRIPT_DIR/setup-git-pre-commit-hooks.sh \"$tool_dir\""
   echo ""
   echo -e "${BLUE}🗑️  To remove the hook:${NC}"
   echo "  • Delete: $dir_for_common_pre_commit_hooks"
@@ -114,12 +131,14 @@ function show_help() {
 [INFO] [$FUNC] Git pre-commit hook用の処理を行います。
 
 使用方法:
-  ./scripts/initialize/setup-git-pre-commit-hooks.sh <HOOK_TOOL_DIR>
+  $SCRIPT_DIR/setup-git-pre-commit-hooks.sh <TARGET_REPOSITORY>
 
 例:
   ./scripts/initialize/setup-git-pre-commit-hooks.sh '/home/user/my_project'
 
 --help を指定するとこのメッセージを表示します。
+実行ディレクトリに依存せず、指定先の Git hooks ディレクトリに設定します。
+既存の pre-commit はバックアップしてから置き換えます。
 EOF
 }
 
@@ -127,14 +146,19 @@ EOF
 function main() {
   local FUNC="${FUNCNAME[0]}"
 
-  if [[ "$1" == "--help" ]]; then
+  if [[ "${1:-}" == "--help" ]]; then
     show_help
     exit 0
   fi
 
+  if [[ $# -ne 1 || -z "$1" ]]; then
+    show_help >&2
+    return 1
+  fi
   local tool_dir="$1"
 
-  process_for_pre_commit_hook $tool_dir
+  check_requirements "$tool_dir"
+  process_for_pre_commit_hook "$tool_dir"
 }
 
 main "$@"
