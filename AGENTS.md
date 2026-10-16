@@ -7,7 +7,7 @@
 
 ## Summary
 
-このファイルは、エージェント向けの入口です。  
+このファイルは、エージェント向けの入口です。
 実装・設計・運用の詳細ルールは `docs/` 側を正本とします。
 
 - `docs/project_overview/project_overview.md`
@@ -19,6 +19,7 @@
 
 ```text
 タスクに着手したい
+├─ devbox 関連の情報を確認したい → devbox/AGENTS.md
 └─ タスクの指示書を確認したい → `.agents/tmp/instructions.md`
 ```
 
