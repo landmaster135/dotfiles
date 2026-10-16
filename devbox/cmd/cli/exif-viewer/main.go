@@ -1,0 +1,90 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log"
+	"os"
+
+	usecases "github.com/landmaster135/devbox/internal/exif_viewer/usecases"
+)
+
+const version = "1.0.0"
+
+func main() {
+	// フラグを定義
+	directory := flag.String("dir", ".", "画像ファイルを検索するディレクトリ")
+	extensionsStr := flag.String("ext", "jpg,jpeg,tiff,tif,png", "対象の画像拡張子（カンマ区切り）")
+	propertiesStr := flag.String("props", "", "表示するExifプロパティ（カンマ区切り、空の場合は全て表示）")
+	maxProps := flag.Int("max", 0, "表示するプロパティの最大数（0の場合は制限なし）")
+	showHelp := flag.Bool("help", false, "ヘルプメッセージを表示")
+	showVersion := flag.Bool("version", false, "バージョン情報を表示")
+	verbose := flag.Bool("v", false, "詳細なログを出力")
+	recursive := flag.Bool("r", false, "サブディレクトリも再帰的に検索")
+	showProperties := flag.Bool("list-props", false, "利用可能なプロパティ一覧を表示")
+	showDataTypes := flag.Bool("types", false, "プロパティのデータ型も表示")
+
+	// カスタムUsage関数を設定
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "exif-viewer - EXIF Property Viewer Tool\n\n")
+		fmt.Fprintf(os.Stderr, "USAGE:\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer [OPTIONS]\n\n")
+		fmt.Fprintf(os.Stderr, "OPTIONS:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nEXAMPLES:\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos -ext jpg,png -props DateTime,Camera\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos -max 5\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos -r -v\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos -list-props\n")
+		fmt.Fprintf(os.Stderr, "    exif-viewer -dir ./photos -types\n")
+	}
+
+	// フラグを解析
+	flag.Parse()
+
+	// ログ設定
+	if *verbose {
+		log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
+	} else {
+		log.SetFlags(log.Ldate | log.Ltime)
+	}
+
+	config, err := usecases.NewConfig(*directory, *extensionsStr, *propertiesStr, *maxProps, *verbose, *recursive, *showProperties, *showDataTypes)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// ヘルプまたはバージョン表示
+	if *showHelp {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if *showVersion {
+		fmt.Printf("exif-viewer version %s\n", version)
+		os.Exit(0)
+	}
+
+	// ExifViewerServiceを作成
+	service := usecases.NewExifViewerService()
+
+	// EXIF表示処理を実行
+	output, err := service.ProcessExifViewing(config)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if config.Verbose {
+		// ファイル数をログ出力するために画像ファイルを検索
+		imageFiles, err := service.FindImageFiles(config)
+		if err == nil {
+			log.Printf("Found %d image files\n", len(imageFiles))
+		}
+	}
+
+	// 結果を出力
+	fmt.Print(output)
+}

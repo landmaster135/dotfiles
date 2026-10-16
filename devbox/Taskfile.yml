@@ -1,0 +1,100 @@
+version: "3"
+tasks:
+  default:
+    desc: "デフォルト実行タスク"
+    cmds:
+      - task: test:all:cov
+      - task: build
+      - task: build:mcp
+  alias:
+    desc: "タスク一覧表示"
+    cmds:
+      - task --list-all
+  find:docs:
+    desc: "List files in the docs directory at the project root."
+    cmds:
+      - find docs | sort -f
+  find:agents:
+    desc: "List files in the agent directory at the project root"
+    cmds:
+      - find agent-work | sort -f
+  find:pjroot:
+    desc: "List files in the project root directory"
+    cmds:
+      - find . -maxdepth 1 -type f | sort -f
+  find:sql:
+    desc: "List files in the directory for SQL"
+    cmds:
+      - echo 'No registered command...'
+  run:dev:
+    desc: "Run an executable"
+    cmds:
+      - go run {{ .DIR }}
+    vars:
+      DIR: ./cmd/cli/{{ .CLI_ARGS }}
+  run:tee:
+    desc: "Run an executable with the file recording log"
+    cmds:
+      - go run {{ .DIR }} | tee
+    vars:
+      DIR: ./cmd/cli/{{ .CLI_ARGS }}
+  run:backend:
+    desc: "Run an executable for backend"
+    cmds:
+      - echo 'No registered command...'
+  run:http:
+    desc: "Run an executable for HTTP server"
+    cmds:
+      - go run ./cmd/http/main.go
+  check:
+    desc: "Check on syntax and linting"
+    cmds:
+      - go vet ./...
+  test:cov:
+    desc: "Run tests and confirm the test coverage"
+    cmds:
+      - go test -cover
+  test:all:cov:
+    desc: "Run all tests and confirm the test coverage"
+    cmds:
+      - go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out && go tool cover -html=coverage.out -o coverage.html
+  test:all:out:
+    desc: "Run all tests and output test coverage as files"
+    cmds:
+      - go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out && go tool cover -html=coverage.out -o coverage.html
+  build:
+    desc: "Build files at the project root directory"
+    cmds:
+      - ./scripts/build/build.sh
+  build:dev:
+    desc: "Build files for development"
+    cmds:
+      - pkg/docker/dockerize_http_dev.sh
+  build:staging:
+    desc: "Build files for development"
+    cmds:
+      - pkg/docker/dockerize_http.sh
+  build:prod:
+    desc: "Build files for development"
+    cmds:
+      - echo 'No registered command...'
+  build:pre:
+    desc: "Run required pre-build processes"
+    cmds:
+      - ./scripts/initialize/script_generator_to_build.sh {{ .CLI_ARGS }}
+  build:mcp:
+    desc: "Build MCP tools"
+    cmds:
+      - ./scripts/build/build_mcp_tools.sh
+  build:zip:tools:
+    desc: "Zip compiled tool directories into pkg/bin"
+    cmds:
+      - ./scripts/ops/zip_compiled_tools.sh
+  domain:mig:new:
+    desc: "Initialize resources for a new domain"
+    cmds:
+      - ./scripts/initialize/create_project_files.sh {{ .CLI_ARGS }}
+  domain:mig:run:
+    desc: "Run process to migrate domain data"
+    cmds:
+      - echo 'No registered command...'
