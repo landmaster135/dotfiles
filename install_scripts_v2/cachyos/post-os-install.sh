@@ -104,6 +104,9 @@ nvm --version
 nvm install --lts
 nvm use --lts
 
+# Font
+sudo pacman -S ttf-cascadia-code
+
 # pended packages...
 # sudo pacman -S --noconfirm --needed openbsd-netcat
 # sudo pacman -S --noconfirm --needed zed
