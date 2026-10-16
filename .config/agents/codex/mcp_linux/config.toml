@@ -11,8 +11,11 @@ sandbox_mode = "workspace-write"
 notify = [
   "bash",
   "-lc",
-  "/home/user/devbox/scripts/agent/notification_about_agent_works_terminated.sh DISCORD_WEBHOOK_URL Codex完了！",
+  "/home/user/dotfiles/devbox/scripts/agent/notification_about_agent_works_terminated.sh DISCORD_WEBHOOK_URL Codex完了！",
 ]
+
+[tui]
+screen_reader_detection_done = true
 
 [sandbox_workspace_write]
 exclude_slash_tmp = true
@@ -30,38 +33,38 @@ web_search = "live"
 skills = true
 hooks = true
 
-[projects."/home/user/devbox"]
+[projects."/home/user/dotfiles/devbox"]
 trust_level = "trusted"
 
 [mcp_servers.arithmetic_calculator]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["arith_calc"]
 disabled = false
 
 [mcp_servers.datetime_calculator]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["datetime_calc"]
 disabled = false
 
 [mcp_servers.http_request]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["http_request"]
 disabled = false
 
 [mcp_servers.brave_web_search]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["brave_web_search"]
 disabled = false
 autoApprove = ["brave_web_search"]
 env = { BRAVE_API_KEY = "YOUR_BRAVE_API_KEY" }
 
 [mcp_servers."get-current-timezone"]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["timezone"]
 disabled = false
 
 [mcp_servers.filesystem]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["filesystem"]
 disabled = false
 default_tools_approval_mode = "approve"
@@ -72,18 +75,18 @@ tools = {
 }
 
 [mcp_servers.get_youtube_transcript]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["youtube_transcript"]
 disabled = false
 
 [mcp_servers.github]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["github"]
 disabled = false
 env = { GITHUB_PERSONAL_ACCESS_TOKEN = "YOUR_GITHUB_PAT" }
 
 [mcp_servers.postgresql]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["postgresql"]
 disabled = true
 env = { POSTGRESQL_DATABASE_URL = "YOUR_URL" }
@@ -91,35 +94,35 @@ timeout = "30s"
 request_timeout = "60s"
 
 [mcp_servers.everart]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["everart"]
 disabled = false
 env = { EVERART_API_KEY = "YOUR_KEY" }
 
 [mcp_servers.sequentialthinking]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["sequentialthinking"]
 disabled = false
 
 [mcp_servers.figma]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["figma"]
 disabled = false
 env = { FIGMA_API_KEY = "YOUR_KEY" }
 
 [mcp_servers.google_drive]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["gdrive"]
 disabled = false
 env = { GDRIVE_CREDENTIALS_PATH = "YOUR_PATH" }
 
 [mcp_servers.duckduckgo_instant_search]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["duckduckgo_search"]
 disabled = true
 
 [mcp_servers.git_commit_message_generator]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["git_diff_recorder"]
 disabled = false
 tools = {
@@ -129,22 +132,22 @@ tools = {
 }
 
 [mcp_servers.git_commit_history_retriever]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["git_commit_history_retriever"]
 disabled = false
 
 [mcp_servers.context7]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["context7"]
 disabled = false
 
 [mcp_servers.service_implementing_viewer]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["service_implementing_viewer"]
 disabled = false
 
 [mcp_servers.notion_sync]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["notion_sync"]
 disabled = false
 env = { NOTION_INTEGRATION_TOKEN = "YOUR_VALUE", NOTION_ENDPOINT_URL = "YOUR_VALUE", NOTION_ENDPOINT_URL_TO_PATCH_WEB_CLIP = "YOUR_VALUE" }
@@ -152,24 +155,24 @@ timeout = "180s"
 request_timeout = "210s"
 
 [mcp_servers.weather_notificator]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["weather_notificator"]
 disabled = false
 env = { OPENWEATHER_API_KEY = "YOUR_VALUE", DISCORD_WEBHOOK_URL = "YOUR_VALUE" }
 
 [mcp_servers.open_weather_map]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["open_weather_map"]
 disabled = false
 env = { OPENWEATHER_API_KEY = "YOUR_VALUE" }
 
 [mcp_servers.ops_for_golang]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["ops_for_golang"]
 disabled = false
 
 [mcp_servers.web_clipper]
-command = "/home/user/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
+command = "/home/user/dotfiles/devbox/pkg/bin/mcp/linux_amd64/devbox-mcp-tools"
 args = ["web_clipper"]
 disabled = false
 tools = {

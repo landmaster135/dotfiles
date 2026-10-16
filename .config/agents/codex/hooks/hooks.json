@@ -6,7 +6,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "$HOME/devbox/.config/codex/hooks/scripts/guard-tmp-output.sh",
+						"command": "$HOME/dotfiles/devbox/.config/codex/hooks/scripts/guard-tmp-output.sh",
 						"timeout": 5,
 						"statusMessage": "Checking temporary output policy"
 					}
