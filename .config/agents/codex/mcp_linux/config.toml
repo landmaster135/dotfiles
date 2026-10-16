@@ -1,5 +1,5 @@
-model = "gpt-5.5"
-model_reasoning_effort = "high"
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
 
 model_reasoning_summary = "auto"
 hide_agent_reasoning = true
@@ -14,8 +14,13 @@ notify = [
   "/home/user/dotfiles/devbox/scripts/agent/notification_about_agent_works_terminated.sh DISCORD_WEBHOOK_URL Codex完了！",
 ]
 
+web_search = "live"
+
 [tui]
 screen_reader_detection_done = true
+
+[tui.model_availability_nux]
+"gpt-6.1-sol" = 4
 
 [sandbox_workspace_write]
 exclude_slash_tmp = true
@@ -27,13 +32,11 @@ exclude = ["env.yml"]
 [notice.model_migrations]
 gpt-5-codex = "gpt-5.3-codex"
 
-web_search = "live"
-
 [features]
 skills = true
 hooks = true
 
-[projects."/home/user/dotfiles/devbox"]
+[projects."/home/user/dotfiles"]
 trust_level = "trusted"
 
 [mcp_servers.arithmetic_calculator]
