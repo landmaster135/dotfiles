@@ -1,0 +1,6 @@
+prefix_rule(pattern=["go", "test", "-coverprofile=coverage.out", "./internal/sqlite/..."], decision="allow")
+prefix_rule(pattern=["go", "vet", "./cmd/cli/sqlite", "./internal/sqlite/..."], decision="allow")
+prefix_rule(pattern=["bash", "scripts/build/build_sqlite.sh"], decision="allow")
+prefix_rule(pattern=["go", "test"], decision="allow")
+prefix_rule(pattern=["go", "get"], decision="allow")
+prefix_rule(pattern=["go", "run"], decision="allow")
