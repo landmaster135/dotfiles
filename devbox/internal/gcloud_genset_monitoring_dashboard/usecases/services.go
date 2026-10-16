@@ -10,6 +10,7 @@ import (
 	run "cloud.google.com/go/run/apiv2"
 	runpb "cloud.google.com/go/run/apiv2/runpb"
 	"github.com/googleapis/gax-go/v2"
+	"golang.org/x/oauth2"
 	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
@@ -36,28 +37,27 @@ type Service struct {
 	serviceAccountID string
 	cloudRunClient   CloudRunClient
 	dashboardClient  DashboardClient
+	// テストでは認証情報に依存しない生成関数を注入する。
+	credentialsTokenSource func(context.Context, impersonate.CredentialsConfig, ...option.ClientOption) (oauth2.TokenSource, error)
 }
 
 // NewService は新しいServiceインスタンスを作成する
 func NewService(project, location, serviceName, serviceAccountID string) *Service {
 	return &Service{
-		project:          project,
-		location:         location,
-		serviceName:      serviceName,
-		serviceAccountID: serviceAccountID,
+		project:                project,
+		location:               location,
+		serviceName:            serviceName,
+		serviceAccountID:       serviceAccountID,
+		credentialsTokenSource: impersonate.CredentialsTokenSource,
 	}
 }
 
 // NewServiceWithClients はクライアントを注入してServiceインスタンスを作成する（テスト用）
 func NewServiceWithClients(project, location, serviceName, serviceAccountID string, cloudRunClient CloudRunClient, dashboardClient DashboardClient) *Service {
-	return &Service{
-		project:          project,
-		location:         location,
-		serviceName:      serviceName,
-		serviceAccountID: serviceAccountID,
-		cloudRunClient:   cloudRunClient,
-		dashboardClient:  dashboardClient,
-	}
+	s := NewService(project, location, serviceName, serviceAccountID)
+	s.cloudRunClient = cloudRunClient
+	s.dashboardClient = dashboardClient
+	return s
 }
 
 // CreateDashboardForCloudRun はCloud Runサービス用のモニタリングダッシュボードを作成する
@@ -194,7 +194,7 @@ func (s *Service) getClientOptions(ctx context.Context) ([]option.ClientOption, 
 		serviceAccountEmail := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", s.serviceAccountID, s.project)
 		log.Printf("サービスアカウントを使用します: %s", serviceAccountEmail)
 
-		ts, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
+		ts, err := s.credentialsTokenSource(ctx, impersonate.CredentialsConfig{
 			TargetPrincipal: serviceAccountEmail,
 			Scopes:          []string{"https://www.googleapis.com/auth/cloud-platform"},
 		})

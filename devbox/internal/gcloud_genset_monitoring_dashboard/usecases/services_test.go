@@ -9,6 +9,9 @@ import (
 	dashboardpb "cloud.google.com/go/monitoring/dashboard/apiv1/dashboardpb"
 	runpb "cloud.google.com/go/run/apiv2/runpb"
 	"github.com/googleapis/gax-go/v2"
+	"golang.org/x/oauth2"
+	"google.golang.org/api/impersonate"
+	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -336,9 +339,9 @@ func TestVerifyCloudRunService_WithMock(t *testing.T) {
 // TestCreateMonitoringDashboard_WithMock はcreateMonitoringDashboardのモックを使用したテスト
 func TestCreateMonitoringDashboard_WithMock(t *testing.T) {
 	tests := []struct {
-		name        string
-		setupMock   func(*MockDashboardClient)
-		expectError bool
+		name         string
+		setupMock    func(*MockDashboardClient)
+		expectError  bool
 		errorMessage string
 		expectedName string
 	}{
@@ -351,7 +354,7 @@ func TestCreateMonitoringDashboard_WithMock(t *testing.T) {
 					}, nil
 				}
 			},
-			expectError: false,
+			expectError:  false,
 			expectedName: "projects/test-project/dashboards/test-dashboard-123",
 		},
 		{
@@ -361,7 +364,7 @@ func TestCreateMonitoringDashboard_WithMock(t *testing.T) {
 					return nil, fmt.Errorf("dashboard creation failed")
 				}
 			},
-			expectError: true,
+			expectError:  true,
 			errorMessage: "ダッシュボードの作成リクエストに失敗しました",
 		},
 	}
@@ -419,7 +422,7 @@ func TestCreateDashboardForCloudRun_WithMock(t *testing.T) {
 					}, nil
 				}
 			},
-			expectError: false,
+			expectError:    false,
 			expectedResult: "ダッシュボードが正常に作成されました: projects/test-project/dashboards/test-dashboard-123",
 		},
 		{
@@ -430,8 +433,8 @@ func TestCreateDashboardForCloudRun_WithMock(t *testing.T) {
 				}
 			},
 			setupDashboardMock: func(mock *MockDashboardClient) {},
-			expectError: true,
-			errorMessage: "指定されたCloud Runサービスが見つかりません",
+			expectError:        true,
+			errorMessage:       "指定されたCloud Runサービスが見つかりません",
 		},
 		{
 			name: "ServiceVerificationFailed_Error",
@@ -441,8 +444,8 @@ func TestCreateDashboardForCloudRun_WithMock(t *testing.T) {
 				}
 			},
 			setupDashboardMock: func(mock *MockDashboardClient) {},
-			expectError: true,
-			errorMessage: "cloud Runサービスの確認に失敗しました",
+			expectError:        true,
+			errorMessage:       "cloud Runサービスの確認に失敗しました",
 		},
 		{
 			name: "DashboardCreationFailed_Error",
@@ -458,7 +461,7 @@ func TestCreateDashboardForCloudRun_WithMock(t *testing.T) {
 					return nil, fmt.Errorf("dashboard creation failed")
 				}
 			},
-			expectError: true,
+			expectError:  true,
 			errorMessage: "ダッシュボードの作成に失敗しました",
 		},
 	}
@@ -493,8 +496,8 @@ func TestCreateDashboardForCloudRun_WithMock(t *testing.T) {
 	}
 }
 
-// TestGetClientOptions_Normal はgetClientOptionsのテスト
-func TestGetClientOptions_Normal(t *testing.T) {
+// TestServiceGetClientOptions は認証情報に依存せずオプション生成を検証する。
+func TestServiceGetClientOptions(t *testing.T) {
 	tests := []struct {
 		name             string
 		serviceAccountID string
@@ -511,13 +514,51 @@ func TestGetClientOptions_Normal(t *testing.T) {
 			serviceAccountID: "",
 			expectError:      false,
 		},
+		{
+			name:             "WithServiceAccount_Error",
+			serviceAccountID: "test-sa",
+			expectError:      true,
+			errorMessage:     "サービスアカウントのimpersonationに失敗しました: token source creation failed",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewService("test-project", "us-central1", "test-service", tt.serviceAccountID)
 
-			_, err := service.getClientOptions(context.Background())
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			calls := 0
+			service.credentialsTokenSource = func(gotCtx context.Context, config impersonate.CredentialsConfig, opts ...option.ClientOption) (oauth2.TokenSource, error) {
+				calls++
+				if gotCtx != ctx {
+					t.Error("context was not forwarded")
+				}
+				if config.TargetPrincipal != "test-sa@test-project.iam.gserviceaccount.com" {
+					t.Errorf("unexpected target: %s", config.TargetPrincipal)
+				}
+				if len(config.Scopes) != 1 || config.Scopes[0] != "https://www.googleapis.com/auth/cloud-platform" {
+					t.Errorf("unexpected scopes: %v", config.Scopes)
+				}
+				if tt.expectError {
+					return nil, fmt.Errorf("token source creation failed")
+				}
+				return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "test-token"}), nil
+			}
+			opts, err := service.getClientOptions(ctx)
+			expectedCalls, expectedOptions := 0, 0
+			if tt.serviceAccountID != "" {
+				expectedCalls = 1
+				if !tt.expectError {
+					expectedOptions = 1
+				}
+			}
+			if calls != expectedCalls {
+				t.Errorf("expected %d factory calls, got %d", expectedCalls, calls)
+			}
+			if len(opts) != expectedOptions {
+				t.Errorf("expected %d options, got %d", expectedOptions, len(opts))
+			}
 
 			if tt.expectError {
 				if err == nil {
