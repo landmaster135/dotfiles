@@ -1,0 +1,57 @@
+# syntax=docker/dockerfile:1
+
+# Build stage: compile the HTTP server binary
+FROM golang:1.25-bookworm AS builder
+WORKDIR /workspace
+
+# Download dependencies first for better layer caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the entire source tree and build the Cloud Run entrypoint
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w" -o /workspace/bin/server ./cmd/http
+
+# Runtime stage: minimal image for Cloud Run
+FROM debian:bookworm-slim
+
+# 必要最小限のパッケージをインストール
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    gnupg && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" \
+      > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    lm-sensors \
+    postgresql-client-common \
+    postgresql-client-18 \
+    tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+# PostgreSQL の pg_dump を優先的に参照させる
+ENV PATH="/usr/lib/postgresql/18/bin:${PATH}"
+
+# イメージビルド時に pg_dump の存在とバージョンを検証
+RUN pg_dump --version
+RUN sensors -v
+
+WORKDIR /app
+
+# 非rootユーザーを作成
+RUN groupadd -g 65532 nonroot && \
+    useradd -u 65532 -g nonroot -s /bin/bash -m nonroot
+
+COPY --from=builder /workspace/bin/server /app/server
+RUN chown -R nonroot:nonroot /app
+USER nonroot
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -fsS "http://127.0.0.1:${CRON_URL_PORT}/health" || exit 1
+
+ENTRYPOINT ["/app/server"]

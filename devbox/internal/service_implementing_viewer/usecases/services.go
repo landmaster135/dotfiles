@@ -1,0 +1,280 @@
+package usecases
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	filesystem "github.com/landmaster135/devbox/internal/service_implementing_viewer/infrastructures/filesystem"
+)
+
+// ServiceStatus はサービスの実装状況を表す構造体
+type ServiceStatus struct {
+	ServiceName string
+	Directories map[string]bool // ディレクトリ名 -> 存在フラグ
+}
+
+// ServiceStatistics はサービス実装の統計情報を表す構造体
+type ServiceStatistics struct {
+	CLICount            int // CLIツールの実装数
+	MCPCount            int // MCPツールの実装数
+	GRPCCount           int // gRPCハンドラの実装数
+	HTTPCount           int // HTTPハンドラの実装数
+	CLIOnlyCount        int // CLIのみの実装数
+	MCPOnlyCount        int // MCPのみの実装数
+	GRPCOnlyCount       int // gRPCハンドラのみの実装数
+	HTTPOnlyCount       int // HTTPハンドラのみの実装数
+	BothCLIMCPCount     int // CLI+MCP両方実装済みの数
+	AllImplementedCount int // 全て実装済みの数（CLI+MCP+gRPC+HTTP）
+	TotalServices       int // 総サービス数
+}
+
+// ServiceImplementingViewerService はサービス実装状況を確認するサービス
+type ServiceImplementingViewerService struct {
+	rootDir    string
+	targetDirs []string
+	fileSystem filesystem.Repository
+}
+
+// NewServiceImplementingViewerService は新しいサービスを作成する
+func NewServiceImplementingViewerService(rootDir string, targetDirs []string) *ServiceImplementingViewerService {
+	return NewServiceImplementingViewerServiceWithDependencies(rootDir, targetDirs, filesystem.NewRepository())
+}
+
+// NewServiceImplementingViewerServiceWithDependencies は依存性注入付きで新しいサービスを作成する
+func NewServiceImplementingViewerServiceWithDependencies(rootDir string, targetDirs []string, fileSystem filesystem.Repository) *ServiceImplementingViewerService {
+	if fileSystem == nil {
+		fileSystem = filesystem.NewRepository()
+	}
+
+	return &ServiceImplementingViewerService{
+		rootDir:    rootDir,
+		targetDirs: targetDirs,
+		fileSystem: fileSystem,
+	}
+}
+
+// GetServiceImplementingStatus はサービス実装状況を取得する
+func (s *ServiceImplementingViewerService) GetServiceImplementingStatus() (string, *ServiceStatistics, error) {
+	// 各対象ディレクトリからサービス名を収集
+	allServices := make(map[string]bool)
+	servicesByDir := make(map[string][]string)
+
+	for _, targetDir := range s.targetDirs {
+		dirPath := s.fileSystem.Join(s.rootDir, targetDir)
+		services, err := s.getServicesInDirectory(dirPath)
+		if err != nil {
+			return "", nil, fmt.Errorf("ディレクトリ %s の読み取りに失敗しました: %w", dirPath, err)
+		}
+
+		servicesByDir[targetDir] = services
+		for _, service := range services {
+			normalizedName := s.normalizeServiceName(service)
+			allServices[normalizedName] = true
+		}
+	}
+
+	// サービス名をソート
+	sortedServices := make([]string, 0, len(allServices))
+	for serviceName := range allServices {
+		sortedServices = append(sortedServices, serviceName)
+	}
+	sort.Strings(sortedServices)
+
+	// 各サービスの実装状況を確認
+	serviceStatuses := make([]ServiceStatus, 0, len(sortedServices))
+	for _, serviceName := range sortedServices {
+		status := ServiceStatus{
+			ServiceName: serviceName,
+			Directories: make(map[string]bool),
+		}
+
+		for _, targetDir := range s.targetDirs {
+			status.Directories[targetDir] = s.isServiceImplementedInDirectory(serviceName, servicesByDir[targetDir])
+		}
+
+		serviceStatuses = append(serviceStatuses, status)
+	}
+
+	// 統計情報を計算
+	statistics := s.calculateStatistics(serviceStatuses)
+
+	// 表形式で出力
+	return s.formatAsTable(serviceStatuses), statistics, nil
+}
+
+// getServicesInDirectory は指定されたディレクトリ内のサービス名を取得する
+func (s *ServiceImplementingViewerService) getServicesInDirectory(dirPath string) ([]string, error) {
+	return s.fileSystem.ListDirectories(dirPath)
+}
+
+// normalizeServiceName はサービス名を正規化する（「_」と「-」を統一）
+func (s *ServiceImplementingViewerService) normalizeServiceName(serviceName string) string {
+	return strings.ReplaceAll(serviceName, "_", "-")
+}
+
+// isServiceImplementedInDirectory は指定されたサービスがディレクトリに実装されているかチェック
+func (s *ServiceImplementingViewerService) isServiceImplementedInDirectory(normalizedServiceName string, servicesInDir []string) bool {
+	for _, service := range servicesInDir {
+		if s.normalizeServiceName(service) == normalizedServiceName {
+			return true
+		}
+	}
+	return false
+}
+
+// formatAsTable は結果を表形式でフォーマットする
+func (s *ServiceImplementingViewerService) formatAsTable(serviceStatuses []ServiceStatus) string {
+	var result strings.Builder
+
+	// ヘッダー行を作成
+	result.WriteString("| service")
+	defaultSerNameLen := 7 // "service"の長さ
+	maxServiceNameLen := defaultSerNameLen
+	for _, status := range serviceStatuses {
+		if len(status.ServiceName) > maxServiceNameLen {
+			maxServiceNameLen = len(status.ServiceName)
+		}
+	}
+
+	// サービス名の列幅を調整
+	for i := defaultSerNameLen; i < maxServiceNameLen; i++ {
+		result.WriteString(" ")
+	}
+
+	for _, targetDir := range s.targetDirs {
+		result.WriteString(" | ")
+		result.WriteString(targetDir)
+	}
+	result.WriteString(" |\n")
+
+	// セパレーター行を作成
+	result.WriteString("| :")
+	for i := 1; i < maxServiceNameLen-1; i++ {
+		result.WriteString("-")
+	}
+	result.WriteString(": ")
+
+	for range s.targetDirs {
+		result.WriteString("| :-: ")
+	}
+	result.WriteString("|\n")
+
+	// データ行を作成
+	for _, status := range serviceStatuses {
+		result.WriteString("| ")
+		result.WriteString(status.ServiceName)
+
+		// サービス名の列幅を調整
+		for i := len(status.ServiceName); i < maxServiceNameLen; i++ {
+			result.WriteString(" ")
+		}
+
+		for _, targetDir := range s.targetDirs {
+			result.WriteString(" | ")
+			if status.Directories[targetDir] {
+				result.WriteString("✅")
+			} else {
+				result.WriteString("❌️")
+			}
+			result.WriteString(" ")
+		}
+		result.WriteString("|\n")
+	}
+
+	return result.String()
+}
+
+// calculateStatistics は統計情報を計算する
+func (s *ServiceImplementingViewerService) calculateStatistics(serviceStatuses []ServiceStatus) *ServiceStatistics {
+	stats := &ServiceStatistics{
+		TotalServices: len(serviceStatuses),
+	}
+
+	// 各ディレクトリのマッピングを作成
+	dirMapping := make(map[string]string)
+	for _, dir := range s.targetDirs {
+		switch {
+		case strings.Contains(dir, "cli"):
+			dirMapping["cli"] = dir
+		case strings.Contains(dir, "mcp"):
+			dirMapping["mcp"] = dir
+		case strings.Contains(dir, "grpc/handlers"):
+			dirMapping["grpc"] = dir
+		case strings.Contains(dir, "http/handlers"):
+			dirMapping["http"] = dir
+		}
+	}
+
+	// 各サービスの実装状況を分析
+	for _, status := range serviceStatuses {
+		hasCLI := false
+		hasMCP := false
+		hasGRPC := false
+		hasHTTP := false
+
+		// CLI実装チェック
+		if cliDir, exists := dirMapping["cli"]; exists && status.Directories[cliDir] {
+			hasCLI = true
+			stats.CLICount++
+		}
+
+		// MCP実装チェック
+		if mcpDir, exists := dirMapping["mcp"]; exists && status.Directories[mcpDir] {
+			hasMCP = true
+			stats.MCPCount++
+		}
+
+		// gRPC実装チェック
+		if grpcDir, exists := dirMapping["grpc"]; exists && status.Directories[grpcDir] {
+			hasGRPC = true
+			stats.GRPCCount++
+		}
+
+		// HTTP実装チェック
+		if httpDir, exists := dirMapping["http"]; exists && status.Directories[httpDir] {
+			hasHTTP = true
+			stats.HTTPCount++
+		}
+
+		// 組み合わせパターンの計算
+		implementedCount := 0
+		if hasCLI {
+			implementedCount++
+		}
+		if hasMCP {
+			implementedCount++
+		}
+		if hasGRPC {
+			implementedCount++
+		}
+		if hasHTTP {
+			implementedCount++
+		}
+
+		// 単独実装のカウント
+		if implementedCount == 1 {
+			if hasCLI {
+				stats.CLIOnlyCount++
+			} else if hasMCP {
+				stats.MCPOnlyCount++
+			} else if hasGRPC {
+				stats.GRPCOnlyCount++
+			} else if hasHTTP {
+				stats.HTTPOnlyCount++
+			}
+		}
+
+		// CLI+MCP両方実装
+		if hasCLI && hasMCP {
+			stats.BothCLIMCPCount++
+		}
+
+		// 全て実装済み
+		if hasCLI && hasMCP && hasGRPC && hasHTTP {
+			stats.AllImplementedCount++
+		}
+	}
+
+	return stats
+}
