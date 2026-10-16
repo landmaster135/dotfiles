@@ -1,0 +1,29 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+	{
+		"context": "Workspace",
+		"bindings": {
+			"ctrl-shift-g": ["task::Spawn", { "task_name": "LazyGit" }]
+		}
+	},
+	{
+		"context": "Pane",
+		"bindings": {
+			"ctrl-tab": "pane::ActivateNextItem",
+			"ctrl-shift-tab": "pane::ActivatePreviousItem"
+		}
+	},
+	{
+		"context": "Editor",
+		"bindings": {
+			"f12": "editor::GoToDefinition",
+			"ctrl-shift-w": null
+		}
+	}
+]

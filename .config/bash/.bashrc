@@ -7,8 +7,8 @@
 
 # If not running interactively, don't do anything
 case $- in
-    *i*) ;;
-      *) return;;
+  *i*) ;;
+    *) return;;
 esac
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -49,42 +49,42 @@ esac
 #force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+  if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
 	# We have color support; assume it's compliant with Ecma-48
 	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
 	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
-    else
-	color_prompt=
-    fi
+	  color_prompt=yes
+  else
+	  color_prompt=
+  fi
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
-xterm*|rxvt*)
+  xterm*|rxvt*)
     PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
     ;;
-*)
+  *)
     ;;
 esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
+  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  alias ls='ls --color=auto'
+  #alias dir='dir --color=auto'
+  #alias vdir='vdir --color=auto'
 
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
 fi
 
 # colored GCC warnings and errors
@@ -123,8 +123,8 @@ fi
 ##          Base Configuration                                ##
 #==============================================================#
 # Set prompts
-export PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
-export MY_PS1='$(_append_history_line)\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\$\[\033[00m\] '
+export PS1='\n$(_append_history_line)\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\n\$\[\033[00m\] '
+export MY_PS1='\n$(_append_history_line)\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[\033[01;33m\]$(_current_branch)\[\033[00m\]\[\033[01;35m\]\n\$\[\033[00m\] '
 
 HOSTNAME="$HOST"
 HISTFILE="${ZDATADIR}/zsh_history"
@@ -177,6 +177,12 @@ source "$IAC_HOMEDIR/gcloud/task.sh"
 source "$IAC_HOMEDIR/gcloud/util.sh"
 
 #==============================================================#
+##          Binds                                             ##
+#==============================================================#
+bind "set completion-ignore-case on"  # ignore upper/lower case in completion
+bind "set show-all-if-ambiguous on"   # show all if ambiguous
+
+#==============================================================#
 ##          Options                                           ##
 #==============================================================#
 shopt -s autocd
@@ -216,6 +222,89 @@ echo "[INFO] .bashrc process terminated !!"
 echo ""
 
 #==============================================================#
+##         Terminal Background                                ##
+#==============================================================#
+
+# ディレクトリパスに基づいて背景色を取得する関数
+function get_bg_color_for_directory() {
+  local COLOR_MAPPINGS=(
+    "$HOME/dathub" "#310a14"               # red
+    "$HOME/db-server-brewery" "#0a280f"    # green
+    "$HOME/devbox" "#0c2c31"               # turquoise
+    "$HOME/dotfiles" "#312c0a"             # yellow
+    "$HOME/notion-synchronizer" "#200a31"  # purple
+    "$HOME/chrome-forge" "#31140a"         # orange
+  )
+
+  # デフォルトの背景色（マッチしないディレクトリ用）
+  local DEFAULT_BG_COLOR="#0a1528"
+
+  local current_dir="$1"
+  local max_match_length=0
+  local matched_color=""
+
+  # COLOR_MAPPINGS配列を2つずつ処理（パスと色のペア）
+  for ((i=0; i<${#COLOR_MAPPINGS[@]}; i+=2)); do
+    local path_pattern="${COLOR_MAPPINGS[i]}"
+    local color="${COLOR_MAPPINGS[i+1]}"
+
+    # 現在のディレクトリがパターンにマッチするかチェック
+    if [[ "$current_dir" == "$path_pattern"* ]]; then
+      local match_length=${#path_pattern}
+      if [ $match_length -gt $max_match_length ]; then
+        max_match_length=$match_length
+        matched_color="$color"
+      fi
+    fi
+  done
+
+  if [ -n "$matched_color" ]; then
+    echo "$matched_color"
+  else
+    echo "$DEFAULT_BG_COLOR"
+  fi
+}
+
+# 背景色を変更する関数
+function change_terminal_bg_color() {
+  local color="$1"
+
+  # 16進数カラーコードをRGBに変換
+  local hex_color="${color#\#}"
+  local r=$((16#${hex_color:0:2}))
+  local g=$((16#${hex_color:2:2}))
+  local b=$((16#${hex_color:4:2}))
+
+  # ターミナルの背景色を変更（OSC 11 エスケープシーケンス）
+  printf "\033]11;rgb:%02x/%02x/%02x\007" "$r" "$g" "$b"
+}
+
+# ディレクトリ変更時に呼ばれる関数
+function auto_change_bg_color() {
+  local new_color=$(get_bg_color_for_directory "$PWD")
+  change_terminal_bg_color "$new_color"
+}
+
+# chpwd フックを設定（zsh用）
+if [[ -n "$ZSH_VERSION" ]]; then
+  autoload -Uz add-zsh-hook
+  add-zsh-hook chpwd auto_change_bg_color
+fi
+
+# PROMPT_COMMAND を設定（bash用）
+if [[ -n "$BASH_VERSION" ]]; then
+  # 既存のPROMPT_COMMANDがある場合は追加
+  if [[ -n "$PROMPT_COMMAND" ]]; then
+    PROMPT_COMMAND="auto_change_bg_color; $PROMPT_COMMAND"
+  else
+    PROMPT_COMMAND="auto_change_bg_color"
+  fi
+fi
+
+# 初回実行（スクリプト読み込み時に現在のディレクトリの色を適用）
+auto_change_bg_color
+
+#==============================================================#
 ##          Flutter                                           ##
 #==============================================================#
 
@@ -235,7 +324,6 @@ export PATH="$PATH:$FLUTTER_ROOT/bin"
 #==============================================================#
 
 # alias claude="$HOME/.claude/local/claude"
-alias claude="/home/nov/.claude/local/claude"
 
 #==============================================================#
 ##          Docker                                            ##
@@ -250,3 +338,28 @@ alias claude="/home/nov/.claude/local/claude"
 # echo ""
 # echo "**Notice** Copy and Paste into Shell the following command: 'newgrp docker'"
 # echo ""
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+nvm use default --silent  # shitting WSL
+
+#==============================================================#
+##         llama.cpp + CUDA                                   ##
+#==============================================================#
+export CUDA_HOME="/usr/local/cuda"
+export PATH="/usr/local/cuda/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
+
+#==============================================================#
+##          Rclone                                            ##
+#==============================================================#
+export RCLONE_CHECKERS=1
+export RCLONE_TRANSFERS=1
+export RCLONE_MULTI_THREAD_STREAMS=1
+export RCLONE_BUFFER_SIZE=16M
+export RCLONE_RETRIES=3
+export RCLONE_CHECKSUM=true
+export RCLONE_LOG_LEVEL=INFO
+. "$HOME/.cargo/env"

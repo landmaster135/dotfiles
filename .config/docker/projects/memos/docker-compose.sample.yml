@@ -1,0 +1,16 @@
+services:
+  memos:
+    image: neosmemo/memos:stable
+    container_name: memos
+    user: "${MEMOSUID:-1000}:${MEMOSGID:-1000}"
+    volumes:
+      - type: bind
+        source: /home/user/999_app_for_nas/memos
+        target: /var/opt/memos
+    ports:
+      - "5230:5230"
+    restart: unless-stopped
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "memos"
+      tsdproxy.container_port: 5230

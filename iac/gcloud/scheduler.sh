@@ -193,7 +193,7 @@ Example:
 function create_gcloud_scheduler_job_for_cloud_run_container() {
   local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "ジョブを作成するよ！"
-  local USAGE="[INFO] Usage: ${FUNC_NAME} -j <JOB_NAME> -p <PROJECT_ID> [-l <LOCATION>] -H <HTTP_METHOD> -u <SERVICE_URL> [-w <DISCORD_WEBHOOK_URL>] [-c <ICON_URL>] [-a <OIDC_SERVICE_ACCOUNT_EMAIL>] [-S <SCHEDULE>] [-D <DESCRIPTION>] [-z <TIME_ZONE>] [-m <MESSAGE_BODY>]
+  local USAGE="[INFO] Usage: ${FUNC_NAME} -j <JOB_NAME> -p <PROJECT_ID> [-l <LOCATION>] -H <HTTP_METHOD> -u <SERVICE_URL> [-w <DISCORD_WEBHOOK_URL>] [-c <ICON_URL>] [-a <OIDC_SERVICE_ACCOUNT_EMAIL>] [-S <SCHEDULE>] [-D <DESCRIPTION>] [-z <TIME_ZONE>] [-m <MESSAGE_BODY>] [--headers <HEADERS>]
 
 Options (short / long):
   -j, --job-name                    The instance name used in job name (job name will be 'exec-cloud-run')
@@ -208,6 +208,7 @@ Options (short / long):
   -w, --discord-webhook-url         Discord webhook URL (for message body). If not specified, the environment variable DISCORD_WEBHOOK_URL is used.
   -i, --icon-url           Cloud SQL icon URL (for message body). If not specified, the environment variable ICON_URL is used.
   -m, --message-body                Request body for RESTful API.
+  --headers                         HTTP headers for the request (format: \"Header1=value1,Header2=value2\").
   -h, --help                        Show this help message.
 
 Example:
@@ -218,12 +219,13 @@ Example:
     --location MY_LOCATION \\
     --http-method \"POST\" \\
     --service-url \"https://asia-example.12345.run.app\" \\
-    --oidc-service-account-email \\
+    --oidc-service-account-email sample@example.gserviceaccount.com \\
     --schedule \"0 4 * * 0-6\" \\
     --description \"Trigger Cloud Functions to start Cloud SQL instance.\" \\
-    --time-zone \"Asia/Tokyo\"
+    --time-zone \"Asia/Tokyo\" \\
     --discord-webhook-url https://my.discord/webhook \\
-    --icon-url https://my.icon/url sample@example.gserviceaccount.com \\
+    --icon-url https://my.icon/url \\
+    --headers \"Content-Type=application/json,Authorization=Bearer token\"
 
   # If -w and -i are omitted, the values of the environment variables DISCORD_WEBHOOK_URL and ICON_URL are used.
   # Detail of gcloud is here: https://cloud.google.com/sdk/gcloud/reference/scheduler/jobs/create/http
@@ -231,7 +233,7 @@ Example:
 
   # GNU getopt を利用してオプション解析
   local OPTIONS
-  OPTIONS=$(getopt -o j:p:a:S:D:l:z:w:i:H:s:m:h --long job-name:,project-id:,location:,http-method:,service-url:,oidc-service-account-email:,schedule:,description:,time-zone:,discord-webhook-url:,icon-url:,message-body:,help -n "$FUNC_NAME" -- "$@")
+  OPTIONS=$(getopt -o j:p:a:S:D:l:z:w:i:H:s:m:h --long job-name:,project-id:,location:,http-method:,service-url:,oidc-service-account-email:,schedule:,description:,time-zone:,discord-webhook-url:,icon-url:,message-body:,headers:,help -n "$FUNC_NAME" -- "$@")
   # OPTIONS=$(getopt -o j:p:a:S:D:l:z:w:i:H:s:m:h --long job-name:,project-id:,location:,http-method:,service-url:,oidc-service-account-email:,schedule:,description:,time-zone:,discord-webhook-url:,icon-url:,message-body:,help -n "$FUNC_NAME" -- "$@")
   if [ $? -ne 0 ]; then
     echo "[ERROR] $FUNC_NAME: Error parsing arguments." >&2
@@ -253,6 +255,7 @@ Example:
   local DESCRIPTION=""
   local TIME_ZONE=""
   local MESSAGE_BODY=""
+  local HEADERS=""
   local discord_webhook_url=""
   local ICON_URL=""
   # local discord_webhook_url="${DISCORD_WEBHOOK_URL:-}"
@@ -307,6 +310,10 @@ Example:
         ;;
       -m|--message-body)
         MESSAGE_BODY="$2"
+        shift 2
+        ;;
+      --headers)
+        HEADERS="$2"
         shift 2
         ;;
       -h|--help)
@@ -364,7 +371,7 @@ Example:
   echo "[INFO] $FUNC_NAME: Creating scheduler job '${JOB_NAME}'..."
 
   # gcloud コマンド実行
-  if [ -n "$MESSAGE_BODY" ]; then
+  if [ -n "$MESSAGE_BODY" ] && [ -n "$HEADERS" ]; then
     gcloud scheduler jobs create http "${JOB_NAME}" \
       --schedule="${SCHEDULE}" \
       --description="${DESCRIPTION}" \
@@ -373,10 +380,28 @@ Example:
       --time-zone="${TIME_ZONE}" \
       --http-method="${HTTP_METHOD}" \
       --uri="${SERVICE_URL}" \
-      --message-body="${MESSAGE_BODY}";
-      # --uri="${SERVICE_URL}" \
-      # --oidc-service-account-email="${OIDC_SERVICE_ACCOUNT_EMAIL}" \
-      # --oidc-token-audience="${SERVICE_URL}" \
+      --headers="${HEADERS}" \
+      --message-body="${MESSAGE_BODY}"
+  elif [ -n "$MESSAGE_BODY" ]; then
+    gcloud scheduler jobs create http "${JOB_NAME}" \
+      --schedule="${SCHEDULE}" \
+      --description="${DESCRIPTION}" \
+      --project="${PROJECT_ID}" \
+      --location="${LOCATION}" \
+      --time-zone="${TIME_ZONE}" \
+      --http-method="${HTTP_METHOD}" \
+      --uri="${SERVICE_URL}" \
+      --message-body="${MESSAGE_BODY}"
+  elif [ -n "$HEADERS" ]; then
+    gcloud scheduler jobs create http "${JOB_NAME}" \
+      --schedule="${SCHEDULE}" \
+      --description="${DESCRIPTION}" \
+      --project="${PROJECT_ID}" \
+      --location="${LOCATION}" \
+      --time-zone="${TIME_ZONE}" \
+      --http-method="${HTTP_METHOD}" \
+      --uri="${SERVICE_URL}" \
+      --headers="${HEADERS}"
   else
     gcloud scheduler jobs create http "${JOB_NAME}" \
       --schedule="${SCHEDULE}" \
@@ -385,9 +410,7 @@ Example:
       --location="${LOCATION}" \
       --time-zone="${TIME_ZONE}" \
       --http-method="${HTTP_METHOD}" \
-      --uri="${SERVICE_URL}" \
-      # --oidc-service-account-email="${OIDC_SERVICE_ACCOUNT_EMAIL}" \
-      # --oidc-token-audience="${SERVICE_URL}";
+      --uri="${SERVICE_URL}"
   fi
 
   if [ $? -ne 0 ]; then

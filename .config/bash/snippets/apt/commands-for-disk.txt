@@ -1,6 +1,7 @@
 apt-get clean  Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
 apt-get autoremove  Remove unnecessary packages that have no dependencies.
 sudo journalctl --vacuum-time=2weeks  Remove unnecessary log files. System log files are retained for an extended period.
+sudo journalctl -b -N -p err  Show error logs from N boots ago
 du -ah / | sort -rh | head -n 20  Scan larger files in disk space.
 rm -rf ~/.cache  Remove cache in the home directory.
 rm -rf ~/.local/share/Trash/*  Empty rubbish bin.

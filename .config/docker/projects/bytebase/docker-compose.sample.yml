@@ -1,0 +1,50 @@
+name: "bytebase"
+
+services:
+  bytebase:
+    image: bytebase/bytebase:latest
+    container_name: bytebase
+    mem_limit: 512m
+    restart: unless-stopped
+    ports:
+      - "${PORT_BYTEBASE}:8080"
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/bytebase/data
+        target: /var/opt/bytebase
+        read_only: false
+    environment:
+      - PG_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_DB_HOST}:5432/${POSTGRES_DB}
+    depends_on:
+      - bytebase-db
+
+  bytebase-db:
+    image: postgres:18
+    container_name: bytebase-db
+    hostname: ${POSTGRES_DB_HOST}
+    mem_limit: 256m
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c effective_cache_size=192MB
+      -c maintenance_work_mem=16MB
+      -c work_mem=4MB
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/bytebase/db
+        target: /var/lib/postgresql
+        read_only: false
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/18/docker
+    restart: unless-stopped

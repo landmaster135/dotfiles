@@ -188,10 +188,6 @@ cython_debug/
 # Thumbnails
 ._*
 
-### Docker ###
-# .dockerignore
-# Dockerfile
-
 ### VSCode ###
 .vscode/*
 
@@ -276,17 +272,6 @@ tmp_log.txt
 ## Wayland
 !/.pam_environment
 
-### fcitx
-/.config/fcitx/**
-!/.config/fcitx/config
-!/.config/fcitx/conf/
-!/.config/fcitx/conf/**
-/.config/fcitx5/**
-!/.config/fcitx5/config
-!/.config/fcitx5/conf/
-!/.config/fcitx5/conf/**
-/.config/fcitx5/conf/cached_layouts*
-
 ### qutebrowser
 /.config/qutebrowser/**
 !/.config/qutebrowser/autoconfig.yml
@@ -340,3 +325,17 @@ __pycache__
 !.linkignore
 !.gitignore
 !.gitkeep
+
+### agents ###
+.agents/tmp/*
+!.agents/tmp/.gitkeep
+
+### Docker ###
+# .dockerignore
+# Dockerfile
+docker-compose.yml
+**/docker-compose.yml
+**/.env
+
+### agent ###
+.codex

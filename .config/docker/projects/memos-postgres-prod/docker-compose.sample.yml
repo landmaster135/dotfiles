@@ -1,0 +1,65 @@
+name: "memos-prod"
+
+services:
+  memos-prod:
+    image: neosmemo/memos@sha256:3eefcc231141369accbd2f42bdc1a4c1e3b291fb6e288ff0deb60afa1b5d4727
+    container_name: memos-prod
+    hostname: memos
+    user: "${PUID}:${PGID}"
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/memos-postgres-prod/data
+        target: /var/opt/memos
+        read_only: false
+    ports:
+      - ${PORT_MEMOS}:5230
+    environment:
+      MEMOS_DRIVER: postgres
+      MEMOS_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_DB_HOST}:5432/${POSTGRES_DB}?sslmode=disable"
+    restart: on-failure:5
+    mem_limit: 256m
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5230/
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "memos"
+      tsdproxy.container_port: ${PORT_MEMOS}
+
+  db:
+    image: postgres:18@sha256:69e8582b781cb44fa4557b98ed586fe68361e320d9b12f9707494335634f4f3d
+    container_name: ${POSTGRES_DB_CONTAINER}
+    hostname: ${POSTGRES_DB_HOST}
+    mem_limit: 1g
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c effective_cache_size=768MB
+      -c maintenance_work_mem=64MB
+      -c work_mem=4MB
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - type: bind
+        source: ${VOLUME_DATA_DIR}/memos-postgres-prod/db
+        target: /var/lib/postgresql
+        read_only: false
+    ports:
+      - ${PORT_DB}:5432
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      PGDATA: /var/lib/postgresql/18/docker
+    restart: on-failure:5

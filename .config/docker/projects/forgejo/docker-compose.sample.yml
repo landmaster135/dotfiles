@@ -1,0 +1,35 @@
+name: "forgejo"
+
+networks:
+  forgejo:
+    external: false
+
+services:
+  server:
+    image: codeberg.org/forgejo/forgejo:15-rootless
+    container_name: forgejo
+    user: ${USER_UID}:${USER_GID}
+    environment:
+      - USER_UID=${USER_UID}
+      - USER_GID=${USER_GID}
+    restart: always
+    mem_limit: 2g
+    cpu_shares: 768
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 -O /dev/null http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - forgejo
+    volumes:
+      - ${VOLUME_DATA_DIR}/forgejo/data:/var/lib/gitea
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${PUBLIC_PORT}:3000"
+      - "${PUBLIC_SSH_PORT}:2222"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "forgejo"
+      tsdproxy.container_port: ${PUBLIC_PORT}

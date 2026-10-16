@@ -1905,3 +1905,227 @@ function undelete_workload_identity_pool_provider() {
   send_discord_notification_about_gciam "復元したよ！" "OIDC Workload Identity Pool Providerを復元したよ！" "green"
   return 0
 }
+
+#==============================================================#
+##     Workload Identity Federation Main Process              ##
+#==============================================================#
+# Google Cloud Workload Identity Federation セットアップ関数
+function setup_workload_identity_federation() {
+  # 関数名を取得
+  local func_name="${FUNCNAME[0]}"
+
+  # ヘルプ表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: 使用方法"
+    echo "  ${func_name} <PROJECT_ID> <POOL_ID> <PROVIDER_ID> <SERVICE_ACCOUNT_ID> <REPO_OWNER> <REPO_NAME> [LOCATION] [POOL_DESCRIPTION]"
+    echo ""
+    echo "引数:"
+    echo "  PROJECT_ID           Google CloudプロジェクトのプロジェクトID"
+    echo "  POOL_ID              作成するWorkload Identity PoolのID"
+    echo "  PROVIDER_ID          作成するOIDCプロバイダーのID"
+    echo "  SERVICE_ACCOUNT_ID   作成するサービスアカウントのID"
+    echo "  REPO_OWNER           GitHubリポジトリのオーナー名（組織名またはユーザー名）"
+    echo "  REPO_NAME            GitHubリポジトリの名前"
+    echo "  LOCATION             省略可能: ロケーション (デフォルト: global)"
+    echo "  POOL_DESCRIPTION     省略可能: Workload Identity Poolの説明"
+    echo ""
+    echo "使用例:"
+    echo "  ${func_name} my-project my-pool github-provider my-service-account my-org my-repo"
+    echo "  ${func_name} my-project my-pool github-provider my-service-account my-org my-repo global \"GitHub Actions用プール\""
+    echo ""
+    echo "説明:"
+    echo "  この関数は以下のリソースを作成します:"
+    echo "  - Workload Identity Pool"
+    echo "  - GitHub Actions用OIDCプロバイダー"
+    echo "  - サービスアカウント"
+    echo "  - IAMポリシーバインディング (monitoring.editor, run.viewer)"
+    echo "  - Workload Identityバインディング"
+    return 0
+  fi
+
+  # 引数の取得とローカル変数への代入
+  local project_id="$1"
+  local pool_id="$2"
+  local provider_id="$3"
+  local service_account_id="$4"
+  local repo_owner="$5"
+  local repo_name="$6"
+  local location="${7:-global}"
+  local pool_description="$8"
+
+  # 引数の妥当性チェック
+  if [[ -z "$project_id" || -z "$pool_id" || -z "$provider_id" || -z "$service_account_id" || -z "$repo_owner" || -z "$repo_name" ]]; then
+      echo "エラー: 必須引数が不足しています" >&2
+      echo "使用方法: setup_workload_identity_federation PROJECT_ID POOL_ID PROVIDER_ID SERVICE_ACCOUNT_ID REPO_OWNER REPO_NAME [LOCATION] [POOL_DESCRIPTION]" >&2
+      echo "詳細な使用方法を確認するには --help を使用してください。" >&2
+      return 1
+  fi
+
+  # エラー時に関数を終了
+  set -e
+
+  echo "=== Google Cloud Workload Identity Federation セットアップ開始 ==="
+  echo "プロジェクト: $project_id"
+  echo "リポジトリ: $repo_owner/$repo_name"
+  echo "ロケーション: $location"
+  echo
+
+  # 1. Workload Identity Pool作成
+  echo "1. Workload Identity Poolを作成中..."
+  if [[ -n "$pool_description" ]]; then
+      create_workload_identity_pool "$pool_id" "$project_id" --location="$location" --description="$pool_description"
+  else
+      create_workload_identity_pool "$pool_id" "$project_id" --location="$location"
+  fi
+  echo "✓ Workload Identity Pool作成完了"
+  echo
+
+  # 2. GitHub Actions用OIDCプロバイダー作成
+  echo "2. GitHub Actions用OIDCプロバイダーを作成中..."
+  create_oidc_workload_identity_pool_provider_for_github_actions "$provider_id" "$project_id" "$pool_id" "$repo_owner" --location="$location"
+  echo "✓ OIDCプロバイダー作成完了"
+  echo
+
+  # 3. サービスアカウント作成
+  echo "3. サービスアカウントを作成中..."
+  create_gcloud_service_account "$service_account_id" "$project_id" "roles/monitoring.editor"
+  echo "✓ サービスアカウント作成完了"
+  echo
+
+  # 4. IAMポリシーバインディング追加
+  echo "4. IAMポリシーバインディングを追加中 (monitoring.editor)..."
+  add_iam_policy_binding_to_project_on_gcloud "$project_id" "$service_account_id" "roles/monitoring.editor"
+  echo "✓ monitoring.editor権限追加完了"
+
+  echo "5. IAMポリシーバインディングを追加中 (run.viewer)..."
+  add_iam_policy_binding_to_project_on_gcloud "$project_id" "$service_account_id" "roles/run.viewer"
+  echo "✓ run.viewer権限追加完了"
+
+  # 6. プロジェクト番号取得
+  echo "6. プロジェクト番号を取得中..."
+  local project_number
+  project_number=$(gcloud projects describe "$project_id" --format="value(projectNumber)")
+  echo "✓ プロジェクト番号: $project_number"
+  echo
+
+  # 7. Workload Identityバインディング追加
+  echo "7. Workload Identityバインディングを追加中..."
+  local service_account_email="${service_account_id}@${project_id}.iam.gserviceaccount.com"
+  add_workload_identity_binding_to_service_account_on_gcloud "$service_account_email" "$project_number" "$pool_id" "$repo_owner" "$repo_name" --provider-id="$provider_id"
+  echo "✓ Workload Identityバインディング追加完了"
+  echo
+
+  # セットアップ完了
+  echo "=== Workload Identity Federationのセットアップが完了しました！ ==="
+  echo
+
+  # 秘匿情報なので一旦コメントアウトしておく。
+  # echo "GitHub Secretsに以下の値を設定してください:"
+  # echo "GCLOUD_PROJECT_NUMBER: $project_number"
+  # echo "GCLOUD_POOL_ID: $pool_id"
+  # echo "GCLOUD_PROVIDER_ID: $provider_id"
+  # echo "GCLOUD_SERVICE_ACCOUNT_EMAIL: $service_account_email"
+  # echo
+
+  # エラーハンドリングを元に戻す
+  set +e
+}
+
+# Google Cloud Workload Identity Federation リソース削除関数
+function cleanup_workload_identity_federation() {
+  # 関数名を取得
+  local func_name="${FUNCNAME[0]}"
+
+  # ヘルプ表示
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: 使用方法"
+    echo "  ${func_name} <PROJECT_ID> <POOL_ID> <PROVIDER_ID> <SERVICE_ACCOUNT_ID> [LOCATION]"
+    echo ""
+    echo "引数:"
+    echo "  PROJECT_ID           Google CloudプロジェクトのプロジェクトID"
+    echo "  POOL_ID              削除するWorkload Identity PoolのID"
+    echo "  PROVIDER_ID          削除するOIDCプロバイダーのID"
+    echo "  SERVICE_ACCOUNT_ID   削除するサービスアカウントのID"
+    echo "  LOCATION             省略可能: ロケーション (デフォルト: global)"
+    echo ""
+    echo "使用例:"
+    echo "  ${func_name} my-project my-pool github-provider my-service-account"
+    echo "  ${func_name} my-project my-pool github-provider my-service-account global"
+    echo ""
+    echo "説明:"
+    echo "  この関数は以下のリソースを削除します:"
+    echo "  - OIDC Provider"
+    echo "  - Workload Identity Pool"
+    echo "  - Service Account"
+    echo "  - IAM Policy Bindings (自動削除)"
+    echo ""
+    echo "注意:"
+    echo "  削除されたリソースは復元可能ですが、一定期間後に完全に削除されます。"
+    echo "  削除前に確認プロンプトが表示されます。"
+    return 0
+  fi
+
+  # 引数の取得とローカル変数への代入
+  local project_id="$1"
+  local pool_id="$2"
+  local provider_id="$3"
+  local service_account_id="$4"
+  local location="${5:-global}"
+  local service_account_email="${service_account_id}@${project_id}.iam.gserviceaccount.com"
+
+  # 引数の妥当性チェック
+  if [[ -z "$project_id" || -z "$pool_id" || -z "$provider_id" || -z "$service_account_id" ]]; then
+      echo "エラー: 必須引数が不足しています" >&2
+      echo "使用方法: cleanup_workload_identity_federation PROJECT_ID POOL_ID PROVIDER_ID SERVICE_ACCOUNT_ID [LOCATION]" >&2
+      echo "詳細な使用方法を確認するには --help を使用してください。" >&2
+      return 1
+  fi
+
+  echo "=== Google Cloud Workload Identity Federation リソース削除開始 ==="
+  echo "プロジェクト: $project_id"
+  echo "ロケーション: $location"
+  echo
+  echo "警告: 以下のリソースが削除されます:"
+  echo "- Workload Identity Pool: $pool_id"
+  echo "- OIDC Provider: $provider_id"
+  echo "- Service Account: $service_account_email"
+  echo "- IAM Policy Bindings (自動削除)"
+  echo
+  read -p "続行しますか？ (y/N): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "削除をキャンセルしました。"
+      return 0
+  fi
+  echo
+
+  # エラーが発生しても処理を継続
+  set +e
+
+  # 1. OIDCプロバイダー削除
+  echo "1. OIDCプロバイダーを削除中..."
+  delete_workload_identity_pool_provider "$provider_id" "$project_id" "$pool_id" --location="$location"
+  echo "✓ OIDCプロバイダー削除処理完了"
+  echo
+
+  # 2. Workload Identity Pool削除
+  echo "2. Workload Identity Poolを削除中..."
+  delete_workload_identity_pool "$pool_id" "$project_id" --location="$location"
+  echo "✓ Workload Identity Pool削除処理完了"
+  echo
+
+  # 3. サービスアカウント削除
+  echo "3. サービスアカウントを削除中..."
+  delete_gcloud_service_account "$service_account_email"
+  echo "✓ サービスアカウント削除処理完了"
+  echo
+
+  # 削除完了
+  echo "=== Workload Identity Federationリソースの削除が完了しました！ ==="
+  echo "注意: 一部のリソースが削除できなかった場合は、手動で確認してください。"
+  echo "IAMポリシーバインディングは自動的に削除されます。"
+  echo
+
+  # エラーハンドリングを元に戻す
+  set -e
+}

@@ -31,6 +31,7 @@ alias la='ls -AF --color=auto'
 alias l1='ls -1A --color=auto'
 alias lal='ls -alF --color=auto'
 alias lh='ls $HOME'
+alias lc='ls | wc -l'
 alias lsoi='lsof -i'
 
 # cd
@@ -39,7 +40,7 @@ alias cdh='cd $HOME'
 # env variable
 alias senvy='set_env_from_yaml'
 alias senvy-u='set_env_from_yaml --unset'
-alias unset-gin='unset GIN_MODE'
+alias unset-gin='unset GIN_MODE && unset VITE_GIN_MODE'
 
 # grep
 alias grep='grep -H -n -I -i --color=auto'
@@ -58,6 +59,9 @@ alias du-ah='du-ah ~ 20'
 alias rm-log='sudo journalctl --vacuum-time=2weeks' # Remove unnecessary log files. System log files are retained for an extended period.
 alias emptrash='rm -rf ~/.local/share/Trash/*' # Empty rubbish bin.
 alias rm-cache='rm -rf ~/.cache/*'
+
+# cpu
+alias iosx='iostat -x'
 
 # apt
 alias apt-clean='apt-get clean' # Clear cache of apt packages. (But that access is denied in Cloud Shell due to insufficient permissions.)
@@ -107,6 +111,17 @@ alias git-stash-u='git stash -u'
 alias git-stash-l='git stash list'
 alias git-stash-a='git stash apply'
 alias git-stash-d='git stash drop'
+
+#==============================================================#
+##          Tmux aliases                                      ##
+#==============================================================#
+
+# tmux
+alias tm='tmux'
+alias tma='tmux attach'
+alias tmk='tmux kill-session'
+alias tmls='tmux ls'
+alias tm-color='for i in {0..255}; do printf "\x1b[38;5;${i}mcolour${i} \x1b[0m"; if [ $((($i + 1) % 8)) -eq 0 ]; then printf "\n"; fi; done'
 
 #==============================================================#
 ##          Python aliases                                    ##
@@ -192,6 +207,8 @@ alias go-l='go list -m -u all'
 alias go-mi='go mod init'
 alias go-mt='go mod tidy'
 alias go-r='go run -trimpath'
+alias go-rm='go run ./main.go -trimpath'
+alias go-rmt='go run ./main.go -trimpath | tee'
 alias go-tf='test_go_func'
 alias go-tc='go test -cover'
 alias go-tc-a='go test -cover ./...'
@@ -227,11 +244,27 @@ alias dc-rmi='docker rmi'
 alias dc-rmif='docker rmi -f'
 alias dc-lsic='docker images | grep none | cut -b 50-64'
 alias dc-rmic='docker rmi `docker images | grep none | cut -b 50-64`'
-alias dc-prune='docker system prune -a'
+alias dc-syspr='docker system prune -a'
+alias dc-sysprv='docker system prune --volumes'
+alias dc-vpr='docker volume prune -a'
+alias dc-ipr='docker image prune -a'
 alias dc-ps='docker ps'
 alias dc-psa='docker ps -a'
 alias dc-cp='docker-cp'
 alias dc-search='docker search'
+alias dc-co-u='docker compose up -d'
+alias dc-co-d='docker compose down'
+alias dc-co-p='docker compose ps'
+alias dc-lg='docker logs'
+alias dc-li='docker load -i'
+
+#==============================================================#
+##          Rsync aliases                                     ##
+#==============================================================#
+
+alias rsync-devbox='rsync --archive --verbose --human-readable --partial --progress "${HOME}/devbox/devbox-cron-image.tar" "nas01:${VOLUME_DATA_DIR}/devbox"'
+alias rsync-daf='rsync --archive --verbose --human-readable --partial --progress "${HOME}/dathub/dathub-frontend-image.tar" "nas01:${VOLUME_DATA_DIR}/dathub"'
+alias rsync-dab='rsync --archive --verbose --human-readable --partial --progress "${HOME}/dathub/dathub-backend-image.tar" "nas01:${VOLUME_DATA_DIR}/dathub"'
 
 #==============================================================#
 ##          Flutter aliases                                   ##
@@ -247,12 +280,65 @@ alias fv-d='fvm doctor'
 alias fv-l='fvm list'
 
 #==============================================================#
-##          Devbox aliases                                    ##
+##          Codex aliases                                     ##
 #==============================================================#
 
-# devbox
-alias dv-cpj='create_project_files_for_devbox'
-alias dv-sgb='script_generator_to_build_for_devbox'
-alias dv-siv='service_implementing_viewer_for_devbox'
-alias dv-b='build_tool_for_devbox'
-alias dv-bm='build_mcp_tool_for_devbox'
+# codex
+alias cx='codex'
+alias cx-rel='codex resume --last'
+
+#==============================================================#
+##          cagent aliases                                    ##
+#==============================================================#
+
+# cagent
+alias cagent="$HOME/devbox/.config/_agents/cagent"
+alias cg='cagent'
+alias cg-git-cm="cagent run $HOME/devbox/.config/cagent/config_linux/git_commit_message_generator/config_prod.yml 'git-commit-message-staged-pwd' --yolo"
+alias cg-git-issue="cagent run $HOME/devbox/.config/cagent/config_linux/github_issue_creator/config_prod.yml 'new-issue-pwd' --yolo"
+alias cg-git-pr="cagent run $HOME/devbox/.config/cagent/config_linux/github_pull_request_creator/config_prod.yml 'new-pull-request-pwd' --yolo"
+alias cg-changelog="cagent run $HOME/devbox/.config/cagent/config_linux/change_log_updater/config_prod.yml 'update-changelog-pwd' --yolo"
+alias cg-mcp-test="cagent run $HOME/devbox/.config/cagent/config_linux/mcp_tool_tester/config_prod.yml 'test-generic-mcp'"
+alias cg-create="cagent run $HOME/devbox/.config/cagent/config_linux/cagent_creator/config_prod.yml 'create-workflow'"
+alias cg-md-fmt="cagent run $HOME/devbox/.config/cagent/config_linux/markdown_formatter/config_prod.yml 'format-text'"
+
+#==============================================================#
+##          Taskfile aliases                                  ##
+#==============================================================#
+
+alias tk='task'
+alias tk-l='task --list'
+alias tk-vd='task --verbose --dry'
+
+alias tk-c='task check'
+alias tk-tc='task test:cov'
+alias tk-tac='task test:all:cov'
+alias tk-r='task run:dev'
+alias tk-rb='task run:backend'
+alias tk-rh='task run:http'
+alias tk-b='task build'
+alias tk-bd='task build:dev'
+alias tk-bs='task build:staging'
+alias tk-bp='task build:prod'
+alias tk-bm='task build:mcp'
+alias tk-fr='task find:pjroot'
+alias tk-fa='task find:agents'
+alias tk-fd='task find:docs'
+alias tk-fsql='task find:sql'
+
+alias task='go-task'
+alias tq-l='arep tq-'
+alias tq-tce='task text:calculate:extract-working-time'
+alias tq-icpwk='task image:convert:png-to-webp:keeping-saturation'
+alias tq-ircd='task image:rename:content:date'
+alias tq-irch='task image:rename:content:habit'
+alias tq-ivjw='task image:convert:jpg-to-webp'
+alias tq-ivpw='task image:convert:png-to-webp'
+alias tq-iv2j='task image:convert:to-jpg'
+alias tq-irvs='task image:rename:convert:screenshot'
+alias tq-irvsk='task image:rename:convert:screenshot:keeping-saturation'
+alias tq-irv2='task image:rename:convert:by-2-digits'
+alias tq-irv4='task image:rename:convert:by-4-digits'
+
+alias tkm-lr='list_root_taskfiles'
+alias tkm-fr='fill_fields_in_root_taskfiles'

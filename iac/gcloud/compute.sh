@@ -3,28 +3,77 @@ function create_gce_instance() {
   local FUNC_NAME="${FUNCNAME[0]}"
   send_discord_notification "VMを構築するよ！"
 
-  # --help オプションのチェック
-  for arg in "$@"; do
-    if [ "$arg" = "--help" ]; then
-      echo "[INFO] Usage: ${FUNC_NAME} INSTANCE_NAME [ZONE] [MACHINE_TYPE]"
-      echo "  INSTANCE_NAME : 作成するインスタンスの名前"
-      echo "  ZONE          : インスタンスを作成するゾーン (デフォルト: us-central1-a)"
-      echo "  MACHINE_TYPE  : マシンタイプ (デフォルト: e2-medium)"
-      return 0
-    fi
+  local instance_name=""
+  local zone="us-central1-a"
+  local machine_type="e2-medium"
+  local boot_disk_size="100GB"
+  local boot_disk_type="pd-balanced"
+  local address_flag="--no-address"
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -i|--instance-name)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${FUNC_NAME}: -i|--instance-name には値が必要です。" >&2
+          return 1
+        fi
+        instance_name="$2"
+        shift 2
+        ;;
+      -z|--zone)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${FUNC_NAME}: -z|--zone には値が必要です。" >&2
+          return 1
+        fi
+        zone="$2"
+        shift 2
+        ;;
+      -m|--machine-type)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${FUNC_NAME}: -m|--machine-type には値が必要です。" >&2
+          return 1
+        fi
+        machine_type="$2"
+        shift 2
+        ;;
+      --boot-disk-size)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${FUNC_NAME}: --boot-disk-size には値が必要です。" >&2
+          return 1
+        fi
+        boot_disk_size="$2"
+        shift 2
+        ;;
+      --boot-disk-type)
+        if [ -z "$2" ] || [[ "$2" == --* ]]; then
+          echo "[ERROR] ${FUNC_NAME}: --boot-disk-type には値が必要です。" >&2
+          return 1
+        fi
+        boot_disk_type="$2"
+        shift 2
+        ;;
+      --help)
+        echo "[INFO] Usage: ${FUNC_NAME} -i INSTANCE_NAME [-z ZONE] [-m MACHINE_TYPE] [--boot-disk-size BOOT_DISK_SIZE] [--boot-disk-type BOOT_DISK_TYPE]"
+        echo "  -i, --instance-name INSTANCE_NAME : 作成するインスタンスの名前 (必須)"
+        echo "  -z, --zone ZONE                   : インスタンスを作成するゾーン (デフォルト: us-central1-a)"
+        echo "  -m, --machine-type MACHINE_TYPE   : マシンタイプ (デフォルト: e2-medium)"
+        echo "      --boot-disk-size BOOT_DISK_SIZE : ブートディスクサイズ (例: 100GB)"
+        echo "      --boot-disk-type BOOT_DISK_TYPE : ブートディスクタイプ (例: pd-balanced, pd-ssd)"
+        return 0
+        ;;
+      *)
+        echo "[ERROR] ${FUNC_NAME}: Unknown parameter: $1" >&2
+        echo "[INFO] Usage: ${FUNC_NAME} -i INSTANCE_NAME [-z ZONE] [-m MACHINE_TYPE] [--boot-disk-size BOOT_DISK_SIZE] [--boot-disk-type BOOT_DISK_TYPE]" >&2
+        return 1
+        ;;
+    esac
   done
 
-  # 引数チェック：最低1つはインスタンス名を指定する必要があります
-  if [ $# -lt 1 ]; then
-    echo "[ERROR] Usage: ${FUNC_NAME} INSTANCE_NAME [ZONE] [MACHINE_TYPE]" >&2
+  if [ -z "$instance_name" ]; then
+    echo "[ERROR] ${FUNC_NAME}: -i|--instance-name は必須です。" >&2
+    echo "[INFO] Usage: ${FUNC_NAME} -i INSTANCE_NAME [-z ZONE] [-m MACHINE_TYPE] [--boot-disk-size BOOT_DISK_SIZE] [--boot-disk-type BOOT_DISK_TYPE]" >&2
     return 1
   fi
-
-  # パラメータの初期化（デフォルト値付き）
-  local instance_name="$1"
-  local zone="${2:-us-central1-a}"
-  local machine_type="${3:-e2-medium}"
-  local address_flag="--no-address"
 
   # gcloud コマンドの存在確認
   if ! command -v gcloud >/dev/null 2>&1; then
@@ -33,10 +82,20 @@ function create_gce_instance() {
   fi
 
   # インスタンス作成処理
-  if ! gcloud compute instances create "$instance_name" \
-    --zone="$zone" \
-    --machine-type="$machine_type" \
-    "$address_flag"; then
+  local -a create_cmd=(
+    gcloud compute instances create "$instance_name"
+    --zone="$zone"
+    --machine-type="$machine_type"
+    "$address_flag"
+  )
+  if [ -n "$boot_disk_size" ]; then
+    create_cmd+=(--boot-disk-size="$boot_disk_size")
+  fi
+  if [ -n "$boot_disk_type" ]; then
+    create_cmd+=(--boot-disk-type="$boot_disk_type")
+  fi
+
+  if ! "${create_cmd[@]}"; then
     echo "[ERROR] Error: インスタンス '$instance_name' の作成に失敗しました。" >&2
     send_discord_notification_about_gce "失敗…" "VMが構築できなかったよ…" "red"
     return 1
@@ -76,7 +135,7 @@ function create_gce_instance_and_configure() {
   local STARTUP_FILE="${5:-./iac/gcloud/setup_scripts/startup-script.sh}"
 
   # 1. インスタンス作成
-  if ! create_gce_instance "$INSTANCE_NAME" "$ZONE" "$MACHINE_TYPE"; then
+  if ! create_gce_instance -i "$INSTANCE_NAME" -z "$ZONE" -m "$MACHINE_TYPE"; then
     echo "[ERROR] ${funcName}: Failed to create instance '$INSTANCE_NAME'." >&2
     return 1
   fi
@@ -100,7 +159,7 @@ function create_gce_instance_and_configure() {
 function add_startup_script_to_gce_instance() {
   local funcName="${FUNCNAME[0]}"
   local DEFAULT_ZONE="us-central1-a"
-  local DEFAULT_FILE_PATH="./shell/setup_scripts/startup-script.sh"
+  local DEFAULT_FILE_PATH="./iac/gcloud/setup_scripts/startup-script.sh"
   send_discord_notification "VMのスタートアップスクリプトを反映するよ！"
 
   # --help が指定された場合は利用方法を表示
@@ -140,7 +199,7 @@ function create_gce_instance_with_startup_script() {
   local funcName="${FUNCNAME[0]}"
   local DEFAULT_ZONE="us-central1-a"
   local DEFAULT_MACHINE_TYPE="e2-medium"
-  local DEFAULT_FILE_PATH="./shell/setup_scripts/startup-script.sh"
+  local DEFAULT_FILE_PATH=""
 
   # --help オプションのチェック
   for arg in "$@"; do
@@ -167,7 +226,7 @@ function create_gce_instance_with_startup_script() {
   local FILE_PATH="${4:-$DEFAULT_FILE_PATH}"
 
   # インスタンス作成
-  if ! create_gce_instance "$INSTANCE_NAME" "$ZONE" "$MACHINE_TYPE"; then
+  if ! create_gce_instance -i "$INSTANCE_NAME" -z "$ZONE" -m "$MACHINE_TYPE"; then
     echo "[ERROR] ${funcName}: Failed to create instance '$INSTANCE_NAME'." >&2
     return 1
   fi

@@ -654,6 +654,36 @@ function git-erase() {
   return 0
 }
 
+function git-post-erase() {
+  local func_name="${FUNCNAME[0]}"
+  local exit_code=0
+
+  if [[ "$1" == "--help" ]]; then
+    echo "[INFO] ${func_name}: Usage: ${func_name}"
+    echo "[INFO] ${func_name}: Creates 'backup/origin-main' from origin/main and force-pushes local main with lease."
+    return 0
+  fi
+
+  echo "[INFO] ${func_name}: Creating backup branch 'backup/origin-main' from origin/main..."
+  git branch backup/origin-main origin/main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Failed to create backup branch. Aborting."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Force-pushing local main with lease..."
+  git push --force-with-lease origin main
+  exit_code=$?
+  if [[ ${exit_code} -ne 0 ]]; then
+    echo "[ERROR] ${func_name}: Force push failed."
+    return ${exit_code}
+  fi
+
+  echo "[INFO] ${func_name}: Completed backup creation and force push."
+  return 0
+}
+
 function git-repat() {
   local func_name="${FUNCNAME[0]}"
   local pat=""
@@ -2175,213 +2205,6 @@ function cat_grep_by_line() {
 }
 
 #==============================================================#
-##          Devbox Functions                                  ##
-#==============================================================#
-
-function create_project_files_for_devbox() {
-  # ヘルプ表示
-  if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
-    cat << 'EOF'
-Usage: create_project_files_for_devbox <package_name>
-
-Description:
-  指定されたパッケージ名でプロジェクトファイルを作成します。
-
-Arguments:
-  package_name    作成するパッケージ名（必須）
-
-Options:
-  -h, --help     このヘルプメッセージを表示
-
-Examples:
-  create_project_files_for_devbox mypackage
-  create_project_files_for_devbox user-service
-  create_project_files_for_devbox "my_new_package"
-
-Note:
-  - devboxリポジトリ内で実行してください
-  - ./scripts/create_project_files.sh が実行されます
-  - 実行前にコマンドが表示されます
-  - スクリプトが存在することを確認してください
-EOF
-    return 0
-  fi
-
-  local package_name="$1"
-
-  # 実行するコマンドを表示
-  echo "Executing: ./scripts/create_project_files.sh \"$package_name\""
-
-  # コマンド実行
-  ./scripts/create_project_files.sh "$package_name"
-}
-
-function script_generator_to_build_for_devbox() {
-  # ヘルプ表示
-  if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
-    cat << 'EOF'
-Usage: script_generator_to_build_for_devbox <tool_name>
-
-Description:
-  指定されたツール名でビルドスクリプトを生成します。
-
-Arguments:
-  tool_name      生成するツール名（必須）
-
-Options:
-  -h, --help     このヘルプメッセージを表示
-
-Examples:
-  script_generator_to_build_for_devbox mytool
-  script_generator_to_build_for_devbox user-cli
-  script_generator_to_build_for_devbox "build_helper"
-
-Note:
-  - devboxリポジトリ内で実行してください
-  - ./pkg/bin/linux_amd64/script-generator-to-build が実行されます
-  - 実行前にコマンドが表示されます
-  - バイナリファイルが存在することを確認してください
-EOF
-    return 0
-  fi
-
-  local tool_name="$1"
-
-  # 実行するコマンドを表示
-  echo "Executing: ./pkg/bin/cli/linux_amd64/script-generator-to-build \"$tool_name\""
-
-  # コマンド実行
-  ./pkg/bin/cli/linux_amd64/script-generator-to-build "$tool_name"
-}
-
-function service_implementing_viewer_for_devbox() {
-  # ヘルプ表示
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    cat << 'EOF'
-Usage: service_implementing_viewer_for_devbox [options]
-
-Description:
-  service-implementing-viewerツールを実行してサービス実装を表示します。
-
-Options:
-  -r, --root-dir <dir>     ルートディレクトリを指定（デフォルト: ./devbox/cmd）
-  -t, --target-dirs <dirs> ターゲットディレクトリをカンマ区切りで指定（デフォルト: cli,mcp）
-  -h, --help              このヘルプメッセージを表示
-
-Examples:
-  service_implementing_viewer_for_devbox
-  service_implementing_viewer_for_devbox -r ./my-project -t api,web
-  service_implementing_viewer_for_devbox --root-dir=./src --target-dirs=service,handler
-
-Note:
-  - devboxリポジトリ内で実行してください
-  - ./pkg/bin/cli/linux_amd64/service-implementing-viewer が実行されます
-  - 実行前にコマンドが表示されます
-  - バイナリファイルが存在することを確認してください
-EOF
-    return 0
-  fi
-
-  # デフォルト値
-  local root_dir="./cmd"
-  local target_dirs="cli,mcp"
-
-  # 引数解析
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      -r|--root-dir)
-        root_dir="$2"
-        shift 2
-        ;;
-      --root-dir=*)
-        root_dir="${1#*=}"
-        shift
-        ;;
-      -t|--target-dirs)
-        target_dirs="$2"
-        shift 2
-        ;;
-      --target-dirs=*)
-        target_dirs="${1#*=}"
-        shift
-        ;;
-      *)
-        echo "Unknown option: $1"
-        echo "Use -h or --help for usage information."
-        return 1
-        ;;
-    esac
-  done
-
-  # 実行するコマンドを表示
-  echo "Executing: ./pkg/bin/cli/linux_amd64/service-implementing-viewer -root-dir=\"$root_dir\" -target-dirs=\"$target_dirs\""
-
-  # コマンド実行
-  ./pkg/bin/cli/linux_amd64/service-implementing-viewer -root-dir="$root_dir" -target-dirs="$target_dirs"
-}
-
-function build_tool_for_devbox() {
-  # ヘルプ表示
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    cat << 'EOF'
-Usage: build_tool_for_devbox
-
-Description:
-  プロジェクトのビルドスクリプトを実行します。
-
-Options:
-  -h, --help     このヘルプメッセージを表示
-
-Examples:
-  build_tool_for_devbox
-
-Note:
-  - ./scripts/build.sh が実行されます
-  - 実行前にコマンドが表示されます
-  - スクリプトが存在することを確認してください
-EOF
-    return 0
-  fi
-
-  # 実行するコマンドを表示
-  echo "Executing: ./scripts/build.sh"
-
-  # コマンド実行
-  ./scripts/build.sh
-}
-
-
-function build_mcp_tool_for_devbox() {
-  # ヘルプ表示
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    cat << 'EOF'
-Usage: build_mcp_tool_for_devbox
-
-Description:
-  プロジェクトのMCPツール用のビルドスクリプトを実行します。
-
-Options:
-  -h, --help     このヘルプメッセージを表示
-
-Examples:
-  build_mcp_tool_for_devbox
-
-Note:
-  - ./scripts/build_mcp_tools.sh が実行されます
-  - 実行前にコマンドが表示されます
-  - スクリプトが存在することを確認してください
-EOF
-    return 0
-  fi
-
-  # 実行するコマンドを表示
-  echo "Executing: ./scripts/build_mcp_tools.sh"
-
-  # コマンド実行
-  ./scripts/build_mcp_tools.sh
-}
-
-#==============================================================#
 ##          Snippet functions                                 ##
 #==============================================================#
 
@@ -2524,4 +2347,26 @@ function upload_file_into_gcs() {
   local src_file=$1
   local dest_dir=$2
   gsutil cp $1 $2
+}
+
+#==============================================================#
+##          Taskfile functions                                ##
+#==============================================================#
+
+function list_root_taskfiles(){
+  echo $HOME/chrome-forge/Taskfile.yml
+  echo $HOME/dathub/Taskfile.yml
+  echo $HOME/db-server-brewery/Taskfile.yml
+  echo $HOME/devbox/Taskfile.yml
+  # echo $HOME/dotfiles/Taskfile.yml
+  echo $HOME/notion-synchronizer/Taskfile.yml
+}
+
+function fill_fields_in_root_taskfiles(){
+  local repos=('chrome-forge' 'dathub' 'db-server-brewery' 'devbox' 'notion-synchronizer')
+
+  for repo_name in "${repos[@]}"; do
+    echo "Processing repository: $repo_name"
+    go run ./cmd/cli/taskfile --operation fill --task-type root --taskfile-path "$HOME/$repo_name/Taskfile.yml"
+  done
 }

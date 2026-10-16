@@ -1,0 +1,71 @@
+#!/bin/bash
+# =============================================================================
+# filesystem_error_monitor.sh
+# Netdata外部プラグイン: カーネルログからファイルシステムエラーを検知する
+#
+# 仕組み:
+#   journalctl でカーネルログを監視し、EXT4/XFS/Btrfs 等のエラーを
+#   カウントして Netdata のカスタムチャートとして送信する。
+#
+# 配置先: /etc/netdata/custom-plugins.d/filesystem_error_monitor.sh
+# 権限:   chmod +x
+# =============================================================================
+
+# Netdata 外部プラグインプロトコル: 更新間隔 (秒)
+UPDATE_EVERY="${1:-30}"
+
+# チャート定義を出力 (起動時に一度だけ)
+cat <<EOF
+CHART custom.filesystem_errors '' 'Filesystem Errors in Kernel Log' 'errors/s' 'filesystem' '' line 900 ${UPDATE_EVERY} '' '' 'filesystem_error_monitor'
+DIMENSION ext4_errors   'EXT4 errors'   absolute 1 1
+DIMENSION xfs_errors    'XFS errors'    absolute 1 1
+DIMENSION btrfs_errors  'Btrfs errors'  absolute 1 1
+DIMENSION other_errors  'Other FS errors' absolute 1 1
+EOF
+
+# 前回のチェック時刻を記録するファイル
+TIMESTAMP_FILE="/tmp/netdata_fs_error_monitor.timestamp"
+
+# 初回は直近1分間を対象にする
+if [[ ! -f "${TIMESTAMP_FILE}" ]]; then
+  date --utc -d "1 minute ago" '+%Y-%m-%d %H:%M:%S' > "${TIMESTAMP_FILE}"
+fi
+
+while true; do
+  SINCE=$(cat "${TIMESTAMP_FILE}")
+  NOW=$(date --utc '+%Y-%m-%d %H:%M:%S')
+
+  # journalctl でカーネルログ (SYSLOG_IDENTIFIER=kernel) から取得
+  # --no-pager: ページャ無効  -q: 警告抑制  -k: カーネルログのみ
+  LOGS=$(journalctl -q --no-pager -k \
+    --since "${SINCE}" \
+    --until "${NOW}" \
+    --output=short-unix \
+    2>/dev/null)
+
+  # 各ファイルシステムのエラー件数をカウント
+  EXT4_COUNT=$(echo "${LOGS}" | grep -ciE \
+    'EXT4-fs error|ext4_error|EXT4.*corruption|journal_abort|JBD2' || true)
+
+  XFS_COUNT=$(echo "${LOGS}" | grep -ciE \
+    'XFS.*error|xfs_force_shutdown|XFS.*corruption|XFS.*I/O error' || true)
+
+  BTRFS_COUNT=$(echo "${LOGS}" | grep -ciE \
+    'BTRFS.*error|btrfs_abort_transaction|BTRFS.*corruption|BTRFS.*csum' || true)
+
+  OTHER_COUNT=$(echo "${LOGS}" | grep -ciE \
+    'filesystem error|Buffer I/O error|end_request.*I/O error|SCSI error|medium error' || true)
+
+  # 既存カウント分を除算してレートではなく絶対値で送る (absolute)
+  echo "BEGIN custom.filesystem_errors"
+  echo "SET ext4_errors = ${EXT4_COUNT}"
+  echo "SET xfs_errors = ${XFS_COUNT}"
+  echo "SET btrfs_errors = ${BTRFS_COUNT}"
+  echo "SET other_errors = ${OTHER_COUNT}"
+  echo "END"
+
+  # 次回のために現在時刻を保存
+  echo "${NOW}" > "${TIMESTAMP_FILE}"
+
+  sleep "${UPDATE_EVERY}"
+done
