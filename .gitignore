@@ -230,7 +230,7 @@ tmp_log.txt
 ## config
 !/.config/
 !/.config/**
-.config/agents/cagent/config_linux/**/*_prod.yml
+/.config/agents/cagent/config_linux/**/*_prod*
 
 ### Secrets
 /.config/TabNine/registration_key
@@ -340,6 +340,3 @@ docker-compose.yml
 
 ### agent ###
 .codex
-
-# Keep local production agent configurations out of Git.
-/.config/agents/cagent/config_linux/**/*prod*
