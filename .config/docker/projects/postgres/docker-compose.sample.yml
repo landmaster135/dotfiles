@@ -2,7 +2,7 @@ name: "postgres"
 
 services:
   db:
-    image: postgres:18
+    image: pgvector/pgvector:pg18-trixie
     container_name: postgres-main-db
     hostname: ${POSTGRES_DB_HOST}
     mem_limit: 2g
