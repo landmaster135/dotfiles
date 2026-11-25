@@ -121,6 +121,9 @@ git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
 
+# Update pacman DB
+sudo pacman -Syu
+
 # Common packages
 yay -S --noconfirm --needed brave-bin
 yay -S --noconfirm --needed google-cloud-cli
