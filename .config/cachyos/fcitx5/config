@@ -80,4 +80,3 @@ AllowInputMethodForPassword=False
 ShowPreeditForPassword=False
 # ユーザーデータを保存する間隔（分）
 AutoSavePeriod=30
-

@@ -10,7 +10,7 @@ mv $HOME/.bashrc $HOME/.bashrc.bak
 
 ### 2. Set symbolic link
 ```bash
-ln -s $HOME/dotfiles/.config/bash/.bashrc $HOME
+ln -s $HOME/dotfiles/.config/linux/bash/.bashrc $HOME
 ```
 
 ### 3. Restart bash

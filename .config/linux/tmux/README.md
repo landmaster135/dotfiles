@@ -10,7 +10,7 @@ mv $HOME/.config/tmux/tmux.conf $HOME/.config/tmux/tmux.conf.bak
 
 ### 2. Set symbolic link
 ```zsh
-ln -s $HOME/dotfiles/.config/tmux/tmux.conf $HOME/.config/tmux/tmux.conf
+ln -s $HOME/dotfiles/.config/linux/tmux/tmux.conf $HOME/.config/tmux/tmux.conf
 ```
 
 ### 3. Restart tmux

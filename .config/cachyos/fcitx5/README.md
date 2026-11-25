@@ -1,13 +1,13 @@
 # Fcitx5
 
-# Restart
+## Restart
 ```bash
 nohup fcitx5 > /dev/null 2>&1 &
 ```
 
-# Settings
+## Settings
 
-## Brave
+### Brave
 ```bash
 cat << 'EOF' > ~/.config/brave-flags.conf
 --ozone-platform=x11

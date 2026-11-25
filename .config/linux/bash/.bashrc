@@ -142,9 +142,9 @@ TZ="Asia/Tokyo"
 ##         Utilities                                          ##
 #==============================================================#
 # Aliases and functions.
-export ZHOMEDIR=$HOME/dotfiles/.config/zsh
+export ZHOMEDIR=$HOME/dotfiles/.config/linux/zsh
 export ZRCDIR=$ZHOMEDIR
-export BASH_HOMEDIR=$HOME/dotfiles/.config/bash
+export BASH_HOMEDIR=$HOME/dotfiles/.config/linux/bash
 source "$BASH_HOMEDIR/alias.bash"
 source "$BASH_HOMEDIR/function.bash"
 source "$BASH_HOMEDIR/extract_blog_articles.bash"
