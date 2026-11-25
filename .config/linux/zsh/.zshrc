@@ -57,9 +57,8 @@ source "$ZSH_RCDIR/set_env.zsh" "$DOTFILE_HOMEDIR/env.yml"
 #==============================================================#
 setopt EXTENDED_GLOB
 setopt GLOB_DOTS
-setopt CORRECT
+# setopt CORRECT
 unsetopt CORRECT_ALL
-
 
 #==============================================================#
 ##          For Development                                   ##
