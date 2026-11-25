@@ -129,5 +129,8 @@ yay -S --noconfirm --needed discord_arch_electron
 # For game
 yay -S --noconfirm --needed envycontrol
 
+# For shell
+yay -S rmux
+
 # pended packages...
 # yay -S google-chrome
