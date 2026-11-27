@@ -27,7 +27,8 @@ exclude_slash_tmp = true
 exclude_tmpdir_env_var = false
 
 [shell_environment_policy]
-exclude = ["env.yml"]
+inherit = "core"
+exclude = ["env.yml", "*_KEY", "*_API_KEY", "*_TOKEN", "*SECRET*", "*PASSWORD*"]
 
 [notice.model_migrations]
 gpt-5-codex = "gpt-5.3-codex"
